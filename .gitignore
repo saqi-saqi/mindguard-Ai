@@ -1,0 +1,42 @@
+# Environment & Secrets
+.env
+.env.local
+*.pem
+*.key
+
+# Databases & Backups
+*.db
+*.sqlite
+*.sqlite3
+*.bak
+
+# Datasets & Large Archives
+*.zip
+*.tar.gz
+*.rar
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.venv
+.venv_clean/
+.venv*/
+env/
+venv/
+
+# Node / React
+node_modules/
+dist/
+build/
+.vite/
+
+# IDE / System
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

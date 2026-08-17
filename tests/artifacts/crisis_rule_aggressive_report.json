@@ -1,0 +1,74 @@
+{
+  "suite": "MindGuard aggressive deterministic crisis-rule release gate",
+  "total_cases": 238,
+  "passed": 238,
+  "failed": 0,
+  "accuracy": 1.0,
+  "category_breakdown": {
+    "academic": {
+      "total": 12,
+      "passed": 12
+    },
+    "contradiction": {
+      "total": 8,
+      "passed": 8
+    },
+    "distress_support_request": {
+      "total": 16,
+      "passed": 16
+    },
+    "explicit_intent": {
+      "total": 36,
+      "passed": 36
+    },
+    "implicit_distress": {
+      "total": 20,
+      "passed": 20
+    },
+    "means_or_attempt": {
+      "total": 28,
+      "passed": 28
+    },
+    "media": {
+      "total": 8,
+      "passed": 8
+    },
+    "metaphor": {
+      "total": 16,
+      "passed": 16
+    },
+    "negation": {
+      "total": 12,
+      "passed": 12
+    },
+    "normal_distress": {
+      "total": 12,
+      "passed": 12
+    },
+    "obfuscation": {
+      "total": 6,
+      "passed": 6
+    },
+    "recovery": {
+      "total": 8,
+      "passed": 8
+    },
+    "roman_urdu": {
+      "total": 16,
+      "passed": 16
+    },
+    "self_harm": {
+      "total": 20,
+      "passed": 20
+    },
+    "slang": {
+      "total": 16,
+      "passed": 16
+    },
+    "third_party": {
+      "total": 4,
+      "passed": 4
+    }
+  },
+  "failures": []
+}

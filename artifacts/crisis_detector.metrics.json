@@ -1,0 +1,72 @@
+{
+  "task": "crisis_detection",
+  "created_at_utc": "2026-08-15T10:48:55.903927+00:00",
+  "dataset": {
+    "directory": "E:\\FYP\\current\\extras\\dataset\\processed\\crisis",
+    "file_sha256": {
+      "train.csv": "5e1883e1be10031b20a090e7217e4f51fb6a75a8d956ce02cd48f31040141bd1",
+      "validation.csv": "02166eecd97ce7bdbe968f82ed411a02c23ca08cfae4bb0777f974402d0f1af4",
+      "test.csv": "30f9a9201c88b99005bb9b5f95de5938fca0f96b3e33bde6130b806920237f47"
+    },
+    "rows": {
+      "train": 6998,
+      "validation": 1500,
+      "test": 1500
+    },
+    "labels": [
+      "non_suicide",
+      "suicide"
+    ],
+    "cross_split_overlap": {
+      "train_validation": 0,
+      "train_test": 0,
+      "validation_test": 0
+    }
+  },
+  "target_validation_recall": 0.95,
+  "selected_threshold": 0.3300497764682969,
+  "cv_threshold_stats": {
+    "fold_thresholds": [
+      0.29487699246614846,
+      0.3169620656185204,
+      0.26357719025543475,
+      0.4164749806845316,
+      0.3583576533168496
+    ],
+    "mean_threshold": 0.3300497764682969,
+    "std_threshold": 0.053099283315438894,
+    "min_threshold": 0.26357719025543475,
+    "max_threshold": 0.4164749806845316,
+    "p95_conservative_threshold": 0.40485151521099516
+  },
+  "validation": {
+    "threshold": 0.3300497764682969,
+    "precision": 0.8881909547738693,
+    "recall": 0.9515477792732167,
+    "f1": 0.9187784275503573,
+    "roc_auc": 0.9734021274742154,
+    "average_precision": 0.9732053827689918,
+    "brier_score": 0.05861814846322773,
+    "confusion_matrix": {
+      "true_negative": 668,
+      "false_positive": 89,
+      "false_negative": 36,
+      "true_positive": 707
+    }
+  },
+  "held_out_test": {
+    "threshold": 0.3300497764682969,
+    "precision": 0.8936708860759494,
+    "recall": 0.9502018842530283,
+    "f1": 0.9210697977821265,
+    "roc_auc": 0.9755232011321874,
+    "average_precision": 0.9755021396438017,
+    "brier_score": 0.05692391578946673,
+    "confusion_matrix": {
+      "true_negative": 673,
+      "false_positive": 84,
+      "false_negative": 37,
+      "true_positive": 706
+    }
+  }
+}

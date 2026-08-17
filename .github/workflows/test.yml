@@ -1,0 +1,53 @@
+name: MindGuard Continuous Integration
+
+on:
+  push:
+    branches: [ main, master, dev ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-backend:
+    name: Backend API & Safety Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f server/requirements.txt ]; then pip install -r server/requirements.txt; fi
+
+      - name: Run Backend Test Suite
+        env:
+          JWT_SECRET_KEY: ci-test-secret-key-2026
+        run: |
+          python tests/run_all_tests.py
+
+  build-frontend:
+    name: Frontend React & Vite Production Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Node Dependencies
+        working-directory: ./client
+        run: |
+          npm ci
+
+      - name: Build Web Production Client
+        working-directory: ./client
+        run: |
+          npm run build

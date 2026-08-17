@@ -1,0 +1,531 @@
+id,text,category,severity
+1,Ngl kms fr no cap.,subtle_slang,5
+2,Fr fr bout to log off for good not even joking.,subtle_slang,4
+3,i cant remember the last time i felt ok and idk what to do.,indirect_distress,3
+4,Highkey im tryna peace out permanently 😔.,subtle_slang,3
+5,i feel like im just going through the motions lately.,indirect_distress,3
+6,"Just so you know, I have written letters for everyone just in case its already decided.",lethal_preparation,5
+7,Ngl I wanna kill myself today.,explicit_intent,4
+8,I swear this group project will be the death of me.,idiom_non_crisis,1
+9,Tbh I dont see a way out of this and it wont stop.,indirect_distress,3
+10,"Tbh, I wanna disappear for good tonight.",explicit_intent,5
+11,"Not gonna lie, I just want everything to stop, permanently i mean it.",explicit_intent,4
+12,"Just so you know, I am not going to need any of my stuff after tonight...",lethal_preparation,5
+13,"Listen, i just want you to know none of this was your fault.",burden_goodbye,4
+14,Ok but im tryna self delete ngl istg.,subtle_slang,4
+15,Not gonna lie thinking about ending the sim ngl.,subtle_slang,3
+16,"I made peace with it, everything is already arranged...",lethal_preparation,5
+17,Ok but just wanna disappear from existence ngl...,subtle_slang,4
+18,I really want to be dead im serious.,explicit_intent,5
+19,I am ready to die i mean it.,explicit_intent,5
+20,"Tbh not built for this world tbh, tryna dip lol.",subtle_slang,3
+21,Highkey done being a burden ngl fr...,subtle_slang,5
+22,"Honestly, I have everything set up already, its time im not telling anyone until after.",lethal_preparation,5
+23,Lately I dont know how to stop hurting myself and i dont know why.,self_harm_cutting,3
+24,"Ok but im out, for real this time 😔.",subtle_slang,3
+25,"According to the report, suicide rates rose last year in several countries.",negation_past_academic,1
+26,Lowkey im done with this level called life...,subtle_slang,5
+27,"I think im sorry for everything, please forgive me.",burden_goodbye,5
+28,I dont think i can do this anymore honestly.,indirect_distress,3
+29,I really want to end my life i mean it.,explicit_intent,5
+30,Im dying to see that new movie this weekend.,idiom_non_crisis,1
+31,Not gonna lie im tryna tap out for good 😔.,subtle_slang,5
+32,"Just so u know, i dont want to be a burden anymore so im leaving for good im so sorry.",burden_goodbye,5
+33,The panel discussed media guidelines for reporting on suicide responsibly.,negation_past_academic,1
+34,I picked the day its going to happen im not telling anyone until after.,lethal_preparation,4
+35,"I just want everything to stop, permanently i cant take it anymore.",explicit_intent,5
+36,I cleaned out my room because i wont be needing it...,lethal_preparation,5
+37,"Honestly, im sorry, i just cant keep doing this to you all...",burden_goodbye,4
+38,Ngl im tryna tap out for good not even joking.,subtle_slang,4
+39,"Not gonna lie, I cant keep living like this and want to end it im serious.",explicit_intent,5
+40,i wanna kill myself ive had enough.,explicit_intent,5
+41,Im sorry i couldnt be stronger for you im so sorry.,burden_goodbye,5
+42,I am going to end my life ive had enough.,explicit_intent,4
+43,i want to kill myself for real.,explicit_intent,5
+44,I just feel like I feel like a burden to everyone around me.,indirect_distress,3
+45,"Listen, take care of my things after im gone please understand.",burden_goodbye,4
+46,i have everything i need ready to go.,lethal_preparation,5
+47,"Just so you know, i wrote letters for everyone, theyre in my room i love you all.",burden_goodbye,5
+48,"Ngl not built for this world tbh, tryna dip no cap.",subtle_slang,3
+49,i already have a plan for tonight and im not changing my mind its already decided.,lethal_preparation,5
+50,Ok but ready to check out for good fr.,subtle_slang,3
+51,"Just so you know, i already said my goodbyes to the people that matter im so sorry.",burden_goodbye,4
+52,This traffic is literally killing me.,idiom_non_crisis,1
+53,I really dont see the point in staying alive anymore today.,explicit_intent,4
+54,Fr fr ready to check out for good istg.,subtle_slang,4
+55,"Im dead serious, this coffee is amazing.",idiom_non_crisis,1
+56,i self harmed for the first time in months last night and i dont know why.,self_harm_cutting,4
+57,"Honestly, I cant stop hurting myself lately...",self_harm_cutting,4
+58,"Just so you know, i dont want to be a burden anymore so im leaving for good plz understand.",burden_goodbye,4
+59,Im tired of being a weight on everyone.,burden_goodbye,5
+60,"Listen, i wanted to say goodbye before its too late please understand.",burden_goodbye,5
+61,I already figured out exactly how its going to happen theres no going back now.,lethal_preparation,4
+62,"Not gonna lie, I keep thinking about ending my life for real.",explicit_intent,5
+63,I keep feeling like feel like giving up on everything and it wont stop.,indirect_distress,2
+64,I swear I am thinking about ending everything tonite i cant take it anymore.,explicit_intent,5
+65,"Honestly, please dont be sad, its better this way for everyone i mean that.",burden_goodbye,5
+66,Lately I have the urge to hurt myself really bad right now...,self_harm_cutting,4
+67,I think take care of my things after im gone i love you all.,burden_goodbye,5
+68,i want to end my life and i mean it this time.,explicit_intent,5
+69,Lowkey not trying to see tomorrow tbh istg.,subtle_slang,4
+70,Fr fr not trying to see tomorrow tbh lol.,subtle_slang,3
+71,I swear I am done with life and want to die right now.,explicit_intent,4
+72,Tbh I have been cutting again and i hate that i cant stop.,self_harm_cutting,3
+73,"Ngl checking out early, im done lol.",subtle_slang,5
+74,"I love you all, im sorry i couldnt stay i mean that.",burden_goodbye,5
+75,"Just so you know, I already wrote my will just in case its already decided.",lethal_preparation,5
+76,I think i dont want to be a burden anymore so im leaving for good please understand.,burden_goodbye,4
+77,"Not gonna lie, I want to end my existence i cant take it anymore.",explicit_intent,4
+78,"Im starving, i could die for a pizza right now.",idiom_non_crisis,1
+79,"i made peace with it, everything is already arranged.",lethal_preparation,4
+80,Ngl im tryna unalive fr no cap lol.,subtle_slang,3
+81,"i just want everything to stop, permanently right now.",explicit_intent,5
+82,I just feel like I feel like giving up on everything and it scares me.,indirect_distress,3
+83,I swear I wanna end my life for real.,explicit_intent,4
+84,Honestly I dont see a way out of this and idk what to do.,indirect_distress,2
+85,i have set a date and im sticking to it im not telling anyone until after.,lethal_preparation,5
+86,I dont know how much longer i can hold on and it wont stop.,indirect_distress,2
+87,"Ok but not built for this world tbh, tryna dip lol.",subtle_slang,5
+88,"Tbh, I am going to take my own life tonight i mean it.",explicit_intent,5
+89,Tbh I self harmed for the first time in months last night and its getting worse.,self_harm_cutting,4
+90,"Im sorry for everything, plz forgive me please understand.",burden_goodbye,5
+91,These days I feel hopeless about pretty much everything honestly.,indirect_distress,2
+92,I just feel like I am running out of energy to keep pretending im fine more and more each day.,indirect_distress,3
+93,"Honestly, I relapsed and hurt myself again.",self_harm_cutting,3
+94,These days I feel like im just going thru the motions more and more each day.,indirect_distress,3
+95,I really wanna end my life today.,explicit_intent,5
+96,"Listen, i wrote letters for everyone, theyre in my room im so sorry.",burden_goodbye,5
+97,i am going to take my own life tonight.,explicit_intent,4
+98,Honestly I feel hopeless about pretty much everything and it scares me.,indirect_distress,3
+99,"Just so u know, I have written letters for everyone just in case its already decided.",lethal_preparation,5
+100,i have been self harming again this week and i feel so ashamed.,self_harm_cutting,3
+101,Not gonna lie kms is looking pretty good rn ngl lol.,subtle_slang,5
+102,Ok but im tryna peace out permanently.,subtle_slang,4
+103,i want it all to be over for real.,explicit_intent,5
+104,"Listen, im tired of being a weight on everyone im so sorry.",burden_goodbye,4
+105,I just feel like I dont know how much longer i can hold on lately.,indirect_distress,2
+106,I keep feeling like am running out of energy to keep pretending im fine...,indirect_distress,3
+107,Tbh kms is looking pretty good rn ngl no cap.,subtle_slang,3
+108,Honestly I feel like im just going thru the motions.,indirect_distress,2
+109,"That spicy food nearly killed me, ten out of ten though.",idiom_non_crisis,1
+110,I used to have suicidal thoughts a few years ago but im in a better place now.,negation_past_academic,1
+111,Ok but kms fr.,subtle_slang,5
+112,Right now I want to kill myself...,explicit_intent,5
+113,I really am going to kill myself tonight.,explicit_intent,5
+114,I wanted to say goodbye before its too late.,burden_goodbye,5
+115,"Honestly, I already figured out exactly how its going to happen im not telling anyone until after.",lethal_preparation,5
+116,i feel the urge to hurt myself building up again again.,self_harm_cutting,4
+117,Tbh I cant stop thinking about hurting myself today...,self_harm_cutting,4
+118,I really am seriously considering ending my life!,explicit_intent,4
+119,Ngl thinking about ending the sim ngl 😔.,subtle_slang,3
+120,Honestly I cant remember the last time i felt okay these days.,indirect_distress,3
+121,"Listen, i just want you to know none of this was your fault...",burden_goodbye,5
+122,i cant stop thinking about hurting myself today and i feel so ashamed.,self_harm_cutting,4
+123,I swear I need to end my life and i mean it this time.,explicit_intent,4
+124,Not gonna lie bout to log off for good fr.,subtle_slang,5
+125,"Honestly, I have made all the arrangements already its already decided.",lethal_preparation,4
+126,i already told my closest friend goodbye without saying why...,lethal_preparation,5
+127,Ngl done being a burden ngl fr not even joking.,subtle_slang,5
+128,Tbh I am so overwhelmed i dont know what to do lately.,indirect_distress,3
+129,"Tbh, I dont wanna live anymore im serious.",explicit_intent,5
+130,i have been self harming again this week...,self_harm_cutting,4
+131,"He mentioned he thought about ending his life back in high school, years ago.",negation_past_academic,1
+132,"i have everything set up already, its time...",lethal_preparation,5
+133,"Just so you know, i already said my goodbyes to the people that matter i love you all.",burden_goodbye,5
+134,"Tbh, I have decided to end my life.",explicit_intent,4
+135,Tbh I feel numb to everything these days more and more each day.,indirect_distress,3
+136,i wrote a goodbye note and left it on my desk its already decided.,lethal_preparation,5
+137,"Not gonna lie, I want it all to be over right now.",explicit_intent,5
+138,"Honestly, I dont know how to stop hurting myself and i dont know why.",self_harm_cutting,4
+139,Fr fr just wanna disappear from existence ngl not even joking.,subtle_slang,4
+140,Lately I feel like im stuck and theres no way forward lately.,indirect_distress,3
+141,"Honestly, I wanna kill myself for real.",explicit_intent,5
+142,"Honestly, this is goodbye, i cant keep putting u through this i love you all.",burden_goodbye,5
+143,Fr fr ready to check out for good no cap.,subtle_slang,3
+144,"Honestly, I cant stop hurting myself lately and its getting worse.",self_harm_cutting,3
+145,"Listen, please tell everyone i loved them please understand.",burden_goodbye,5
+146,Ngl I want to kill myself so bad right now for real.,explicit_intent,4
+147,"Listen, i just want you to know none of this was your fault im so sorry.",burden_goodbye,4
+148,I wrote a goodbye note and left it on my desk theres no going back now.,lethal_preparation,5
+149,She told me she felt suicidal in college but has fully recovered since then.,negation_past_academic,1
+150,Lately I am running out of energy to keep pretending im fine and it scares me.,indirect_distress,3
+151,Right now I wanna end my life i mean it.,explicit_intent,4
+152,I just feel like I feel hopeless about pretty much everything more and more each day.,indirect_distress,2
+153,i have a plan ready and its happening soon its already decided.,lethal_preparation,4
+154,Lowkey just wanna disappear from existence ngl fr.,subtle_slang,5
+155,Ngl I have decided to end my life ive had enough.,explicit_intent,5
+156,"Just so you know, youd all be happier if i wasnt around i mean that.",burden_goodbye,4
+157,"Not gonna lie, I am ready to die!",explicit_intent,4
+158,I read a research paper about interventions for suicidal ideation this week.,negation_past_academic,1
+159,Right now I need to end my life tonite.,explicit_intent,4
+160,I think i wanted to say goodbye before its too late.,burden_goodbye,4
+161,"Just so you know, make sure my dog is taken care of after im gone i love you all.",burden_goodbye,5
+162,"Listen, youd all be happier if i wasnt around i love you all.",burden_goodbye,5
+163,Make sure my dog is taken care of after im gone i mean that.,burden_goodbye,5
+164,"Tbh, I want to kill myself so bad right now right now.",explicit_intent,5
+165,i am so overwhelmed i dont know what to do.,indirect_distress,3
+166,Ngl I want to be dead.,explicit_intent,4
+167,"Honestly, I already have a plan for tonight and im not changing my mind im not telling anyone until after.",lethal_preparation,5
+168,"Honestly, I cant stop thinking about hurting myself today and i dont know why.",self_harm_cutting,3
+169,Highkey im just tryna off myself at this point.,subtle_slang,3
+170,I keep feeling like dont know how much longer i can hold on more and more each day.,indirect_distress,3
+171,Honestly I dont think anyone would notice if i disappeared lately.,indirect_distress,3
+172,I have written letters for everyone just in case theres no going back now.,lethal_preparation,5
+173,"Tbh, I keep thinking about ending my life.",explicit_intent,4
+174,Lately I feel like giving up on everything more and more each day.,indirect_distress,3
+175,I swear I wanna disappear for good.,explicit_intent,4
+176,"Honestly, I made peace with it, everything is already arranged its already decided.",lethal_preparation,5
+177,Everyone will finally get a break once im gone i mean that.,burden_goodbye,4
+178,"Just so you know, I have a plan ready and its happening soon.",lethal_preparation,5
+179,I keep feeling like feel like im stuck and theres no way forward and it wont stop.,indirect_distress,2
+180,"Tbh, I want to end it all today.",explicit_intent,5
+181,Ngl im tryna catch the bus fr fr.,subtle_slang,4
+182,Im tryna tap out for good no cap.,subtle_slang,3
+183,I really am going to end my life im serious.,explicit_intent,4
+184,Tbh I dont think i can do this anymore and idk what to do.,indirect_distress,3
+185,"In the movie, a character struggles with suicidal thoughts before getting help.",negation_past_academic,1
+186,I gave away most of my things this week im not telling anyone until after.,lethal_preparation,5
+187,Not gonna lie im just tryna off myself at this point...,subtle_slang,3
+188,"Just so you know, I gave away most of my things this week im not telling anyone until after.",lethal_preparation,5
+189,I dont know how much longer i can hold on honestly.,indirect_distress,2
+190,Lowkey im so done with life ngl...,subtle_slang,3
+191,I swear I am done with life and want to die i cant take it anymore.,explicit_intent,5
+192,Today I want to disappear forever i mean it.,explicit_intent,5
+193,"I read that early intervention lowers suicide risk significantly, according to the study.",negation_past_academic,1
+194,I just feel like I dont think i can do this anymore honestly.,indirect_distress,3
+195,"Not gonna lie, I am going to kill myself today.",explicit_intent,4
+196,i feel completely empty inside...,indirect_distress,2
+197,Ngl I have had enough and want to die tonight.,explicit_intent,5
+198,"Tbh, I just want to die.",explicit_intent,5
+199,i already wrote my will just in case...,lethal_preparation,5
+200,Ngl I want to stop existing and i mean it this time.,explicit_intent,5
+201,"Just so you know, I have set a date and im sticking to it...",lethal_preparation,5
+202,Not gonna lie im tryna catch the bus fr 😔.,subtle_slang,5
+203,I feel like giving up on everything more and more each day.,indirect_distress,3
+204,"Lowkey checking out early, im done...",subtle_slang,4
+205,I keep feeling like am so tired of everything and it scares me.,indirect_distress,3
+206,i wanna kill myself i cant take it anymore.,explicit_intent,5
+207,Today I am going to kill myself i mean it.,explicit_intent,5
+208,I really have had enough and want to die!,explicit_intent,5
+209,i feel like im drowning and no one notices and idk what to do.,indirect_distress,3
+210,"i have thought this through completely, its decided...",lethal_preparation,4
+211,I think im sorry i couldnt be stronger for u im so sorry.,burden_goodbye,4
+212,"Your jokes are killing me, please stop.",idiom_non_crisis,1
+213,Ngl I wanna kill myself i mean it.,explicit_intent,5
+214,I want to disappear forever today.,explicit_intent,5
+215,"i made peace with it, everything is already arranged theres no going back now.",lethal_preparation,4
+216,Ngl I want it all to be over for real.,explicit_intent,4
+217,"Honestly, I broke my streak and hurt myself again and its getting worse.",self_harm_cutting,3
+218,"Honestly, I feel like self harm is the only thing that helps me cope and i feel so ashamed.",self_harm_cutting,3
+219,"That exam nearly killed me, so much studying.",idiom_non_crisis,1
+220,Ngl I want to be dead tonight.,explicit_intent,5
+221,I am struggling to find a reason to keep going.,indirect_distress,3
+222,"Honestly, i wrote letters for everyone, theyre in my room plz understand.",burden_goodbye,5
+223,"Just so you know, I have made all the arrangements already...",lethal_preparation,5
+224,"Just so you know, im sorry, i just cant keep doing this to you all i mean that.",burden_goodbye,5
+225,I cant stop thinking about hurting myself today...,self_harm_cutting,4
+226,Lately I cant stop hurting myself lately and its getting worse.,self_harm_cutting,3
+227,I just feel like I cant keep going like this...,indirect_distress,3
+228,The professor cited statistics on suicide prevention program effectiveness.,negation_past_academic,1
+229,Tbh im tryna catch the bus fr fr.,subtle_slang,3
+230,Honestly I feel like everything is falling apart and i cant stop it.,indirect_distress,3
+231,"Honestly, I cant stop hurting myself lately.",self_harm_cutting,4
+232,"Please dont be sad, its better this way for everyone i love you all.",burden_goodbye,4
+233,I think you deserve better than dealing with me.,burden_goodbye,5
+234,I think im tired of being a weight on everyone please understand.,burden_goodbye,5
+235,Lately I am exhausted from just existing more and more each day.,indirect_distress,3
+236,I just feel like I feel numb to everything these days these days.,indirect_distress,2
+237,"Listen, i wrote letters for everyone, theyre in my room.",burden_goodbye,5
+238,Tbh I feel like everything is falling apart and i cant stop it...,indirect_distress,2
+239,Tbh I feel like giving up on everything and idk what to do.,indirect_distress,3
+240,The training module covered how to respond when someone mentions suicide.,negation_past_academic,1
+241,Ngl I dont wanna live anymore im serious.,explicit_intent,5
+242,Today I want to end my life tonight.,explicit_intent,5
+243,Honestly I feel like im drowning and no one notices lately.,indirect_distress,3
+244,"Honestly, I wanna kill myself tonight.",explicit_intent,5
+245,Lately I relapsed and hurt myself again and its getting worse.,self_harm_cutting,3
+246,I feel completely empty inside more and more each day.,indirect_distress,3
+247,i want to disappear forever...,explicit_intent,5
+248,"Honestly, I want to end my life.",explicit_intent,4
+249,I realy need to end my life...,explicit_intent,4
+250,I think im just a burden to everyone i love i mean that.,burden_goodbye,5
+251,I keep feeling like feel like giving up on everything lately.,indirect_distress,2
+252,I swear I want to be dead for real.,explicit_intent,5
+253,Ngl I need to end my life for real.,explicit_intent,5
+254,I just feel like I dont know how much longer i can hold on honestly.,indirect_distress,2
+255,Ngl im tryna tap out for good...,subtle_slang,5
+256,i have made all the arrangements already im not telling anyone until after.,lethal_preparation,5
+257,I just feel like I feel like im stuck and theres no way forward lately.,indirect_distress,2
+258,I wanted to say goodbye before its too late i mean that.,burden_goodbye,5
+259,I nearly died laughing at that joke.,idiom_non_crisis,1
+260,That dessert was absolutely to die for.,idiom_non_crisis,1
+261,I really wanna disappear for good tonight.,explicit_intent,5
+262,"Listen, make sure my dog is taken care of after im gone plz understand.",burden_goodbye,5
+263,"Tbh, I am going to kill myself right now.",explicit_intent,4
+264,I would honestly die for a vacation right now.,idiom_non_crisis,1
+265,I swear I don't want to live anymore and i mean it this time.,explicit_intent,4
+266,This homework is going to be the death of me.,idiom_non_crisis,1
+267,"Honestly, I want to end it all...",explicit_intent,4
+268,I swear I want to stop existing today.,explicit_intent,5
+269,Lowkey not trying to see tomorrow tbh not even joking.,subtle_slang,4
+270,Tbh im tryna catch the bus fr.,subtle_slang,4
+271,These days I feel like im just going through the motions and it wont stop.,indirect_distress,3
+272,Highkey ready to check out for good 😔.,subtle_slang,4
+273,I have made all the arrangements already...,lethal_preparation,4
+274,I keep feeling like cant remember the last time i felt okay...,indirect_distress,3
+275,I really need to end my life and i mean it this time.,explicit_intent,5
+276,"Right now I just want everything to stop, permanently right now.",explicit_intent,5
+277,The lecture today covered risk factors associated with suicide in teenagers.,negation_past_academic,1
+278,These days I feel completely empty inside and it wont stop.,indirect_distress,3
+279,Tbh I have been struggling with self harm for weeks now...,self_harm_cutting,3
+280,i already figured out exactly how its going to happen...,lethal_preparation,5
+281,i feel like im drowning and no one notices more and more each day.,indirect_distress,3
+282,"Listen, you deserve better than dealing with me please understand.",burden_goodbye,4
+283,I swear I have decided to end my life right now.,explicit_intent,4
+284,"Honestly, I am done with life and want to die right now.",explicit_intent,5
+285,The news article analyzed the rise in youth suicide statistics this decade.,negation_past_academic,1
+286,Not gonna lie im tryna tap out for good fr.,subtle_slang,4
+287,Not gonna lie thinking about taking the early exit tbh fr.,subtle_slang,3
+288,"Just so you know, I made peace with it, everything is already arranged its already decided.",lethal_preparation,4
+289,Ngl kms is looking pretty good rn ngl...,subtle_slang,4
+290,The documentary discussed early warning signs of self harm in adolescents.,negation_past_academic,1
+291,Not gonna lie thinking about ending the sim ngl...,subtle_slang,5
+292,My therapist and i talked about my suicidal thoughts from last year in todays session.,negation_past_academic,1
+293,Tbh I am struggling to find a reason to keep going and it wont stop.,indirect_distress,2
+294,"Honestly, im just a burden to everyone i love im so sorry.",burden_goodbye,5
+295,I feel the urge to hurt myself building up again and its getting worse.,self_harm_cutting,3
+296,Im tryna unalive fr no cap istg.,subtle_slang,5
+297,The article explained how crisis hotlines assess suicide risk over the phone.,negation_past_academic,1
+298,I really want to end it all tonight.,explicit_intent,5
+299,"I think please dont be sad, its better this way for everyone im so sorry.",burden_goodbye,5
+300,I really want to end it all i mean it.,explicit_intent,5
+301,Tbh I feel like im stuck and theres no way forward and it wont stop.,indirect_distress,3
+302,I keep feeling like am barely holding it together right now and it wont stop.,indirect_distress,3
+303,I think make sure my dog is taken care of after im gone please understand.,burden_goodbye,4
+304,Not gonna lie bout to log off for good istg.,subtle_slang,3
+305,"Just so you know, this is goodbye, i cant keep putting you thru this im so sorry.",burden_goodbye,4
+306,I swear I want to give up on life completely today.,explicit_intent,4
+307,i want to take my own life tonight.,explicit_intent,5
+308,I think i already said my goodbyes to the people that matter please understand.,burden_goodbye,4
+309,Highkey im just tryna off myself at this point lol.,subtle_slang,5
+310,Lately I self harmed for the first time in months last night and i feel so ashamed.,self_harm_cutting,4
+311,Honestly I am exhausted from just existing lately.,indirect_distress,3
+312,"I think i love you all, im sorry i couldnt stay plz understand.",burden_goodbye,5
+313,Today I want to take my own life.,explicit_intent,5
+314,I used to self harm in middle school but havent in almost a decade.,negation_past_academic,1
+315,"Just so you know, i love you all, im sorry i couldnt stay i mean that.",burden_goodbye,4
+316,I keep feeling like feel like i have nothing left to give...,indirect_distress,3
+317,These days I cant stop crying and i dont know why anymore.,indirect_distress,3
+318,"Years ago i went through a period of suicidal thoughts, but therapy really helped.",negation_past_academic,1
+319,Ngl ready to check out for good istg.,subtle_slang,5
+320,Honestly I cant keep going like this.,indirect_distress,3
+321,Lowkey im tryna self delete ngl 😔.,subtle_slang,4
+322,Lately I dont think anyone would notice if i disappeared more and more each day.,indirect_distress,3
+323,i dont see the point in staying alive anymore.,explicit_intent,5
+324,"Honestly, I already have a plan for tonight and im not changing my mind theres no going back now.",lethal_preparation,4
+325,"Honestly, I have decided when its going to happen.",lethal_preparation,4
+326,Lowkey done playing this game called life ngl...,subtle_slang,3
+327,Ngl I wanna disappear for good today.,explicit_intent,5
+328,"Just so you know, I cleaned out my room because i wont be needing it.",lethal_preparation,5
+329,"Tbh, I want to kill myself right now.",explicit_intent,5
+330,Ngl im just tryna off myself at this point istg.,subtle_slang,3
+331,I wanted to say goodbye before its too late please understand.,burden_goodbye,4
+332,Honestly I feel like everything is falling apart and i cant stop it and it scares me.,indirect_distress,3
+333,"I could sleep for a year, im so dead right now.",idiom_non_crisis,1
+334,"Honestly, I keep thinking about ending my life tonight.",explicit_intent,4
+335,I cant keep living like this and want to end it today.,explicit_intent,4
+336,"Just so you know, I cleaned out my room because i wont be needing it theres no going back now.",lethal_preparation,5
+337,Right now I want it all to be over i mean it.,explicit_intent,5
+338,Right now I am ready to die for real.,explicit_intent,5
+339,"Ngl not built for this world tbh, tryna dip lol.",subtle_slang,5
+340,"Honestly, I have everything set up already, its time theres no going back now.",lethal_preparation,5
+341,Tbh im tryna unalive fr no cap 😔.,subtle_slang,5
+342,I could just die of embarrassment right now.,idiom_non_crisis,1
+343,Fr fr im tryna unalive fr no cap not even joking.,subtle_slang,5
+344,I just feel like I feel like im just going through the motions honestly.,indirect_distress,3
+345,i want to end my existence i cant take it anymore.,explicit_intent,5
+346,"I havent felt suicidal in over a year now, thankfully things are better.",negation_past_academic,1
+347,Right now I want to kill myself so bad right now tonight.,explicit_intent,4
+348,Lately I dont know how to stop hurting myself and its getting worse.,self_harm_cutting,3
+349,i feel completely empty inside.,indirect_distress,2
+350,"That rollercoaster nearly gave me a heart attack, so fun though.",idiom_non_crisis,1
+351,Lately I hurt myself again last night and its getting worse.,self_harm_cutting,3
+352,Highkey just wanna disappear from existence ngl lol.,subtle_slang,4
+353,Right now I wanna end my life for real.,explicit_intent,4
+354,Everyone will finally get a break once im gone please understand.,burden_goodbye,4
+355,The support group discussed coping strategies for people with self harm history.,negation_past_academic,1
+356,I think youd all be happier if i wasnt around i mean that.,burden_goodbye,5
+357,Highkey im tryna tap out for good not even joking.,subtle_slang,3
+358,My feet are killing me after that hike.,idiom_non_crisis,1
+359,I want to be dead.,explicit_intent,5
+360,Ngl thinking about unaliving myself tbh fr.,subtle_slang,3
+361,Today I wanna kill myself im serious.,explicit_intent,5
+362,"Just so you know, I have everything set up already, its time im not telling anyone until after.",lethal_preparation,4
+363,This heat today is absolutely deadly.,idiom_non_crisis,1
+364,I think i just want you to know none of this was your fault i mean that.,burden_goodbye,5
+365,"Just so you know, everyone will finally get a break once im gone please understand.",burden_goodbye,5
+366,Lately I am barely holding it together right now...,indirect_distress,3
+367,Lately I dont think anyone would notice if i disappeared...,indirect_distress,3
+368,I swear I am thinking about ending everything tonight i cant take it anymore.,explicit_intent,4
+369,I already have a plan for tonight and im not changing my mind im not telling anyone until after.,lethal_preparation,5
+370,Tbh I am so tired of everything honestly.,indirect_distress,3
+371,My psychology textbook has a whole chapter on suicide risk assessment.,negation_past_academic,1
+372,"I think i wrote letters for everyone, theyre in my room please understand.",burden_goodbye,5
+373,Right now I want it all to be over tonight.,explicit_intent,5
+374,Today I am going to take my own life tonite!,explicit_intent,4
+375,I swear I am seriously considering ending my life.,explicit_intent,4
+376,"Honestly, I dont see the point in staying alive anymore for real.",explicit_intent,4
+377,Today I have had enough and want to die today.,explicit_intent,5
+378,Not gonna lie im just tryna off myself at this point istg.,subtle_slang,5
+379,"Tbh, I want to be dead ive had enough.",explicit_intent,5
+380,"I think i love you all, im sorry i couldnt stay please understand.",burden_goodbye,4
+381,"Just so you know, im just a burden to everyone i love i love you all.",burden_goodbye,4
+382,I want to end it all ive had enough.,explicit_intent,5
+383,Not gonna lie just wanna disappear from existence ngl istg.,subtle_slang,5
+384,Make sure my dog is taken care of after im gone i love you all.,burden_goodbye,5
+385,Ngl im done with this level called life fr.,subtle_slang,3
+386,Not gonna lie im so done with life ngl fr.,subtle_slang,4
+387,i want to stop existing right now.,explicit_intent,5
+388,"Tbh, I cant keep living like this and want to end it ive had enough.",explicit_intent,5
+389,"Just so u know, youd all be happier if i wasnt around...",burden_goodbye,4
+390,Ngl I want to disappear forever!,explicit_intent,5
+391,Tbh I feel so alone even when im around people lately.,indirect_distress,2
+392,"Please dont be sad, its better this way for everyone...",burden_goodbye,4
+393,I relapsed and hurt myself again and its getting worse.,self_harm_cutting,4
+394,Lowkey ready to check out for good no cap.,subtle_slang,3
+395,Fr fr just wanna disappear from existence ngl 😔.,subtle_slang,4
+396,i cant remember the last time i felt okay more and more each day.,indirect_distress,2
+397,"Right now I am not going to be alive much longer, on purpose.",explicit_intent,5
+398,Ngl kms is looking pretty good rn ngl.,subtle_slang,3
+399,Today I dont wanna live anymore for real.,explicit_intent,4
+400,"Tbh, I just want everything to stop, permanently today.",explicit_intent,5
+401,i have set a date and im sticking to it its already decided.,lethal_preparation,4
+402,i have set a date and im sticking to it...,lethal_preparation,4
+403,Honestly I feel like im just going through the motions and idk what to do.,indirect_distress,2
+404,Not gonna lie im tryna tap out for good...,subtle_slang,5
+405,Ready to check out for good not even joking.,subtle_slang,4
+406,I cant stop crying and i dont know why anymore and it wont stop.,indirect_distress,3
+407,"This deadline is killing me slowly, so much work.",idiom_non_crisis,1
+408,"Just so you know, i love you all, im sorry i couldnt stay...",burden_goodbye,4
+409,Highkey done playing this game called life ngl...,subtle_slang,3
+410,I cant stop crying and i dont know why anymore lately.,indirect_distress,3
+411,"Tbh, I want to kill myself so bad right now for real.",explicit_intent,5
+412,I want to end my life today.,explicit_intent,5
+413,I dont see the point in staying alive anymore i cant take it anymore.,explicit_intent,4
+414,"Honestly, I have thought this through completely, its decided its already decided.",lethal_preparation,5
+415,i already figured out exactly how its going to happen im not telling anyone until after.,lethal_preparation,4
+416,"I think i wrote letters for everyone, theyre in my room i love you all.",burden_goodbye,4
+417,Honestly I feel like everything is falling apart and i cant stop it and it wont stop.,indirect_distress,3
+418,Lately I dont see a way out of this these days.,indirect_distress,2
+419,i feel hopeless about pretty much everything lately.,indirect_distress,2
+420,"Ok but checking out early, im done not even joking.",subtle_slang,5
+421,Tbh wanna dip out permanently istg.,subtle_slang,3
+422,i feel completely empty inside and it scares me.,indirect_distress,3
+423,Right now I want it all to be over for real.,explicit_intent,4
+424,"i dont feel like myself anymore, havent in a while lately.",indirect_distress,3
+425,These days I feel like a burden to everyone around me more and more each day.,indirect_distress,3
+426,I dont want to be a burden anymore so im leaving for good...,burden_goodbye,4
+427,Thinking about unaliving myself tbh istg.,subtle_slang,4
+428,"Honestly, I just want everything to stop, permanently.",explicit_intent,5
+429,Ngl I am going to kill myself and i mean it this time.,explicit_intent,5
+430,"Just so you know, I have decided when its going to happen im not telling anyone until after.",lethal_preparation,5
+431,Honestly I dont see a way out of this...,indirect_distress,3
+432,i am struggling to find a reason to keep going lately.,indirect_distress,2
+433,Not gonna lie thinking about taking the early exit tbh 😔.,subtle_slang,3
+434,"I just feel like I dont feel like myself anymore, havent in a while.",indirect_distress,2
+435,"Just so you know, I have thought this through completely, its decided...",lethal_preparation,5
+436,"Honestly, I have thought this through completely, its decided.",lethal_preparation,4
+437,I have the urge to hurt myself realy bad right now and i dont know why.,self_harm_cutting,3
+438,I already wrote my will just in case its already decided.,lethal_preparation,5
+439,"Tbh, I want this pain to stop by dying.",explicit_intent,4
+440,Honestly I cant remember the last time i felt okay lately.,indirect_distress,3
+441,Lately I feel the urge to hurt myself building up again...,self_harm_cutting,4
+442,Right now I want to take my own life im serious.,explicit_intent,5
+443,Ngl I am done with life and want to die and i mean it this time.,explicit_intent,5
+444,"Honestly, i wanted to say goodbye b4 its too late...",burden_goodbye,5
+445,I am not going to need any of my stuff after tonight its already decided.,lethal_preparation,5
+446,I dont want to be a burden anymore so im leaving for good im so sorry.,burden_goodbye,5
+447,"This is goodbye, i cant keep putting you through this.",burden_goodbye,5
+448,I have decided when its going to happen theres no going back now.,lethal_preparation,5
+449,I just feel like I am so tired of everything lately.,indirect_distress,3
+450,I just feel like I dont think i can do this anymore and it scares me.,indirect_distress,3
+451,I cant stop crying and i dont know why anymore...,indirect_distress,2
+452,Not gonna lie im so done with life ngl no cap.,subtle_slang,4
+453,Tbh I am so tired of everything and it scares me.,indirect_distress,3
+454,I cant stop hurting myself lately and its getting worse.,self_harm_cutting,4
+455,I think i just want you to know none of this was your fault i love you all.,burden_goodbye,5
+456,Ngl kms fr...,subtle_slang,5
+457,These days I feel like everything is falling apart and i cant stop it and idk what to do.,indirect_distress,2
+458,i feel like self harm is the only thing that helps me cope.,self_harm_cutting,3
+459,I self harmed for the first time in months last night...,self_harm_cutting,4
+460,Tbh im done with this level called life 😔.,subtle_slang,5
+461,I think take care of my things after im gone im so sorry.,burden_goodbye,5
+462,I really have decided to end my life im serious.,explicit_intent,4
+463,I swear I am ready to die.,explicit_intent,5
+464,"Tbh not built for this world tbh, tryna dip 😔.",subtle_slang,4
+465,"Honestly, i just want you to know none of this was your fault i mean that.",burden_goodbye,4
+466,I think you deserve better than dealing with me please understand.,burden_goodbye,4
+467,You deserve better than dealing with me please understand.,burden_goodbye,4
+468,The podcast episode was about surviving a suicide attempt and recovering.,negation_past_academic,1
+469,Ngl I want it all to be over right now.,explicit_intent,5
+470,I just feel like I feel like im just going thru the motions honestly.,indirect_distress,3
+471,Ngl I wanna end my life today.,explicit_intent,4
+472,I keep feeling like am struggling to find a reason to keep going...,indirect_distress,2
+473,Tbh kms is looking pretty good rn ngl 😔.,subtle_slang,4
+474,"Listen, u deserve better than dealing with me please understand.",burden_goodbye,4
+475,Youd all be happier if i wasnt around.,burden_goodbye,5
+476,"Honestly, I have everything i need ready to go im not telling anyone until after.",lethal_preparation,4
+477,"Just so u know, I already told my closest friend goodbye without saying why theres no going back now.",lethal_preparation,4
+478,Ok but thinking about ending the sim ngl lol.,subtle_slang,5
+479,"Not gonna lie, I am going to kill myself tonight.",explicit_intent,4
+480,Tbh just wanna disappear from existence ngl fr.,subtle_slang,4
+481,"Honestly, I feel like self harm is the only thing that helps me cope and i dont know why.",self_harm_cutting,3
+482,"Just so you know, im sorry i couldnt be stronger for you please understand.",burden_goodbye,5
+483,Everyone would be better off without me i love you all.,burden_goodbye,5
+484,Honestly I am struggling to find a reason to keep going and it wont stop.,indirect_distress,3
+485,Not gonna lie ready to check out for good...,subtle_slang,4
+486,Tbh I am exhausted from just existing and it scares me.,indirect_distress,3
+487,"Honestly, you deserve better than dealing with me...",burden_goodbye,4
+488,Tbh I am running out of energy to keep pretending im fine these days.,indirect_distress,3
+489,"Just so you know, im sorry for everything, please forgive me i mean that.",burden_goodbye,4
+490,I just feel like I feel like im drowning and no one notices and it wont stop.,indirect_distress,3
+491,I swear I want to end my existence right now.,explicit_intent,4
+492,I swear I am ready to die...,explicit_intent,5
+493,Im tryna tap out for good istg.,subtle_slang,5
+494,Lately I self harmed for the first time in months last night.,self_harm_cutting,3
+495,"Not gonna lie not built for this world tbh, tryna dip not even joking.",subtle_slang,5
+496,Tbh I cant stop hurting myself lately again.,self_harm_cutting,4
+497,Honestly I cant keep going like this and idk what to do.,indirect_distress,3
+498,Tbh I feel like im drowning and no one notices lately.,indirect_distress,2
+499,"Just so you know, I picked the day its going to happen...",lethal_preparation,5
+500,Lowkey wanna dip out permanently lol.,subtle_slang,4
+501,"Not gonna lie, I want to give up on life completely ive had enough.",explicit_intent,5
+502,"Honestly, I have set a date and im sticking to it im not telling anyone until after.",lethal_preparation,5
+503,Fr fr im tryna tap out for good...,subtle_slang,4
+504,Ngl I want it all to be over i cant take it anymore.,explicit_intent,4
+505,These days I am struggling to find a reason to keep going and idk what to do.,indirect_distress,2
+506,"Honestly, I already figured out exactly how its going to happen theres no going back now.",lethal_preparation,5
+507,"My friend used to talk about wanting to die back in high school, not anymore though.",negation_past_academic,1
+508,i don't want to live anymore today.,explicit_intent,5
+509,"Ugh, kill me now, this meeting is so boring.",idiom_non_crisis,1
+510,"Honestly, I want to kill myself so bad right now for real.",explicit_intent,5
+511,I swear I want to kill myself ive had enough.,explicit_intent,4
+512,These days I am struggling to find a reason to keep going and it wont stop.,indirect_distress,2
+513,Honestly I feel like nothing will ever get better these days.,indirect_distress,3
+514,Tbh I am running out of energy to keep pretending im fine lately.,indirect_distress,2
+515,Tbh I cant stop crying and i dont know why anymore and it scares me.,indirect_distress,3
+516,Lately I hurt myself again last night...,self_harm_cutting,3
+517,"Not gonna lie, I am thinking about ending everything tonight ive had enough.",explicit_intent,4
+518,Tbh I am so tired of everything and it wont stop.,indirect_distress,3
+519,Im dead tired after that workout.,idiom_non_crisis,1
+520,I really am thinking about ending everything tonight today.,explicit_intent,5
+521,Thinking about taking the early exit tbh lol.,subtle_slang,4
+522,Right now I wanna disappear for good...,explicit_intent,5
+523,"Just so u know, I am not going to need any of my stuff after tonight theres no going back now.",lethal_preparation,5
+524,i have been cutting again and i hate that i cant stop.,self_harm_cutting,4
+525,Make sure my dog is taken care of after im gone.,burden_goodbye,5
+526,"Honestly, I feel like self harm is the only thing that helps me cope.",self_harm_cutting,3
+527,Ok but wanna dip out permanently.,subtle_slang,4
+528,Tbh im tryna unalive fr no cap istg.,subtle_slang,4
+529,i have decided to end my life!,explicit_intent,5
+530,"I think i wrote letters for everyone, theyre in my room.",burden_goodbye,5

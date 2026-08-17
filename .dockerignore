@@ -1,0 +1,11 @@
+.git
+.gitignore
+.env
+node_modules
+__pycache__
+*.pyc
+*.pyo
+*.db
+dist
+build
+.user_uploaded

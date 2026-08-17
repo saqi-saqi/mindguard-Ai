@@ -1,0 +1,101 @@
+id,text,category,severity
+1,"I have decided to take my own life tonight and nothing will change my mind.",explicit_intent,5
+2,"I don't think I can survive until morning anymore.",indirect_distress,4
+3,"I wrote a farewell message for my family on my desk.",burden_goodbye,5
+4,"I bought sleeping pills yesterday to end everything.",lethal_preparation,5
+5,"Fr fr boutta peace out forever no cap.",subtle_slang,4
+6,"I've been cutting my thighs again and I can't stop.",self_harm_cutting,4
+7,"Standing on the edge of the roof right now.",active_escalation,5
+8,"I am NOT suicidal at all, just stressed about my job.",negation_past_academic,1
+9,"Five years ago I struggled with self-harm but I am clean and thriving now.",negation_past_academic,1
+10,"My psychology class is studying suicide prevention protocols.",negation_past_academic,1
+11,"The character in that TV show committed suicide in season 2.",negation_past_academic,1
+12,"I am dying of laughter watching this comedian.",idiom_non_crisis,1
+13,"This project is going to be the death of me.",idiom_non_crisis,1
+14,"My feet are killing me after walking all day.",idiom_non_crisis,1
+15,"Ngl tryna self delete tonight for real.",subtle_slang,5
+16,"I cannot keep living with this overwhelming emotional pain.",explicit_intent,4
+17,"Everyone would be much better off if I were gone forever.",burden_goodbye,4
+18,"I gathered all my medication bottles in front of me.",lethal_preparation,5
+19,"I feel like I'm just going through the motions and can't go on.",indirect_distress,3
+20,"I really want to die right now.",explicit_intent,5
+21,"I don't want to die, please help me stay safe.",negation_past_academic,1
+22,"Used to have suicidal thoughts in college, doing great today.",negation_past_academic,1
+23,"Writing my master thesis on youth suicide trends.",negation_past_academic,1
+24,"Watched a movie about a protagonist struggling with depression.",negation_past_academic,1
+25,"I could just die of embarrassment from that mistake.",idiom_non_crisis,1
+26,"Highkey ready to unalive myself istg.",subtle_slang,5
+27,"Please forgive me for everything, goodbye everyone.",burden_goodbye,5
+28,"I settled all my debts and gave away my guitar to my brother.",lethal_preparation,5
+29,"I don't see any future for myself anymore.",indirect_distress,3
+30,"I'm going to end my life tonight.",explicit_intent,5
+31,"I am definitely not planning to hurt myself.",negation_past_academic,1
+32,"Recovered from self-harm 3 years ago and feeling strong.",negation_past_academic,1
+33,"Reading a research study on crisis hotline effectiveness.",negation_past_academic,1
+34,"My uncle passed away last year after a long illness.",negation_past_academic,1
+35,"I'm dead tired after working a 12-hour shift.",idiom_non_crisis,1
+36,"Lowkey tryna tap out for good ngl.",subtle_slang,4
+37,"I am such a burden to my family, they deserve better.",burden_goodbye,4
+38,"I picked out the date and bought the rope.",lethal_preparation,5
+39,"I feel hopeless and wish I wouldn't wake up.",indirect_distress,4
+40,"I want to end my pain permanently.",explicit_intent,5
+41,"No suicidal intent whatsoever, just asking for meditation tips.",negation_past_academic,1
+42,"Had a dark period in 2020 but I turned my life around.",negation_past_academic,1
+43,"Attending a lecture on suicide risk assessment in nursing.",negation_past_academic,1
+44,"Read a news article covering mental health awareness week.",negation_past_academic,1
+45,"I would kill for a hot cup of coffee right now.",idiom_non_crisis,1
+46,"Finna clock out of life permanently no cap.",subtle_slang,5
+47,"Thank you for everything, this is my final note.",burden_goodbye,5
+48,"I hid a suicide note in my drawer and packed my things.",lethal_preparation,5
+49,"I don't think I can make it through the night.",indirect_distress,4
+50,"I plan to commit suicide today.",explicit_intent,5
+51,"I am not a danger to myself or anyone else.",negation_past_academic,1
+52,"Been stable for two years after overcoming my past struggles.",negation_past_academic,1
+53,"Analyzing demographic data on suicide rates for coursework.",negation_past_academic,1
+54,"The documentary discussed warning signs of self-harm in youth.",negation_past_academic,1
+55,"This traffic is killing me.",idiom_non_crisis,1
+56,"Boutta log off for good fr fr.",subtle_slang,4
+57,"None of this was your fault, please remember that.",burden_goodbye,4
+58,"I have the pills in front of me right now.",lethal_preparation,5
+59,"There is no point in staying alive anymore.",indirect_distress,4
+60,"I want to kill myself.",explicit_intent,5
+61,"Haven't had any suicidal thoughts in months.",negation_past_academic,1
+62,"I survived a dark depression 4 years ago.",negation_past_academic,1
+63,"Reviewing clinical guidelines for suicide risk intervention.",negation_past_academic,1
+64,"A character in the novel died by suicide.",negation_past_academic,1
+65,"I'm dying to see that new movie coming out.",idiom_non_crisis,1
+66,"Tryna end the sim permanently ngl.",subtle_slang,4
+67,"They won't have to deal with me much longer.",burden_goodbye,4
+68,"I researched lethal doses online last night.",lethal_preparation,5
+69,"Everything feels completely empty and I want it to stop.",indirect_distress,3
+70,"I am going to take my own life.",explicit_intent,5
+71,"I do not have any plans to harm myself.",negation_past_academic,1
+72,"Overcame my self-harm urges 2 years ago.",negation_past_academic,1
+73,"Participating in a workshop on suicide prevention in schools.",negation_past_academic,1
+74,"Listened to a podcast discussing grief and bereavement.",negation_past_academic,1
+75,"My back is killing me today.",idiom_non_crisis,1
+76,"Lowkey done with this level called life.",subtle_slang,4
+77,"You'll all be happier once I am gone.",burden_goodbye,4
+78,"I already wrote my will and left my keys on the counter.",lethal_preparation,5
+79,"I feel trapped and see no way out of this situation.",indirect_distress,3
+80,"I want to end my life right now.",explicit_intent,5
+81,"I am not feeling suicidal, just feeling a bit anxious.",negation_past_academic,1
+82,"Hospitalized back in 2018 but fully recovered now.",negation_past_academic,1
+83,"Writing an essay on social media impact on adolescent mental health.",negation_past_academic,1
+84,"The film highlighted helpline resources for crisis support.",negation_past_academic,1
+85,"I'm starving to death after skipping lunch.",idiom_non_crisis,1
+86,"Kms is looking pretty good rn ngl.",subtle_slang,4
+87,"I'm sorry for being such a weight on everyone.",burden_goodbye,4
+88,"I picked the bridge where I will jump.",lethal_preparation,5
+89,"I don't think I can keep fighting this pain.",indirect_distress,3
+90,"I intend to end my life tonight.",explicit_intent,5
+91,"I have zero intention of hurting myself.",negation_past_academic,1
+92,"Past struggles are ancient history, doing great today.",negation_past_academic,1
+93,"Studying sociology data regarding crisis response.",negation_past_academic,1
+94,"Read a news report on mental health policy changes.",negation_past_academic,1
+95,"Shooting myself in the foot with this procrastination.",idiom_non_crisis,1
+96,"Tryna dip out of existence no cap.",subtle_slang,4
+97,"Take care of my pets after I'm gone.",burden_goodbye,4
+98,"I stockpiled medication over the past week.",lethal_preparation,5
+99,"I can't take this anymore and want everything to end.",indirect_distress,4
+100,"I am ready to die today.",explicit_intent,5
