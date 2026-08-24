@@ -164,4 +164,79 @@ describe("ChatInterface Production Quality & Accessibility", () => {
 
     expect(screen.getByText(/for self-reflection\. Not a clinical psychological assessment/i)).toBeDefined();
   });
+
+  it("persists emergency banner across follow-up non-crisis messages in active session", async () => {
+    let callCount = 0;
+    const mockFetch = vi.fn().mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        // Turn 1: HIGH_CRISIS response
+        return {
+          ok: true,
+          json: async () => ({
+            success: true,
+            data: {
+              reply: "Crisis safety protocol",
+              risk_level: "HIGH_CRISIS",
+              session_id: "ses-12345",
+              requires_immediate_action: true
+            }
+          })
+        };
+      } else {
+        // Turn 2: Follow up
+        return {
+          ok: true,
+          json: async () => ({
+            success: true,
+            data: {
+              reply: "I hear you, make sure you are safe.",
+              risk_level: "ELEVATED_DISTRESS",
+              session_id: "ses-12345",
+              requires_immediate_action: false
+            }
+          })
+        };
+      }
+    });
+    globalThis.fetch = mockFetch as any;
+    const onOpenCrisisModal = vi.fn();
+
+    render(<ChatInterface {...defaultProps} onOpenCrisisModal={onOpenCrisisModal} />);
+
+    const textarea = screen.getByPlaceholderText(/Type your message/i);
+    const sendButton = screen.getByRole("button", { name: /Send message/i });
+
+    // Send Turn 1
+    fireEvent.change(textarea, { target: { value: "I want to die" } });
+    fireEvent.click(sendButton);
+
+    await waitFor(() => {
+      expect(onOpenCrisisModal).toHaveBeenCalledWith(undefined, "detected");
+      expect(screen.getByText(/If you may be in physical danger/i)).toBeDefined();
+    });
+
+    // Send Turn 2: casual message
+    fireEvent.change(textarea, { target: { value: "tell me a joke" } });
+    fireEvent.click(sendButton);
+
+    await waitFor(() => {
+      // Banner must STILL be visible
+      expect(screen.getByText(/If you may be in physical danger/i)).toBeDefined();
+      expect(screen.getByText("I'm safe now")).toBeDefined();
+    });
+
+    // Click "I'm safe now" to resolve safety flow
+    const safeButton = screen.getByText("I'm safe now");
+    fireEvent.click(safeButton);
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/chat/session/ses-12345/safety-clear",
+        expect.objectContaining({
+          method: "POST"
+        })
+      );
+    });
+  });
 });

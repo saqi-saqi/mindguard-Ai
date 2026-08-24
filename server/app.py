@@ -12,6 +12,7 @@ Enterprise-grade Flask application powering MindGuard:
 
 import os
 import sys
+import re
 import time
 import json
 import uuid
@@ -37,6 +38,7 @@ from database import (
     save_mood_log, get_mood_logs, get_analytics_summary,
     get_user_settings, update_user_settings,
     create_chat_session, get_chat_sessions, update_chat_session,
+    set_session_risk_state, get_session_risk_state, clear_session_crisis_state,
     save_audit_event, delete_mood_log,
     save_chat_message, get_chat_history,
     export_user_data, delete_user_data, delete_user_account,
@@ -47,8 +49,8 @@ from auth import (
     jwt_required, admin_required, optional_jwt, JWT_SECRET_KEY, JWT_ALGORITHM
 )
 from services.crisis_rules import (
-    evaluate_crisis, evaluate_deterministic_crisis, is_contextual_or_negated,
-    match_crisis_regex
+    evaluate_crisis, evaluate_deterministic_crisis, evaluate_crisis_pipeline,
+    is_contextual_or_negated, match_crisis_regex, THIRD_PARTY_GUIDANCE_TEMPLATE
 )
 from services.huggingface_service import (
     analyze_user_message, load_ml_pipelines
@@ -56,18 +58,33 @@ from services.huggingface_service import (
 from services.llm_service import (
     generate_llm_response, evaluate_llm_safety_guardrail
 )
+from services.response_kb import INTENT_RESPONSES
 from services.crisis_resources import (
     get_resources_for_region, check_resource_status, CRISIS_RESOURCES
 )
 from services.intent_rules import match_fast_path_intent
 
-# Configure Logging
+
+class PrivacyRedactionFilter(logging.Filter):
+    """Redacts sensitive user prompts, credentials, and tokens from all log handlers."""
+    def filter(self, record: logging.LogRecord) -> bool:
+        if isinstance(record.msg, str):
+            # Mask API keys and bearer tokens
+            record.msg = re.sub(r'(?:Bearer\s+|key=)[A-Za-z0-9_\-\.]{20,}', '[REDACTED_CREDENTIAL]', record.msg, flags=re.IGNORECASE)
+        return True
+
+
+# Configure Logging with Privacy Filter
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 logger = logging.getLogger("MindGuard-API")
+privacy_filter = PrivacyRedactionFilter()
+logger.addFilter(privacy_filter)
+for handler in logging.root.handlers:
+    handler.addFilter(privacy_filter)
 
 # Initialize Flask App
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(BASE_DIR), "client"), static_url_path="")
@@ -578,18 +595,30 @@ def chat():
     retention_days = 30
     expires_at = None
 
+    # Retention and Regional Settings
+    retention_enabled = True
+    retention_days = 30
+    expires_at = None
+    user_locale = "international"
+
     if user_id:
         user = get_user_by_id(user_id)
         if user:
             settings = user.get("settings", {})
             retention_enabled = bool(settings.get("retention_enabled", True))
             retention_days = int(settings.get("retention_days", 30))
+            user_locale = settings.get("locale", "international")
             if retention_enabled:
                 expires_at = (datetime.utcnow() + timedelta(days=retention_days)).isoformat()
 
+    regional_resources = get_resources_for_region(user_locale)
+
     try:
-        if user_id and not session_id:
-            session_id = create_chat_session(user_id, user_message[:60])["id"]
+        if not session_id:
+            if user_id:
+                session_id = create_chat_session(user_id, user_message[:60])["id"]
+            else:
+                session_id = f"ses-{uuid.uuid4().hex[:12]}"
 
         logger.info(f"[{req_id}] Processing message length={len(user_message)} chars (user_id={user_id})")
 
@@ -612,43 +641,143 @@ def chat():
                 update_chat_session(session_id, user_id, {"last_message_at": time.strftime("%Y-%m-%dT%H:%M:%S")})
 
         # -------------------------------------------------------------------
-        # Step 1: Tier 1 - Deterministic Crisis Rules
+        # Step 0: Check Active Session Crisis State Machine
         # -------------------------------------------------------------------
-        crisis_eval = evaluate_deterministic_crisis(user_message)
+        session_risk = get_session_risk_state(session_id, user_id)
+        is_session_crisis_active = session_risk.get("risk_state") == "crisis_active"
+
+        # -------------------------------------------------------------------
+        # -------------------------------------------------------------------
+        # Step 1: Tier 1 - Deterministic Rules & Pipeline Preprocessing
+        # -------------------------------------------------------------------
+        crisis_eval = evaluate_crisis_pipeline(user_message, allow_ml_fallback=False)
+
+        if crisis_eval.get("is_third_party"):
+            duration_ms = round((time.time() - start_req_time) * 1000, 2)
+            logger.info(f"[{req_id}] THIRD-PARTY CRISIS REPORTED. Providing guidance. Duration={duration_ms}ms")
+            if user_id and retention_enabled:
+                save_chat_message(
+                    user_id=user_id,
+                    sender="assistant",
+                    text=crisis_eval["safety_message"],
+                    risk_level="LOW",
+                    intent="THIRD PARTY CRISIS REPORT",
+                    emotion="CONCERN",
+                    sentiment="NEUTRAL",
+                    session_id=session_id,
+                    expires_at=expires_at
+                )
+            save_audit_event("third_party_crisis_guidance", user_id, {"source": "third_party", "request_id": req_id})
+            return jsonify({
+                "success": True,
+                "status": "success",
+                "risk_level": "LOW",
+                "requires_immediate_action": False,
+                "data": {
+                    "status": "success",
+                    "risk_level": "LOW",
+                    "reply": crisis_eval["safety_message"],
+                    "disclaimer": SAFETY_DISCLAIMER,
+                    "intent": "THIRD PARTY CRISIS REPORT",
+                    "emotion": "CONCERN",
+                    "sentiment": "NEUTRAL",
+                    "emergency_resources": regional_resources,
+                    "requires_immediate_action": False,
+                    "session_id": session_id,
+                    "latency_ms": duration_ms,
+                    "inference_latency_ms": duration_ms
+                },
+                "error": None
+            }), 200
 
         if crisis_eval["is_crisis"]:
             duration_ms = round((time.time() - start_req_time) * 1000, 2)
-            logger.warning(f"[{req_id}] CRISIS DETECTED via Tier 1 Deterministic Rules. Duration={duration_ms}ms")
+            risk_label = "HIGH_CRISIS" if crisis_eval.get("high_risk", True) else "ELEVATED_DISTRESS"
+            logger.warning(f"[{req_id}] CRISIS DETECTED via Tier 1 Pipeline. Risk={risk_label}. Duration={duration_ms}ms")
+
+            if session_id:
+                set_session_risk_state(session_id, user_id, "crisis_active", risk_label)
 
             if user_id and retention_enabled:
                 save_chat_message(
                     user_id=user_id,
                     sender="assistant",
                     text=crisis_eval["safety_message"],
-                    risk_level="HIGH_CRISIS",
+                    risk_level=risk_label,
                     intent="SUICIDE CRISIS OR SELF HARM RISK",
                     emotion="DISTRESS",
                     sentiment="NEGATIVE",
                     session_id=session_id,
                     expires_at=expires_at
                 )
-            save_audit_event("crisis_detected", user_id, {"source": "deterministic", "request_id": req_id})
+            save_audit_event("crisis_detected", user_id, {"source": "deterministic_pipeline", "request_id": req_id, "risk_level": risk_label})
 
             return jsonify({
                 "success": True,
                 "status": "success",
-                "risk_level": "HIGH_CRISIS",
+                "risk_level": risk_label,
                 "requires_immediate_action": True,
                 "data": {
                     "status": "success",
-                    "risk_level": "HIGH_CRISIS",
+                    "risk_level": risk_label,
                     "reply": crisis_eval["safety_message"],
                     "disclaimer": SAFETY_DISCLAIMER,
                     "intent": "SUICIDE CRISIS OR SELF HARM RISK",
                     "emotion": "DISTRESS",
                     "sentiment": "NEGATIVE",
-                    "emergency_resources": crisis_eval.get("resources", CRISIS_RESOURCES),
+                    "emergency_resources": regional_resources,
                     "requires_immediate_action": True,
+                    "session_id": session_id,
+                    "latency_ms": duration_ms,
+                    "inference_latency_ms": duration_ms
+                },
+                "error": None
+            }), 200
+
+        # Guarded Sticky Follow-up: If session is in crisis_active but current message does not re-trigger Tier 1
+        if is_session_crisis_active:
+            duration_ms = round((time.time() - start_req_time) * 1000, 2)
+            logger.info(f"[{req_id}] Guarded session crisis follow-up turn. Transitioning to elevated_monitoring.")
+            
+            if session_id:
+                set_session_risk_state(session_id, user_id, "elevated_monitoring", "ELEVATED_DISTRESS")
+
+            guarded_reply = (
+                "I hear you, and I want to make sure you are safe first. "
+                "Even if you feel like stepping back or changing the topic from what you shared, please know that support is available 24/7. "
+                "I am here with you — would you like to talk through how you are feeling, or try a calming grounding exercise together?"
+            )
+
+            if user_id and retention_enabled:
+                save_chat_message(
+                    user_id=user_id,
+                    sender="assistant",
+                    text=guarded_reply,
+                    risk_level="ELEVATED_DISTRESS",
+                    intent="CRISIS MONITORING FOLLOWUP",
+                    intent_confidence=0.90,
+                    emotion="DISTRESS",
+                    sentiment="NEGATIVE",
+                    session_id=session_id,
+                    expires_at=expires_at
+                )
+
+            return jsonify({
+                "success": True,
+                "status": "success",
+                "risk_level": "ELEVATED_DISTRESS",
+                "requires_immediate_action": False,
+                "data": {
+                    "status": "success",
+                    "risk_level": "ELEVATED_DISTRESS",
+                    "reply": guarded_reply,
+                    "disclaimer": SAFETY_DISCLAIMER,
+                    "intent": "CRISIS MONITORING FOLLOWUP",
+                    "intent_confidence": 0.90,
+                    "emotion": "DISTRESS",
+                    "sentiment": "NEGATIVE",
+                    "emergency_resources": regional_resources,
+                    "requires_immediate_action": False,
                     "session_id": session_id,
                     "latency_ms": duration_ms,
                     "inference_latency_ms": duration_ms
@@ -659,11 +788,13 @@ def chat():
         # -------------------------------------------------------------------
         # Step 2: Tier 2 & Tier 2.5 - ML Classification & LLM Crisis Verifier
         # -------------------------------------------------------------------
-        ml_results = analyze_user_message(user_message, context_turns=recent_context)
+        pp_res = crisis_eval.get("preprocess_result")
+        clean_user_message = pp_res.text if pp_res else user_message
+        ml_results = analyze_user_message(clean_user_message, context_turns=recent_context)
 
         is_crisis_signal = (
             ml_results["intent"] == "SUICIDE CRISIS OR SELF HARM RISK"
-            and not is_contextual_or_negated(user_message)
+            and not (crisis_eval.get("bypass_triggered") or is_contextual_or_negated(clean_user_message))
         )
 
         triage_level = "LOW"
@@ -702,6 +833,9 @@ def chat():
             duration_ms = round((time.time() - start_req_time) * 1000, 2)
             logger.warning(f"[{req_id}] CRISIS DETECTED via Tier 2/2.5 Pipeline. Duration={duration_ms}ms")
 
+            if session_id:
+                set_session_risk_state(session_id, user_id, "crisis_active", "HIGH_CRISIS")
+
             if user_id and retention_enabled:
                 save_chat_message(
                     user_id=user_id,
@@ -731,7 +865,7 @@ def chat():
                     "intent_confidence": ml_results["intent_confidence"],
                     "emotion": ml_results["emotion"],
                     "sentiment": ml_results["sentiment"],
-                    "emergency_resources": crisis_eval.get("resources", CRISIS_RESOURCES),
+                    "emergency_resources": regional_resources,
                     "requires_immediate_action": True,
                     "session_id": session_id,
                     "latency_ms": duration_ms,
@@ -748,6 +882,9 @@ def chat():
                 "You can call or text 988 anytime.)*"
             )
             duration_ms = round((time.time() - start_req_time) * 1000, 2)
+
+            if session_id:
+                set_session_risk_state(session_id, user_id, "elevated_monitoring", "ELEVATED_DISTRESS")
 
             if user_id and retention_enabled:
                 save_chat_message(
@@ -777,7 +914,7 @@ def chat():
                     "intent_confidence": ml_results["intent_confidence"],
                     "emotion": ml_results["emotion"],
                     "sentiment": ml_results["sentiment"],
-                    "emergency_resources": crisis_eval.get("resources", CRISIS_RESOURCES),
+                    "emergency_resources": regional_resources,
                     "requires_immediate_action": False,
                     "session_id": session_id,
                     "latency_ms": duration_ms,
@@ -814,6 +951,9 @@ def chat():
                 expires_at=expires_at
             )
 
+        kb_match = INTENT_RESPONSES.get(ml_results.get("intent", ""), {})
+        grounding_exercise = kb_match.get("grounding_exercise")
+
         return jsonify({
             "success": True,
             "status": "success",
@@ -828,7 +968,8 @@ def chat():
                 "intent_confidence": ml_results["intent_confidence"],
                 "emotion": ml_results["emotion"],
                 "sentiment": ml_results["sentiment"],
-                "emergency_resources": None,
+                "grounding_exercise": grounding_exercise,
+                "emergency_resources": regional_resources if session_risk.get("risk_state") == "elevated_monitoring" else None,
                 "requires_immediate_action": False,
                 "session_id": session_id,
                 "latency_ms": duration_ms,
@@ -847,6 +988,19 @@ def chat():
 
 
 # ---------------------------------------------------------------------------
+# Session Safety Clear Endpoint
+# ---------------------------------------------------------------------------
+@app.route("/api/chat/session/<session_id>/safety-clear", methods=["POST"])
+@optional_jwt
+def clear_crisis_session(session_id):
+    body = request.get_json(silent=True) or {}
+    resolution_type = body.get("resolution_type", "grounding_completed")
+    user_id = g.current_user["id"] if hasattr(g, "current_user") and g.current_user else None
+    res = clear_session_crisis_state(session_id, user_id, resolution_type=resolution_type)
+    return jsonify({"success": True, "data": res, "error": None}), 200
+
+
+# ---------------------------------------------------------------------------
 # Feedback & Safety Audit Telemetry
 # ---------------------------------------------------------------------------
 @app.route("/api/feedback", methods=["POST"])
@@ -855,14 +1009,15 @@ def submit_feedback():
     body = request.get_json(silent=True) or {}
     rating = body.get("rating")
     feedback_type = body.get("type", "general")
-    notes = str(body.get("notes", ""))[:300]
+    notes = str(body.get("notes", "")).strip()
 
     user_id = g.current_user["id"] if hasattr(g, "current_user") and g.current_user else None
 
     save_audit_event("safety_feedback", user_id, {
         "rating": rating,
         "type": feedback_type,
-        "notes": notes
+        "has_notes": bool(notes),
+        "notes_length": len(notes)
     })
 
     return jsonify({"success": True, "data": {"recorded": True}, "error": None}), 200

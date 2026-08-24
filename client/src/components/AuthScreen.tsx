@@ -4,10 +4,11 @@ import type { MindUser } from "./types";
 
 interface AuthScreenProps {
   onLogin: (user: MindUser, token: string) => void;
+  defaultLoginMode?: boolean;
 }
 
-export default function AuthScreen({ onLogin }: AuthScreenProps) {
-  const [isLoginMode, setIsLoginMode] = useState(true);
+export default function AuthScreen({ onLogin, defaultLoginMode = true }: AuthScreenProps) {
+  const [isLoginMode, setIsLoginMode] = useState(defaultLoginMode);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

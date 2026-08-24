@@ -72,6 +72,13 @@ function AnalysisBadges({ msg }: { msg: ChatMessage }) {
   const friendlyIntent = msg.intent ? formatFriendlyLabel(msg.intent) : null;
   const friendlyEmotion = msg.emotion ? formatFriendlyLabel(msg.emotion) : null;
 
+  const toneLabel =
+    msg.sentiment === "POSITIVE"
+      ? "🟢 Possible emotional tone · Positive"
+      : msg.sentiment === "NEGATIVE"
+        ? "🔴 Possible emotional tone · Distressed"
+        : "⚪ Possible emotional tone · Neutral";
+
   return (
     <div className="pt-2 px-1 text-xs text-slate-500">
       <div className="flex flex-wrap items-center gap-2">
@@ -80,20 +87,11 @@ function AnalysisBadges({ msg }: { msg: ChatMessage }) {
           onClick={() => setShowDetails(!showDetails)}
           aria-expanded={showDetails}
           aria-controls={`insight-${msg.id}`}
-          className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-200/80 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 cursor-pointer"
+          className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/90 bg-slate-100/90 px-2.5 py-0.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-200/80 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 cursor-pointer"
         >
-          <span>Possible emotional tone</span>
+          <span>{toneLabel}</span>
           {showDetails ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
         </button>
-        {msg.sentiment && (
-          <span className="inline-flex items-center gap-1 rounded-full border border-slate-200/90 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-600">
-            {msg.sentiment === "POSITIVE"
-              ? "🟢 Possible tone · Positive"
-              : msg.sentiment === "NEGATIVE"
-                ? "🔴 Possible tone · Distressed"
-                : "⚪ Possible tone · Neutral"}
-          </span>
-        )}
         <time className="ml-auto text-xs text-slate-500">{msg.timestamp}</time>
       </div>
 
@@ -110,7 +108,7 @@ function AnalysisBadges({ msg }: { msg: ChatMessage }) {
             )}
             {friendlyEmotion && (
               <span className="rounded-lg border border-purple-200/80 bg-purple-50/80 px-2.5 py-0.5 font-medium text-purple-900">
-                Inferred tone: {friendlyEmotion}
+                Inferred emotion: {friendlyEmotion}
               </span>
             )}
           </div>
@@ -282,6 +280,10 @@ export default function ChatInterface({
         setMessages((prev) => [...prev, botMsg]);
         setLiveAnnouncement(`New message from MindGuard: ${data.reply}`);
 
+        if (data.risk_level === "HIGH_CRISIS" || data.risk_level === "ELEVATED_DISTRESS") {
+          setDismissedEmergencyBanner(false);
+        }
+
         if (data.risk_level === "HIGH_CRISIS") {
           onOpenCrisisModal(data.emergency_resources, "detected");
         }
@@ -330,6 +332,24 @@ export default function ChatInterface({
     }
     setMessages([defaultWelcome]);
     setActiveSessionId(null);
+    setDismissedEmergencyBanner(false);
+  };
+
+  const handleSafetyClear = async () => {
+    if (activeSessionId) {
+      try {
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+        await fetch(`/api/chat/session/${activeSessionId}/safety-clear`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ resolution_type: "user_confirmed_safe" }),
+        });
+      } catch (e) {
+        console.warn("Safety clear API call:", e);
+      }
+    }
+    setDismissedEmergencyBanner(true);
   };
 
   // Vetted, reviewed suggestion bank for safe user prompts
@@ -508,9 +528,22 @@ export default function ChatInterface({
                 {/* Grounding Exercise Card */}
                 {msg.grounding_exercise && (
                   <div className="mt-2 rounded-xl border border-purple-200/80 bg-purple-50/80 p-3 text-xs text-purple-950 shadow-2xs">
-                    <div className="mb-1 flex items-center gap-1.5 text-xs font-bold text-purple-900 font-heading">
-                      <Sparkles className="size-3.5 shrink-0 text-purple-600" />
-                      <span>Suggested Grounding Exercise</span>
+                    <div className="mb-1.5 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-purple-900 font-heading">
+                        <Sparkles className="size-3.5 shrink-0 text-purple-600" />
+                        <span>Suggested Grounding Exercise</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveBreathing(true);
+                          scrollToBottom();
+                        }}
+                        className="inline-flex items-center gap-1 rounded-lg bg-purple-200/70 px-2 py-0.5 text-[11px] font-semibold text-purple-900 hover:bg-purple-300/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 cursor-pointer"
+                      >
+                        <Wind className="size-3 text-purple-700" />
+                        <span>Start 4-7-8 Timer</span>
+                      </button>
                     </div>
                     <p className="break-words leading-relaxed font-normal">
                       {msg.grounding_exercise}
@@ -552,7 +585,7 @@ export default function ChatInterface({
       {/* Composer Section */}
       <div className="z-20 shrink-0 border-t border-slate-200/90 bg-white px-4 pt-2.5 pb-3 sm:px-6">
         <div className="mx-auto w-full max-w-[780px] space-y-2">
-          {/* Conditional Urgent Safety Banner - only rendered during elevated distress / crisis detection */}
+          {/* Conditional Urgent Safety Banner - rendered during elevated distress / crisis detection */}
           {hasElevatedRisk && !dismissedEmergencyBanner && (
             <div className="flex items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs leading-relaxed text-rose-950 fade-in">
               <span className="min-w-0 flex-1">
@@ -565,6 +598,14 @@ export default function ChatInterface({
                   className="font-bold text-rose-800 underline hover:text-rose-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 cursor-pointer"
                 >
                   Get help
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSafetyClear}
+                  title="Acknowledge safety resources"
+                  className="rounded-lg bg-rose-100 px-2 py-0.5 font-medium text-rose-800 hover:bg-rose-200 focus-visible:outline-none cursor-pointer"
+                >
+                  I'm safe now
                 </button>
                 <button
                   type="button"

@@ -7,8 +7,12 @@ from pathlib import Path
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
-SERVER_DIR = Path(__file__).resolve().parent.parent / "server"
-sys.path.insert(0, str(SERVER_DIR))
+ROOT_DIR = Path(__file__).resolve().parent.parent
+SERVER_DIR = ROOT_DIR / "server"
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+if str(SERVER_DIR) not in sys.path:
+    sys.path.insert(0, str(SERVER_DIR))
 
 from services.crisis_rules import evaluate_deterministic_crisis
 
@@ -96,12 +100,12 @@ def run_evaluation(csv_file_path: Path):
 
 
 def run_aggressive_suite():
-    """Runs the full 222-case aggressive crisis rules test suite from test_crisis_rules_aggressive.py."""
+    """Runs the full aggressive crisis rules test suite from test_crisis_engine.py."""
     tests_dir = Path(__file__).resolve().parent.parent / "tests" / "backend"
     if str(tests_dir) not in sys.path:
         sys.path.insert(0, str(tests_dir))
     try:
-        from test_crisis_rules_aggressive import all_cases
+        from test_safety_and_crisis_engine import all_aggressive_cases as all_cases
         passed = 0
         total = 0
         for cat, labelled_text, expected in all_cases():

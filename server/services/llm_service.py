@@ -124,10 +124,9 @@ _MODEL_QUOTA_EXCEEDED_UNTIL: dict = {}
 # gemini-flash-lite-latest: ~1.17s
 # gemini-flash-latest: full flash as final fallback
 GEMINI_CANDIDATE_MODELS = [
-    "gemini-3.1-flash-lite",
-    "gemini-3.5-flash-lite",
     "gemini-flash-lite-latest",
     "gemini-flash-latest",
+    "gemini-2.5-flash-lite",
 ]
 
 # Normal conversations must remain responsive even when a local model is slow.
@@ -138,27 +137,26 @@ OLLAMA_RESPONSE_TIMEOUT_SECONDS = float(os.environ.get("OLLAMA_RESPONSE_TIMEOUT_
 from .intent_rules import has_distress_signal, match_fast_path_intent
 
 
-def _get_gemini_client(key: str, timeout_seconds: float = 2.0):
-    """Returns a configured google.genai Client with a strict network timeout."""
+def _get_gemini_client(key: str, timeout_seconds: float = 10.0):
+    """Returns a configured google.genai Client with a reliable network timeout."""
     from google import genai
     from google.genai import types
     try:
         return genai.Client(
             api_key=key.strip(),
-            http_options=types.HttpOptions(timeout=float(timeout_seconds))
+            http_options=types.HttpOptions(timeout=int(timeout_seconds * 1000))
         )
     except Exception:
         return genai.Client(api_key=key.strip())
 
 
-def _call_gemini(client, model_name: str, system_prompt: str, user_prompt: str, timeout: float = 2.0) -> Optional[str]:
+def _call_gemini(client, model_name: str, system_prompt: str, user_prompt: str, timeout: float = 10.0) -> Optional[str]:
     """
     Calls a single Gemini model via the new google.genai SDK.
     Returns the response text or None on failure.
     """
     from google import genai
     from google.genai import types
-    import socket
 
     now = time.time()
     if now < _MODEL_QUOTA_EXCEEDED_UNTIL.get(model_name, 0):
@@ -170,8 +168,8 @@ def _call_gemini(client, model_name: str, system_prompt: str, user_prompt: str, 
             contents=user_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_prompt,
-                max_output_tokens=250,
-                temperature=0.75,
+                max_output_tokens=300,
+                temperature=0.2,
             ),
         )
         if response and response.text:
@@ -179,15 +177,10 @@ def _call_gemini(client, model_name: str, system_prompt: str, user_prompt: str, 
     except Exception as e:
         err = str(e).lower()
         if any(k in err for k in ["quota", "429", "resource_exhausted"]):
-            logger.warning("Gemini quota exhausted for %s. Circuit breaker active for 5 min.", model_name)
-            _MODEL_QUOTA_EXCEEDED_UNTIL[model_name] = time.time() + 300.0
-        elif any(k in err for k in ["timeout", "timed out", "deadline", "504", "503", "unavailable", "connection", "connect", "socket", "network", "nameresolution"]):
-            logger.warning("Gemini network issue for %s.", model_name)
-            # Trip a short circuit-breaker across all remote models on network disconnection
-            for m in GEMINI_CANDIDATE_MODELS:
-                _MODEL_QUOTA_EXCEEDED_UNTIL[m] = max(_MODEL_QUOTA_EXCEEDED_UNTIL.get(m, 0), time.time() + 30.0)
+            logger.warning("Gemini quota exhausted for %s. Circuit breaker active for 60s.", model_name)
+            _MODEL_QUOTA_EXCEEDED_UNTIL[model_name] = time.time() + 60.0
         else:
-            logger.debug("Gemini model %s failed.", model_name)
+            logger.warning("Gemini model %s call failed: %s", model_name, e)
     return None
 
 
@@ -317,6 +310,21 @@ def _get_emotion_fallback(text: str, emotion: str, sentiment: str) -> str:
                 "Try taking a few slow deep breaths, then break your preparation into one small step at a time. "
                 "You are more capable than you feel right now.")
 
+    if re.search(r'\b(?:breath(?:ing|e)?|meditat(?:ion|e)?|relax(?:ation)?|grounding|calm\s+down)\b', t):
+        return (
+            "Let's practice a calming breathing exercise together. Find a comfortable position and follow this 4-7-8 rhythm:\n\n"
+            "1. **Inhale** slowly through your nose for **4 seconds**.\n"
+            "2. **Hold** your breath gently for **7 seconds**.\n"
+            "3. **Exhale** smoothly through your mouth for **8 seconds**.\n\n"
+            "Repeat this cycle 3 to 4 times. Taking slow, rhythmic breaths signals safety to your nervous system."
+        )
+
+    if any(w in t for w in ["sleep", "insomnia", "tired", "exhausted", "can't sleep", "trouble sleeping"]):
+        return ("Restful sleep is essential, and struggling to sleep can feel exhausting. "
+                "To help your body transition into rest tonight, try progressive muscle relaxation — "
+                "gently tensing and releasing each muscle group from your toes up to your forehead. "
+                "Dim the screens and let yourself rest quietly, one moment at a time.")
+
     if any(w in t for w in ["work", "job", "boss", "colleague", "office", "fired", "resign", "career"]):
         return ("Work pressure can feel very heavy, especially when it builds up. "
                 "You are not alone in feeling this way. Taking a short break to breathe and step away for a few minutes "
@@ -354,4 +362,9 @@ def generate_smart_fallback(text: str, intent: str, emotion: str, sentiment: str
     specific = _get_keyword_specific_response(text)
     if specific:
         return specific
+    from .response_kb import INTENT_RESPONSES
+    if intent in INTENT_RESPONSES and intent != "GREETING OR CASUAL CHAT":
+        kb_resp = INTENT_RESPONSES[intent].get("reply")
+        if kb_resp:
+            return kb_resp
     return _get_emotion_fallback(text, emotion, sentiment)

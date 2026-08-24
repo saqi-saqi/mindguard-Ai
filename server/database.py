@@ -247,9 +247,16 @@ def update_user_settings(user_id: str, settings: Dict[str, Any]) -> Optional[Dic
 
 def create_chat_session(user_id: str, title: str = "New reflection") -> Dict[str, Any]:
     doc = {
-        "id": f"ses-{uuid.uuid4().hex[:12]}", "user_id": user_id,
-        "title": title[:100] or "New reflection", "summary": None,
-        "created_at": datetime.utcnow().isoformat(), "last_message_at": datetime.utcnow().isoformat()
+        "id": f"ses-{uuid.uuid4().hex[:12]}",
+        "user_id": user_id,
+        "title": title[:100] or "New reflection",
+        "summary": None,
+        "risk_state": "normal",
+        "crisis_triggered_at": None,
+        "last_risk_level": None,
+        "crisis_count": 0,
+        "created_at": datetime.utcnow().isoformat(),
+        "last_message_at": datetime.utcnow().isoformat()
     }
     get_db().chat_sessions.insert_one(doc)
     return serialize_doc(doc)
@@ -260,14 +267,97 @@ def get_chat_sessions(user_id: str) -> List[Dict[str, Any]]:
     return [serialize_doc(doc) for doc in cursor]
 
 
-def update_chat_session(session_id: str, user_id: str, updates: Dict[str, Any]) -> None:
-    allowed = {key: value for key, value in updates.items() if key in {"title", "summary", "last_message_at"}}
+def get_chat_session_by_id(session_id: str, user_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    query: Dict[str, Any] = {"id": session_id}
+    if user_id:
+        query["user_id"] = user_id
+    doc = get_db().chat_sessions.find_one(query)
+    return serialize_doc(doc)
+
+
+def update_chat_session(session_id: str, user_id: Optional[str], updates: Dict[str, Any]) -> None:
+    allowed = {
+        key: value for key, value in updates.items()
+        if key in {"title", "summary", "last_message_at", "risk_state", "crisis_triggered_at", "last_risk_level", "crisis_count"}
+    }
     if allowed:
-        get_db().chat_sessions.update_one({"id": session_id, "user_id": user_id}, {"$set": allowed})
+        query: Dict[str, Any] = {"id": session_id}
+        if user_id:
+            query["user_id"] = user_id
+        get_db().chat_sessions.update_one(query, {"$set": allowed})
+
+
+def set_session_risk_state(
+    session_id: str,
+    user_id: Optional[str],
+    new_state: str,
+    risk_level: Optional[str] = None
+) -> Dict[str, Any]:
+    """Updates session risk state ('normal', 'crisis_active', 'elevated_monitoring', 'resolved_by_safety_flow')."""
+    valid_states = {"normal", "crisis_active", "elevated_monitoring", "resolved_by_safety_flow"}
+    state = new_state if new_state in valid_states else "normal"
+    
+    updates: Dict[str, Any] = {
+        "risk_state": state,
+        "last_message_at": datetime.utcnow().isoformat()
+    }
+    if risk_level:
+        updates["last_risk_level"] = risk_level
+    if state == "crisis_active":
+        updates["crisis_triggered_at"] = datetime.utcnow().isoformat()
+        
+    query: Dict[str, Any] = {"id": session_id}
+    set_dict = dict(updates)
+    if user_id:
+        set_dict["user_id"] = user_id
+
+    update_op: Dict[str, Any] = {
+        "$set": set_dict,
+        "$setOnInsert": {
+            "title": "Chat Session",
+            "created_at": datetime.utcnow().isoformat()
+        }
+    }
+    if state == "crisis_active":
+        update_op["$inc"] = {"crisis_count": 1}
+    else:
+        update_op["$setOnInsert"]["crisis_count"] = 0
+
+    get_db().chat_sessions.update_one(query, update_op, upsert=True)
+    return get_session_risk_state(session_id, user_id)
+
+
+def get_session_risk_state(session_id: Optional[str], user_id: Optional[str] = None) -> Dict[str, Any]:
+    """Returns the risk state dictionary for a session."""
+    if not session_id:
+        return {"risk_state": "normal", "last_risk_level": "LOW", "crisis_count": 0}
+    session = get_chat_session_by_id(session_id, user_id)
+    if not session:
+        return {"risk_state": "normal", "last_risk_level": "LOW", "crisis_count": 0}
+    return {
+        "risk_state": session.get("risk_state", "normal"),
+        "last_risk_level": session.get("last_risk_level", "LOW"),
+        "crisis_triggered_at": session.get("crisis_triggered_at"),
+        "crisis_count": session.get("crisis_count", 0)
+    }
+
+
+def clear_session_crisis_state(
+    session_id: str,
+    user_id: Optional[str] = None,
+    resolution_type: str = "grounding_completed"
+) -> Dict[str, Any]:
+    """Guarded de-escalation of a crisis session via explicit safety workflow."""
+    save_audit_event("crisis_session_resolved", user_id, {
+        "session_id": session_id,
+        "resolution_type": resolution_type,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+    return set_session_risk_state(session_id, user_id, "resolved_by_safety_flow", risk_level="LOW")
 
 
 def save_audit_event(event_type: str, actor_id: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None) -> None:
-    """Store security/safety metadata only; never save chat text or credentials."""
+    """Store security/safety metadata only; never save raw chat text or credentials."""
     get_db().audit_logs.insert_one({
         "id": f"audit-{uuid.uuid4().hex[:12]}", "event_type": event_type,
         "actor_id": actor_id, "metadata": metadata or {}, "created_at": datetime.utcnow().isoformat()

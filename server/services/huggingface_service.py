@@ -13,6 +13,7 @@ os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("MindGuard-ML")
 
+import re
 import numpy as np
 
 _EMOTION_PIPE = None
@@ -20,7 +21,37 @@ _SENTIMENT_PIPE = None
 _ZERO_SHOT_PIPE = None
 _CRISIS_MODEL_ARTIFACT = None
 _INTENT_MODEL_ARTIFACT = None
+_CRISIS_TRANSFORMER_PIPE = None
 _ML_LOAD_FAILED = False
+
+
+def _normalize_leetspeak(text: str) -> str:
+    """Normalizes common leetspeak / symbol obfuscations into standard characters."""
+    if not text:
+        return ""
+    t = text
+    # Character substitutions inside words
+    t = re.sub(r"\bh[@a]ng\b", "hang", t, flags=re.IGNORECASE)
+    t = re.sub(r"\bd[!1i]e\b", "die", t, flags=re.IGNORECASE)
+    t = re.sub(r"\bsu[1!i]c[1!i]d", "suicid", t, flags=re.IGNORECASE)
+    t = re.sub(r"\b0verd0se\b", "overdose", t, flags=re.IGNORECASE)
+    t = re.sub(r"\bh[8@]te\b", "hate", t, flags=re.IGNORECASE)
+    t = re.sub(r"\bk[.\s_-]*y[.\s_-]*s\b", "kys", t, flags=re.IGNORECASE)
+    t = re.sub(r"\bk[.\s_-]*m[.\s_-]*s\b", "kms", t, flags=re.IGNORECASE)
+    return t
+
+
+def _extract_clauses(text: str) -> list:
+    """Splits compound text on contrast / discourse conjunctions to evaluate clauses independently."""
+    if not text:
+        return []
+    parts = re.split(r"\b(?:but|however|though|except|just|so|although|even if|yet)\b", text, flags=re.IGNORECASE)
+    clauses = [text]
+    for p in parts:
+        cleaned = p.strip()
+        if len(cleaned.split()) >= 3 and cleaned.lower() != text.strip().lower():
+            clauses.append(cleaned)
+    return clauses
 
 CANDIDATE_INTENT_LABELS = [
     "suicide crisis or self harm risk",
@@ -40,7 +71,7 @@ from .intent_rules import match_crisis_regex, match_fast_path_intent
 
 def load_ml_pipelines():
     """Loads Hugging Face pipelines and trained joblib models into memory independently with error protection."""
-    global _EMOTION_PIPE, _SENTIMENT_PIPE, _CRISIS_MODEL_ARTIFACT, _INTENT_MODEL_ARTIFACT, _ML_LOAD_FAILED
+    global _EMOTION_PIPE, _SENTIMENT_PIPE, _CRISIS_MODEL_ARTIFACT, _INTENT_MODEL_ARTIFACT, _CRISIS_TRANSFORMER_PIPE, _ML_LOAD_FAILED
 
     if _ML_LOAD_FAILED:
         return
@@ -88,6 +119,22 @@ def load_ml_pipelines():
             except Exception:
                 # Fallback to online fetch if cache missing
                 return pipeline(task, model=model_name, **kwargs)
+
+        # 0. Load Fine-Tuned Crisis Transformer if available
+        if _CRISIS_TRANSFORMER_PIPE is None:
+            crisis_tf_path = artifacts_dir / "huggingface_crisis_roberta"
+            if crisis_tf_path.exists():
+                try:
+                    logger.info(f"Loading Fine-Tuned Crisis Transformer from {crisis_tf_path}...")
+                    _CRISIS_TRANSFORMER_PIPE = _load_pipe(
+                        "text-classification",
+                        model_name=str(crisis_tf_path),
+                        tokenizer=str(crisis_tf_path),
+                        top_k=None
+                    )
+                    logger.info("Fine-Tuned Crisis Transformer loaded successfully.")
+                except Exception as e:
+                    logger.error(f"Failed to load Fine-Tuned Crisis Transformer: {e}")
 
         # 1. Load Emotion Classifier independently
         if _EMOTION_PIPE is None:
@@ -139,6 +186,7 @@ def analyze_user_message(text: str, context_turns: list[str] | None = None) -> D
 
     lower_formatted_input = formatted_input.lower().strip()
 
+    transformer_crisis_prob = 0.0
     joblib_crisis_prob = 0.0
     top_intent = None
     intent_score = 0.50
@@ -149,8 +197,24 @@ def analyze_user_message(text: str, context_turns: list[str] | None = None) -> D
 
     try:
         load_ml_pipelines()
+
+        # 1. Fine-Tuned Crisis Transformer evaluation (Clause-Aware Multi-Segment)
+        if _CRISIS_TRANSFORMER_PIPE is not None:
+            try:
+                norm_text = _normalize_leetspeak(clean_text)
+                segments = _extract_clauses(norm_text)
+                for seg in segments:
+                    t_res = _CRISIS_TRANSFORMER_PIPE(seg, truncation=True, max_length=128)[0]
+                    for item in t_res:
+                        if str(item.get("label", "")).upper() in ["CRISIS", "SUICIDE", "LABEL_1", "1"]:
+                            score = float(item.get("score", 0.0))
+                            if score > transformer_crisis_prob:
+                                transformer_crisis_prob = score
+                            break
+            except Exception as ex:
+                logger.error(f"Transformer crisis model inference failed: {ex}")
         
-        # 1. Joblib Crisis Classifier (Evaluates multi-turn context window & single turn)
+        # 2. Joblib Crisis Classifier (Evaluates multi-turn context window & single turn)
         if _CRISIS_MODEL_ARTIFACT is not None:
             try:
                 pipeline_obj = _CRISIS_MODEL_ARTIFACT["pipeline"]
@@ -170,14 +234,15 @@ def analyze_user_message(text: str, context_turns: list[str] | None = None) -> D
             except Exception as e:
                 logger.error(f"Joblib crisis model prediction failed: {e}")
 
-        # 4a. Joblib high probability check for crisis (independent of PyTorch runtime)
+        # 3. High probability check for crisis (combining Transformer & Joblib)
         from .crisis_rules import is_contextual_or_negated
-        raw_thresh = float(_CRISIS_MODEL_ARTIFACT.get("threshold", 0.55)) if _CRISIS_MODEL_ARTIFACT else 0.55
-        threshold = raw_thresh
+        effective_crisis_prob = max(transformer_crisis_prob, joblib_crisis_prob)
+        raw_thresh = float(_CRISIS_MODEL_ARTIFACT.get("threshold", 0.50)) if _CRISIS_MODEL_ARTIFACT else 0.50
+        threshold = 0.50
 
-        if _CRISIS_MODEL_ARTIFACT is not None and joblib_crisis_prob >= threshold and not is_contextual_or_negated(clean_text):
+        if effective_crisis_prob >= threshold and not is_contextual_or_negated(clean_text):
             top_intent = "SUICIDE CRISIS OR SELF HARM RISK"
-            intent_score = round(joblib_crisis_prob, 4)
+            intent_score = round(effective_crisis_prob, 4)
 
         try:
             import torch

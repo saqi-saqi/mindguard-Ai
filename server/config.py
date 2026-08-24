@@ -36,4 +36,5 @@ CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", os.environ.get("CO
 RATE_LIMIT_REQUESTS = int(os.environ.get("RATE_LIMIT_REQUESTS", os.environ.get("RATE_LIMIT_PER_MINUTE", "60")))
 RATE_LIMIT_WINDOW_SECONDS = int(os.environ.get("RATE_LIMIT_WINDOW_SECONDS", "60"))
 DEFAULT_RETENTION_DAYS = int(os.environ.get("DEFAULT_RETENTION_DAYS", "30"))
+USE_GENERALIZER_PIPELINE = os.environ.get("USE_GENERALIZER_PIPELINE", "true").lower() in ("true", "1", "yes")
 

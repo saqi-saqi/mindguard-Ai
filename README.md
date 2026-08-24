@@ -123,16 +123,20 @@ npm run dev
 ## 4. Running Automated Tests & Benchmarks
 
 ```bash
-# Run complete backend unit & integration test suite (with isolated mongomock)
-# PowerShell
-$env:USE_MONGOMOCK = "true"; python tests/run_all_tests.py
+# Run complete automated master test runner (Backend, CI Gate, Frontend, A11y, Security Audits)
+python tests/run_all_tests.py
 
+# Run standalone backend test suite with pytest
+python -m pytest tests/backend -v
 
 # Run 120 custom edge-case benchmark suite
-python tests/backend/test_custom_edge_cases.py my_edge_cases.json
+python scripts/benchmarks/benchmark_custom_edge_cases.py tests/data/my_edge_cases.json
 
 # Run 1,000-sample stress test against processed crisis dataset
-python tests/backend/stress_test_1000.py
+python scripts/benchmarks/benchmark_stress_1000.py
+
+# Run controlled matrix sets evaluation (Sets A-J)
+python scripts/benchmarks/benchmark_matrix_sets.py
 ```
 
 ---
