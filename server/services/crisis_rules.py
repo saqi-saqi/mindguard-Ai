@@ -53,6 +53,7 @@ from .semantic_concepts import (
     detect_irreversible_exit,
     extract_all_concepts,
 )
+from .text_normalizer import normalize_evasion_text
 from .precedence_arbitrator import (
     arbitrate,
     ArbitrationInput,
@@ -76,7 +77,8 @@ def _normalize(text: str) -> str:
     """Clean lowercasing: normalize curly quotes/apostrophes, typos, leetspeak, discourse markers, and whitespace."""
     if not text:
         return ""
-    t = text.replace("\u2019", "'").replace("\u2018", "'")
+    t = normalize_evasion_text(text)
+    t = t.replace("\u2019", "'").replace("\u2018", "'")
     t = t.replace("\u201c", '"').replace("\u201d", '"')
     t = t.lower()
     t, _ = normalize_algospeak(t)
@@ -182,6 +184,8 @@ _INDIRECT_IMPLICIT_DISTRESS = [
     r"\b(?:i\s+)?can'?t\s+remember\s+the\s+last\s+time\s+i\s+felt\s+o?k\b",
     r"\b(?:i\s+)?(?:keep\s+)?(?:feel\s+like\s+)?can'?t\s+remember\s+the\s+last\s+time\s+i\s+felt\s+(?:okay|ok)\b",
     r"\b(?:see\s+no|don'?t\s+see\s+a|no)\s+way\s+out\b",
+    r"\b(?:suicide|death|dying|killing\s+myself)\s+is\s+(?:my\s+|the\s+)?(?:only\s+)?(?:way\s+out|option|choice|answer)\b",
+    r"\b(?:is\s+my|feels\s+like\s+my|the)\s+only\s+way\s+out\b",
     r"\b(?:i\s+)?don'?t\s+think\s+i\s+can\s+do\s+this\s+anymore\b",
     r"\bdisappear\s+from\s+existence\b",
     r"\bdon'?t\s+see\s+the\s+point\s+in\s+staying\s+alive\b",
@@ -333,6 +337,7 @@ _LETHAL_MEANS_AND_PREPARATION = [
     r"\b(?:drank|drinking|swallowed|ingested)\s+(?:a\s+)?(?:bottle\s+of\s+|cup\s+of\s+)?(?:bleach|poison|chemicals|toxic)\b",
     r"\b(?:took|swallowed|downed|popped)\s+(?:\d+|all|the\s+entire\s+bottle\s+of|a\s+handful\s+of|my\s+whole\s+prescription\s+of)\s+(?:sleeping\s+)?(?:pills|tablets|capsules|meds|medication|painkillers)\b",
     r"\boverdos(?:ed|ing)\s+on\s+(?:my\s+)?(?:pills|meds|medication|drugs|painkillers)\b",
+    r"\bhave\s+the\s+pills\s+(?:ready\s+)?(?:in\s+front\s+of\s+me|ready|here)\b",
     # --- Expanded means: medication hoarding, chemicals, vehicle, ingestion ---
     r"\bhoarding\s+(?:my\s+)?(?:pills|meds|medication|antidepressants?|painkillers?)\b",
     r"\bsaving\s+up\s+(?:my\s+)?(?:pills|meds|painkillers?|medication)\b",
@@ -701,8 +706,12 @@ _SLANG_HYPERBOLE_DAMPENER_PATTERNS = [
 _THIRD_PARTY_SUBJECT_PATTERNS = [
     r"^\s*(?:my\s+)?(?:friend|brother|sister|mom|dad|mother|father|uncle|aunt|partner|colleague|teammate|roommate|classmate|neighbor|best\s+friend|bf|gf|girlfriend|boyfriend|husband|wife|son|daughter|cousin|nephew|niece)",
     r"^\s*someone\s+(?:on\s+this\s+|in\s+the\s+|at\s+|i\s+know\s+)?",
-    r"\b(?:my\s+)?(?:friend|brother|sister|mom|dad|mother|father|partner|uncle|aunt|teammate|roommate|cousin|best\s+friend)\s+(?:is|was|has|just|told|texted|said|sent|has\s+been|might\s+be)\s+",
+    r"\b(?:my\s+)?(?:friend|brother|sister|mom|dad|mother|father|partner|uncle|aunt|teammate|roommate|cousin|best\s+friend|colleague|classmate)\s+(?:is|was|has|just|told|texted|said|sent|has\s+been|might\s+be|wants?\s+to|plans?\s+to)\s+",
     r"\b(?:he|she|they)\s+(?:is|are|was|were|has|have)\s+(?:going\s+to|gonna|about\s+to|planning\s+to|trying\s+to)\s+(?:kill|hurt|harm|end|commit|jump|cut|overdose|suicide|die)\b",
+    r"\b(?:he|she|they)\s+(?:wants?\s+to|plans?\s+to|is\s+thinking\s+(?:of|about))\s+(?:kill|hurt|harm|end|commit|jump|cut|overdose|suicide|die)\b",
+    r"\b(?:my\s+)?(?:friend|brother|sister|mom|dad|roommate|cousin|partner)\s+is\s+(?:feeling\s+)?(?:suicidal|self[ -]?harming)\b",
+    r"\b(?:worried|scared|concerned)\s+(?:about|for)\s+(?:my\s+)?(?:friend|brother|sister|roommate|someone)\b",
+    r"\bhow\s+to\s+help\s+(?:a|my)\s+(?:friend|brother|sister|someone)\b",
 ]
 
 # Accidental/benign context indicators
@@ -797,7 +806,7 @@ _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE_RAW = [
     r"\bi\s+(?:do\s+not|don'?t)\s+think\s+i\s+can\s+survive\s+another\s+day\b",
     r"\b(?:i'?m\s+)?ready\s+to\s+give\s+up\s+on\s+life\b",
     r"\bholding\s+the\s+blade\b",
-    r"\bhave\s+the\s+pills\s+in\s+front\s+of\s+me\b",
+    r"\bhave\s+the\s+pills\s+(?:ready\s+)?(?:in\s+front\s+of\s+me|ready|here)\b",
     r"\bwant\s+(?:everything|it|it\s+all)\s+to\s+stop\b",
     r"\b(?:ending|end)\s+the\s+sim\b",
     r"\btap\s+out\s+(?:for\s+good|permanently)?\b",
@@ -882,10 +891,11 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
         # Check if any EXPLICIT first-person pronoun precedes a crisis verb.
         has_first_person_crisis = bool(re.search(
             r"\bi(?:'m|\s+am|\s+will|\s+have|\s+want|\s+plan|\s+feel|\s+need|'ve)\s+"
-            r"(?:going\s+to\s+)?(?:kill|hurt|harm|end|cut|overdos|suicide|swallow|jump|hang|shoot|drown|crash)",
-            t
+            r"(?:(?:going\s+)?to\s+|gonna\s+)?(?:kill|hurt|harm|end|cut|overdos|suicide|swallow|jump|hang|shoot|drown|crash|have\s+(?:the\s+)?(?:pills|rope|blade))",
+            t, re.IGNORECASE
         ))
-        if not has_first_person_crisis:
+        has_explicit_override = any(pat.search(t) for pat in [_c(p) for p in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE_RAW])
+        if not (has_first_person_crisis or has_explicit_override):
             return "third_party_subject_report"
 
     # (2.6) Accidental / benign context check
@@ -1222,21 +1232,31 @@ def evaluate_crisis_pipeline(
 
         # Step 2: Third-party subject crisis routing (L1)
         if pp.is_third_party:
-            return {
-                "is_crisis": False,
-                "is_third_party": True,
-                "third_party_crisis_reported": True,
-                "risk_level": "none",
-                "high_risk": False,
-                "imminent_risk": False,
-                "protective_factor": False,
-                "source": "third_party_guidance",
-                "confidence": 0.95,
-                "safety_message": THIRD_PARTY_GUIDANCE_TEMPLATE.strip(),
-                "disclaimer": SAFETY_DISCLAIMER,
-                "resources": CRISIS_RESOURCES,
-                "preprocess_result": pp,
-            }
+            unquoted = re.sub(r"['\"].*?['\"]", "", pp.text)
+            has_first_person_crisis = bool(re.search(
+                r"\bi(?:'m|\s+am|\s+will|\s+have|\s+want|\s+plan|\s+feel|\s+need|'ve)\s+"
+                r"(?:(?:going\s+)?to\s+|gonna\s+)?(?:kill|hurt|harm|end|cut|overdos|suicide|swallow|jump|hang|shoot|drown|crash|have\s+(?:the\s+)?(?:pills|rope|blade))",
+                unquoted, re.IGNORECASE
+            ))
+            has_explicit_override = any(pat.search(unquoted) for pat in [_c(p) for p in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE_RAW])
+            if has_first_person_crisis or has_explicit_override:
+                pp.is_third_party = False
+            else:
+                return {
+                    "is_crisis": False,
+                    "is_third_party": True,
+                    "third_party_crisis_reported": True,
+                    "risk_level": "none",
+                    "high_risk": False,
+                    "imminent_risk": False,
+                    "protective_factor": False,
+                    "source": "third_party_guidance",
+                    "confidence": 0.95,
+                    "safety_message": THIRD_PARTY_GUIDANCE_TEMPLATE.strip(),
+                    "disclaimer": SAFETY_DISCLAIMER,
+                    "resources": CRISIS_RESOURCES,
+                    "preprocess_result": pp,
+                }
 
         # Step 3: Extract modular extractor signals
         det_result = evaluate_crisis(pp.text, preprocess_result=pp)

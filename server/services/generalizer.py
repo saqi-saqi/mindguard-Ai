@@ -20,6 +20,8 @@ import unicodedata
 from dataclasses import dataclass
 from typing import List, Optional, Tuple, Dict, Any
 
+from .text_normalizer import normalize_evasion_text
+
 
 @dataclass
 class PreprocessResult:
@@ -184,6 +186,14 @@ _THIRD_PARTY_PATTERNS = [
     _compile(r"\b(?:he|she|they)\s+(?:told\s+me|said)\s+(?:he|she|they)\s+(?:wants?|is\s+going|plans?)\s+to\s+(?:die|kill|end|suicide)\b"),
     _compile(r"\bhow\s+to\s+(?:help|support|report)\s+(?:a\s+friend|my\s+friend|my\s+sister|my\s+brother|someone)\s+(?:who\s+is|who\s+wants\s+to)\b"),
     _compile(r"\bmy\s+friend\s+texted\s+me\s*,\s*['\"].*?['\"]"),
+    # Direct verb expressions: "my friend wants to commit suicide", "my brother plans to kill himself"
+    _compile(r"\b(?:my\s+(?:\w+\s+){0,2}?(?:friend|brother|sister|mom|dad|roommate|coworker|classmate|partner|ex|colleague|cousin|uncle|aunt|neighbor|husband|wife|son|daughter))\s+(?:wants?\s+to|is\s+(?:going\s+to|trying\s+to|planning\s+to|thinking\s+(?:of|about)))\s+(?:commit\s+suicide|kill\s+(?:him|her|them)self|die|end\s+(?:his|her|their|its)\s+life|hurt\s+(?:him|her|them)self|cut\s+(?:him|her|them)self|overdose)\b"),
+    # State expressions: "my friend is suicidal", "my brother is self-harming"
+    _compile(r"\b(?:my\s+(?:\w+\s+){0,2}?(?:friend|brother|sister|mom|dad|roommate|coworker|classmate|partner|ex|colleague|cousin|uncle|aunt|neighbor|husband|wife|son|daughter))\s+is\s+(?:feeling\s+)?(?:suicidal|self[ -]?harming|depressed\s+and\s+suicidal|in\s+danger\s+of\s+suicide)\b"),
+    # Concern/worry expressions: "I'm worried about my friend who wants to die"
+    _compile(r"\b(?:i(?:'m|\s+am)\s+(?:worried|scared|concerned|terrified)\s+(?:about|for|that)\s+(?:my\s+)?(?:friend|brother|sister|mom|dad|roommate|colleague|cousin|someone)).*?(?:suicid|kill|die|end\s+(?:his|her|their)\s+life|hurt\s+(?:him|her|them)self)\b"),
+    # Acquaintance expressions: "someone I know wants to commit suicide"
+    _compile(r"\b(?:someone\s+i\s+know|a\s+person\s+i\s+know|a\s+friend\s+of\s+mine)\s+(?:wants?\s+to|is\s+(?:going\s+to|planning\s+to|thinking\s+of))\s+(?:commit\s+suicide|kill\s+(?:him|her|them)selves?|die|end\s+(?:his|her|their)\s+life)\b"),
 ]
 
 def detect_third_party_frame(text: str) -> bool:
@@ -319,8 +329,11 @@ def preprocess_text(text: str) -> PreprocessResult:
         text = text[:MAX_INPUT_LENGTH]
         is_truncated = True
 
+    # 0. Adversarial evasion normalization (confusables, zero-width, compaction)
+    evasion_cleaned = normalize_evasion_text(text)
+
     # 1. Algospeak & digital euphemism normalization
-    normalized, slang_count = normalize_algospeak(text)
+    normalized, slang_count = normalize_algospeak(evasion_cleaned)
 
     # 2. Semantic Frame Detection on normalized text
     is_acad = detect_academic_frame(normalized)
