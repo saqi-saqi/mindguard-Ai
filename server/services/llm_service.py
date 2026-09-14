@@ -57,6 +57,82 @@ Respond ONLY in valid JSON with schema:
 """
 
 
+def sanitize_prompt_content(text: str) -> str:
+    """Escapes XML/HTML delimiters to prevent prompt-injection attacks."""
+    if not text:
+        return ""
+    # Strip or escape XML delimiters to prevent breaking out of boundary tags
+    s = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    return s
+
+
+VALID_GUARDRAIL_CATEGORIES = {
+    "active_suicidal_intent",
+    "self_harm",
+    "indirect_distress",
+    "coping_request",
+    "casual_conversation",
+    "negation",
+    "past_history",
+    "idiom_hyperbole",
+    "third_person",
+    "general_distress",
+}
+
+
+def strict_parse_guardrail_json(raw: str) -> Optional[dict]:
+    """
+    Strictly parses and validates guardrail JSON output.
+    Rejects multi-object payloads, malformed JSON, and ensures proper typing.
+    """
+    if not raw or not raw.strip():
+        return None
+
+    import json
+    import re
+
+    # Reject responses containing multiple top-level JSON objects (injection signature)
+    # E.g., '{"is_crisis": false}{"is_crisis": true}'
+    object_matches = re.findall(r"\{[^{}]*\}", raw)
+    if len(object_matches) > 1:
+        logger.warning("Guardrail response contained multiple JSON objects; rejecting as potential injection.")
+        return None
+
+    json_match = re.search(r"\{.*?\}", raw, re.DOTALL)
+    if not json_match:
+        return None
+
+    try:
+        data = json.loads(json_match.group(0))
+        if not isinstance(data, dict):
+            return None
+
+        is_crisis = data.get("is_crisis")
+        if not isinstance(is_crisis, bool):
+            return None
+
+        confidence = data.get("confidence")
+        if not isinstance(confidence, (int, float)) or not (0.0 <= confidence <= 1.0):
+            confidence = 0.85
+        else:
+            confidence = float(confidence)
+
+        reasoning = str(data.get("reasoning", ""))
+        category = str(data.get("category", "")).lower().strip()
+        if category not in VALID_GUARDRAIL_CATEGORIES:
+            category = "active_suicidal_intent" if is_crisis else "general_distress"
+
+        return {
+            "is_crisis": is_crisis,
+            "confidence": confidence,
+            "reasoning": reasoning,
+            "category": category,
+        }
+    except Exception as exc:
+        logger.warning(f"Guardrail JSON parse exception: {exc}")
+        return None
+
+
 def evaluate_llm_safety_guardrail(
     user_text: str,
     context_turns: list[str] | None = None,
@@ -72,38 +148,27 @@ def evaluate_llm_safety_guardrail(
         return None
 
     try:
-        import json
-        import re
-
         client = _get_gemini_client(key)
 
         context_block = ""
         if context_turns and isinstance(context_turns, list) and len(context_turns) > 0:
-            clean_turns = [str(t)[:400].strip() for t in context_turns if str(t).strip()][-3:]
+            clean_turns = [sanitize_prompt_content(str(t)[:400].strip()) for t in context_turns if str(t).strip()][-3:]
             formatted_turns = "\n".join([f"- Previous Turn: {t}" for t in clean_turns])
             context_block = f"<conversation_history>\n{formatted_turns}\n</conversation_history>\n\n"
 
+        sanitized_user_text = sanitize_prompt_content(user_text)
         prompt = (
             f"{context_block}"
-            f"<current_user_message>\n{user_text}\n</current_user_message>\n\n"
-            "Evaluate crisis risk and return JSON schema:"
+            f"<current_user_message>\n{sanitized_user_text}\n</current_user_message>\n\n"
+            "Evaluate crisis risk and return valid JSON matching schema:"
         )
 
         for model_name in GEMINI_CANDIDATE_MODELS:
             raw = _call_gemini(client, model_name, SAFETY_GUARDRAIL_PROMPT, prompt, timeout=2.0)
             if raw:
-                json_match = re.search(r'\{.*?\}', raw, re.DOTALL)
-                if json_match:
-                    try:
-                        parsed = json.loads(json_match.group(0))
-                        return {
-                            "is_crisis": bool(parsed.get("is_crisis", False)),
-                            "confidence": float(parsed.get("confidence", 0.90)),
-                            "reasoning": str(parsed.get("reasoning", "")),
-                            "category": str(parsed.get("category", "general"))
-                        }
-                    except Exception:
-                        pass
+                parsed = strict_parse_guardrail_json(raw)
+                if parsed is not None:
+                    return parsed
 
     except Exception as e:
         logger.warning(f"LLM Safety Guardrail call failed: {e}")
@@ -199,9 +264,10 @@ def query_local_ollama(user_text: str, intent: str, emotion: str, sentiment: str
 
         model = installed[0]
         url = "http://127.0.0.1:11434/api/generate"
+        sanitized = sanitize_prompt_content(user_text)
         prompt = (
             f"{SYSTEM_PROMPT}\n\n"
-            f"<user_message>{user_text}</user_message>\n"
+            f"<user_message>{sanitized}</user_message>\n"
             f"Context - Intent: {intent}, Emotion: {emotion}\n"
             "Respond empathetically and concisely (2-3 sentences):"
         )
@@ -243,8 +309,9 @@ def generate_llm_response(user_text: str, intent: str, emotion: str, sentiment: 
     if key and key.strip():
         try:
             client = _get_gemini_client(key)
+            sanitized = sanitize_prompt_content(user_text)
             prompt = (
-                f"<user_message>{user_text}</user_message>\n"
+                f"<user_message>{sanitized}</user_message>\n"
                 f"Context - Detected Intent: {intent}, Emotion: {emotion}, Sentiment: {sentiment}\n\n"
                 "Respond empathetically adhering strictly to safety guidelines:"
             )

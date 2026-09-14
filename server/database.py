@@ -9,6 +9,9 @@ Supports both real PyMongo client and isolated mongomock testing.
 
 import os
 import uuid
+import time
+import hmac
+import hashlib
 import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Tuple
@@ -314,13 +317,100 @@ def update_chat_session(session_id: str, user_id: Optional[str], updates: Dict[s
         get_db().chat_sessions.update_one(query, {"$set": allowed})
 
 
+# User cooling window cache (user_id -> ISO timestamp)
+_USER_COOLING_WINDOWS: Dict[str, str] = {}
+
+
+def set_user_cooling_window(user_id: str, duration_minutes: int = 15) -> str:
+    """Sets a cooling window for user across all sessions to prevent crisis-state escape."""
+    if not user_id:
+        return ""
+    expiry = (datetime.utcnow() + timedelta(minutes=duration_minutes)).isoformat()
+    _USER_COOLING_WINDOWS[user_id] = expiry
+    try:
+        get_db().users.update_one(
+            {"id": user_id},
+            {"$set": {"crisis_cooling_until": expiry, "last_crisis_at": datetime.utcnow().isoformat()}}
+        )
+    except Exception:
+        pass
+    return expiry
+
+
+def is_user_in_cooling_window(user_id: Optional[str]) -> bool:
+    """Checks whether the user is currently inside an active cooling window."""
+    if not user_id:
+        return False
+    expiry_str = _USER_COOLING_WINDOWS.get(user_id)
+    if not expiry_str:
+        try:
+            user = get_db().users.find_one({"id": user_id})
+            if user:
+                expiry_str = user.get("crisis_cooling_until")
+        except Exception:
+            pass
+    if not expiry_str:
+        return False
+    try:
+        expiry = datetime.fromisoformat(expiry_str)
+        if datetime.utcnow() < expiry:
+            return True
+        else:
+            _USER_COOLING_WINDOWS.pop(user_id, None)
+            return False
+    except Exception:
+        return False
+
+
+def clear_user_cooling_window(user_id: str) -> None:
+    """Clears user cooling window upon verified safety workflow completion."""
+    if not user_id:
+        return
+    _USER_COOLING_WINDOWS.pop(user_id, None)
+    try:
+        get_db().users.update_one(
+            {"id": user_id},
+            {"$unset": {"crisis_cooling_until": ""}}
+        )
+    except Exception:
+        pass
+
+
+def generate_clearance_token(session_id: str, user_id: str, secret_key: str) -> str:
+    """Generates an HMAC-signed one-time clearance token with 5-minute TTL."""
+    now = int(time.time())
+    payload = f"{session_id}:{user_id}:{now}"
+    signature = hmac.new(secret_key.encode(), payload.encode(), hashlib.sha256).hexdigest()
+    return f"{payload}:{signature}"
+
+
+def verify_clearance_token(token: str, session_id: str, secret_key: str, max_age_seconds: int = 300) -> bool:
+    """Verifies HMAC signature and 5-minute TTL for a clearance token."""
+    try:
+        parts = token.split(":")
+        if len(parts) != 4:
+            return False
+        tok_session, tok_user, tok_time_str, tok_sig = parts
+        if tok_session != session_id:
+            return False
+        tok_time = int(tok_time_str)
+        if time.time() - tok_time > max_age_seconds:
+            return False
+        payload = f"{tok_session}:{tok_user}:{tok_time_str}"
+        expected = hmac.new(secret_key.encode(), payload.encode(), hashlib.sha256).hexdigest()
+        return hmac.compare_digest(expected, tok_sig)
+    except Exception:
+        return False
+
+
 def set_session_risk_state(
     session_id: str,
     user_id: Optional[str],
     new_state: str,
-    risk_level: Optional[str] = None
+    risk_level: Optional[str] = None,
+    expected_version: Optional[int] = None
 ) -> Dict[str, Any]:
-    """Updates session risk state ('normal', 'crisis_active', 'elevated_monitoring', 'resolved_by_safety_flow')."""
+    """Updates session risk state ('normal', 'crisis_active', 'elevated_monitoring', 'resolved_by_safety_flow') with versioning."""
     valid_states = {"normal", "crisis_active", "elevated_monitoring", "resolved_by_safety_flow"}
     state = new_state if new_state in valid_states else "normal"
     
@@ -332,40 +422,50 @@ def set_session_risk_state(
         updates["last_risk_level"] = risk_level
     if state == "crisis_active":
         updates["crisis_triggered_at"] = datetime.utcnow().isoformat()
+        if user_id:
+            set_user_cooling_window(user_id)
         
     query: Dict[str, Any] = {"id": session_id}
+    if expected_version is not None:
+        query["version"] = expected_version
+
     set_dict = dict(updates)
     if user_id:
         set_dict["user_id"] = user_id
 
     update_op: Dict[str, Any] = {
         "$set": set_dict,
+        "$inc": {"version": 1},
         "$setOnInsert": {
             "title": "Chat Session",
             "created_at": datetime.utcnow().isoformat()
         }
     }
     if state == "crisis_active":
-        update_op["$inc"] = {"crisis_count": 1}
+        update_op["$inc"]["crisis_count"] = 1
     else:
         update_op["$setOnInsert"]["crisis_count"] = 0
 
-    get_db().chat_sessions.update_one(query, update_op, upsert=True)
+    res = get_db().chat_sessions.update_one(query, update_op, upsert=(expected_version is None))
+    if expected_version is not None and res.matched_count == 0:
+        raise ValueError(f"Concurrent update conflict on session {session_id} (expected version {expected_version})")
+
     return get_session_risk_state(session_id, user_id)
 
 
 def get_session_risk_state(session_id: Optional[str], user_id: Optional[str] = None) -> Dict[str, Any]:
-    """Returns the risk state dictionary for a session."""
+    """Returns the risk state dictionary for a session, including concurrency version."""
     if not session_id:
-        return {"risk_state": "normal", "last_risk_level": "LOW", "crisis_count": 0}
+        return {"risk_state": "normal", "last_risk_level": "LOW", "crisis_count": 0, "version": 1}
     session = get_chat_session_by_id(session_id, user_id)
     if not session:
-        return {"risk_state": "normal", "last_risk_level": "LOW", "crisis_count": 0}
+        return {"risk_state": "normal", "last_risk_level": "LOW", "crisis_count": 0, "version": 1}
     return {
         "risk_state": session.get("risk_state", "normal"),
         "last_risk_level": session.get("last_risk_level", "LOW"),
         "crisis_triggered_at": session.get("crisis_triggered_at"),
-        "crisis_count": session.get("crisis_count", 0)
+        "crisis_count": session.get("crisis_count", 0),
+        "version": session.get("version", 1),
     }
 
 
@@ -375,12 +475,40 @@ def clear_session_crisis_state(
     resolution_type: str = "grounding_completed"
 ) -> Dict[str, Any]:
     """Guarded de-escalation of a crisis session via explicit safety workflow."""
-    save_audit_event("crisis_session_resolved", user_id, {
+    session = get_db().chat_sessions.find_one({"id": session_id})
+    if not session:
+        raise KeyError(f"Session {session_id} not found")
+
+    # Ownership check: if session has user_id, caller must match
+    if session.get("user_id") and user_id and session["user_id"] != user_id:
+        raise PermissionError(f"User {user_id} does not own session {session_id}")
+
+    # Transition guard: only crisis_active or elevated_monitoring can be resolved
+    current_state = session.get("risk_state", "normal")
+    if current_state not in ("crisis_active", "elevated_monitoring"):
+        raise ValueError(f"Cannot clear crisis state from non-crisis state: {current_state}")
+
+    # Resolution type validation
+    valid_resolutions = {
+        "grounding_completed",
+        "crisis_helpline_contacted",
+        "support_network_contacted",
+        "safety_flow_completed",
+        "user_confirmed_safe"
+    }
+    res_type = resolution_type if resolution_type in valid_resolutions else "grounding_completed"
+
+    save_audit_event("crisis_session_resolved", user_id or session.get("user_id"), {
         "session_id": session_id,
-        "resolution_type": resolution_type,
+        "resolution_type": res_type,
         "timestamp": datetime.utcnow().isoformat()
     })
-    return set_session_risk_state(session_id, user_id, "resolved_by_safety_flow", risk_level="LOW")
+
+    owner_id = user_id or session.get("user_id")
+    if owner_id:
+        clear_user_cooling_window(owner_id)
+
+    return set_session_risk_state(session_id, owner_id, "resolved_by_safety_flow", risk_level="LOW")
 
 
 def save_audit_event(event_type: str, actor_id: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None) -> None:

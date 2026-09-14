@@ -15,6 +15,7 @@ if str(SERVER_DIR) not in sys.path:
     sys.path.insert(0, str(SERVER_DIR))
 
 from services.crisis_rules import evaluate_deterministic_crisis
+from services.calibration_monitor import run_calibration_audit
 
 
 def run_evaluation(csv_file_path: Path):
@@ -190,7 +191,13 @@ def main():
                 sub_fpr = (s["fp"] / (s["tn"] + s["fp"])) * 100 if (s["tn"] + s["fp"]) > 0 else 0.0
                 print(f"    - {key:20s} [NON-CRISIS]: Count={sub_total:2d} | TN={s['tn']:2d}, FP={s['fp']:2d} | Specificity={sub_spec:5.1f}%, FPR={sub_fpr:5.1f}%")
 
-    # 5. Check Release Gate Status Assertions
+    # 5. Run Adversarial Calibration & Invariant Audit
+    print("\n[5] Running Adversarial Calibration & Invariant Audit (services.calibration_monitor)")
+    calib_res = run_calibration_audit()
+    print(f"    Cases: {calib_res['total_cases']} | Accuracy: {calib_res['accuracy']*100:.2f}% | Sensitivity: {calib_res['sensitivity']*100:.2f}% | Specificity: {calib_res['specificity']*100:.2f}%")
+    print(f"    Tier 1 Critical Bypasses: {calib_res['tier_1_bypasses']}")
+
+    # 6. Check Release Gate Status Assertions
     print("\n" + "=" * 85)
     print("                     RELEASE GATE STATUS ASSERTIONS & CHECKS                     ")
     print("=" * 85)
@@ -199,6 +206,7 @@ def main():
     fnr_pass = eval_res["fnr"] <= 0.05
     prec_pass = eval_res["precision"] >= 0.90
     fpr_pass = eval_res["fpr"] <= 0.05
+    calib_pass = calib_res["passed_invariants"] and (calib_res["tier_1_bypasses"] == 0)
 
     print(f"  Holdout Recall >= 95.0%        : {'[PASS]' if rec_pass else '[FAIL]'} ({eval_res['recall']*100:.2f}%)")
     print(f"  Holdout False-Negative Rate <= 5%: {'[PASS]' if fnr_pass else '[FAIL]'} ({eval_res['fnr']*100:.2f}%)")
@@ -206,11 +214,12 @@ def main():
     print(f"  Holdout False-Positive Rate <= 5%: {'[PASS]' if fpr_pass else '[FAIL]'} ({eval_res['fpr']*100:.2f}%)")
     print(f"  Regression Fixture Pass Rate=100%: {'[PASS]' if fixture_gate_pass else '[FAIL]'} ({fixture_passed}/{fixture_total})")
     print(f"  Aggressive Suite Pass Rate=100% : {'[PASS]' if agg_gate_pass else '[FAIL]'} ({agg_passed}/{agg_total})")
+    print(f"  Adversarial Calibration Gate   : {'[PASS]' if calib_pass else '[FAIL]'} (Sensitivity={calib_res['sensitivity']*100:.1f}%, Bypasses={calib_res['tier_1_bypasses']})")
 
     print("\nNote: Tier-1 Deterministic Rule Engine metrics are evaluated above.")
     print("      Tier-2 ML Classifier metrics are tracked separately and do NOT validate Tier 1.")
 
-    all_passed = rec_pass and fnr_pass and prec_pass and fpr_pass and fixture_gate_pass and agg_gate_pass
+    all_passed = rec_pass and fnr_pass and prec_pass and fpr_pass and fixture_gate_pass and agg_gate_pass and calib_pass
 
     print("=" * 85)
     if all_passed:

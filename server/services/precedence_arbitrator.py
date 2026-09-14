@@ -104,19 +104,23 @@ def arbitrate(inp: ArbitrationInput) -> ArbitrationResult:
 
     # 1. THIRD-PARTY ROUTING
     if inp.is_third_party:
-        reasoning.append("Rule 1 (Third-party routing): Statement describes someone else in crisis.")
-        return ArbitrationResult(
-            is_crisis=False,
-            risk_level="none",
-            high_risk=False,
-            imminent_risk=False,
-            protective_factor=False,
-            bypass_triggered=False,
-            source="third_party_guidance",
-            confidence=0.95,
-            rule_triggered="third_party_crisis_reported",
-            reasoning=reasoning,
-        )
+        # Require first-person self-harm overrides to supersede third-party routing only when explicit and local to the speaker.
+        if inp.has_first_person_override:
+            reasoning.append("Rule 1 Override: Third-party frame detected, but speaker also expresses explicit first-person crisis.")
+        else:
+            reasoning.append("Rule 1 (Third-party routing): Statement describes someone else in crisis.")
+            return ArbitrationResult(
+                is_crisis=False,
+                risk_level="none",
+                high_risk=False,
+                imminent_risk=False,
+                protective_factor=False,
+                bypass_triggered=False,
+                source="third_party_guidance",
+                confidence=0.95,
+                rule_triggered="third_party_crisis_reported",
+                reasoning=reasoning,
+            )
 
     # 2. FAIL-SAFE FLOOR: Active escalation in progress
     if "active_escalation_in_progress" in inp.matched_categories:

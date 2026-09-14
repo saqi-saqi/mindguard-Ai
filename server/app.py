@@ -39,6 +39,8 @@ from database import (
     get_user_settings, update_user_settings,
     create_chat_session, get_chat_sessions, update_chat_session,
     set_session_risk_state, get_session_risk_state, clear_session_crisis_state,
+    set_user_cooling_window, is_user_in_cooling_window, clear_user_cooling_window,
+    generate_clearance_token, verify_clearance_token,
     save_audit_event, delete_mood_log,
     save_chat_message, get_chat_history,
     export_user_data, delete_user_data, delete_user_account,
@@ -747,10 +749,11 @@ def chat():
                 "error": None
             }), 200
 
-        # Guarded Sticky Follow-up: If session is in crisis_active but current message does not re-trigger Tier 1
-        if is_session_crisis_active:
+        # Guarded Sticky Follow-up: If session is in crisis_active or user is in active cooling window
+        user_cooling = bool(user_id and is_user_in_cooling_window(user_id))
+        if is_session_crisis_active or user_cooling:
             duration_ms = round((time.time() - start_req_time) * 1000, 2)
-            logger.info(f"[{req_id}] Guarded session crisis follow-up turn. Transitioning to elevated_monitoring.")
+            logger.info(f"[{req_id}] Guarded crisis follow-up turn (session_crisis={is_session_crisis_active}, user_cooling={user_cooling}). Transitioning to elevated_monitoring.")
             
             if session_id:
                 set_session_risk_state(session_id, user_id, "elevated_monitoring", "ELEVATED_DISTRESS")
@@ -1003,16 +1006,56 @@ def chat():
 
 
 # ---------------------------------------------------------------------------
-# Session Safety Clear Endpoint
+# Session Safety Clear & Clearance Token Endpoints
 # ---------------------------------------------------------------------------
+@app.route("/api/chat/session/<session_id>/clearance-token", methods=["POST"])
+@jwt_required
+def get_session_clearance_token(session_id):
+    user_id = g.current_user["id"]
+    session = get_db().chat_sessions.find_one({"id": session_id})
+    if not session:
+        return jsonify({"success": False, "error": "not_found", "message": "Session not found"}), 404
+    if session.get("user_id") and session["user_id"] != user_id:
+        return jsonify({"success": False, "error": "forbidden", "message": "Session ownership verification failed"}), 403
+    token = generate_clearance_token(session_id, user_id, JWT_SECRET_KEY)
+    return jsonify({"success": True, "data": {"clearance_token": token}, "error": None}), 200
+
+
 @app.route("/api/chat/session/<session_id>/safety-clear", methods=["POST"])
-@optional_jwt
 def clear_crisis_session(session_id):
+    auth_header = request.headers.get("Authorization", "")
+    token_str = auth_header.replace("Bearer ", "").strip() if auth_header.startswith("Bearer ") else ""
     body = request.get_json(silent=True) or {}
+    clearance_token = body.get("clearance_token") or request.headers.get("X-Clearance-Token", "")
     resolution_type = body.get("resolution_type", "grounding_completed")
-    user_id = g.current_user["id"] if hasattr(g, "current_user") and g.current_user else None
-    res = clear_session_crisis_state(session_id, user_id, resolution_type=resolution_type)
-    return jsonify({"success": True, "data": res, "error": None}), 200
+
+    user_id = None
+    if token_str:
+        try:
+            payload, err = decode_token(token_str)
+            if err or not payload:
+                return jsonify({"success": False, "error": "unauthorized", "message": err or "Invalid token"}), 401
+            user_id = payload.get("sub")
+        except Exception as e:
+            return jsonify({"success": False, "error": "unauthorized", "message": f"Invalid token: {e}"}), 401
+    elif clearance_token:
+        valid = verify_clearance_token(clearance_token, session_id, JWT_SECRET_KEY)
+        if not valid:
+            return jsonify({"success": False, "error": "unauthorized", "message": "Invalid or expired clearance token"}), 401
+        parts = clearance_token.split(":")
+        user_id = parts[1] if len(parts) >= 2 else None
+    else:
+        return jsonify({"success": False, "error": "unauthorized", "message": "Authentication required: provide Bearer JWT or X-Clearance-Token"}), 401
+
+    try:
+        res = clear_session_crisis_state(session_id, user_id, resolution_type=resolution_type)
+        return jsonify({"success": True, "data": res, "error": None}), 200
+    except KeyError:
+        return jsonify({"success": False, "error": "not_found", "message": "Session not found"}), 404
+    except PermissionError as pe:
+        return jsonify({"success": False, "error": "forbidden", "message": str(pe)}), 403
+    except ValueError as ve:
+        return jsonify({"success": False, "error": "bad_request", "message": str(ve)}), 400
 
 
 # ---------------------------------------------------------------------------
