@@ -42,7 +42,7 @@ from database import (
     save_audit_event, delete_mood_log,
     save_chat_message, get_chat_history,
     export_user_data, delete_user_data, delete_user_account,
-    update_trusted_contact, cleanup_old_records
+    update_trusted_contact, update_safety_profile, cleanup_old_records
 )
 from auth import (
     hash_password, verify_password, generate_token, decode_token,
@@ -50,7 +50,8 @@ from auth import (
 )
 from services.crisis_rules import (
     evaluate_crisis, evaluate_deterministic_crisis, evaluate_crisis_pipeline,
-    is_contextual_or_negated, match_crisis_regex, THIRD_PARTY_GUIDANCE_TEMPLATE
+    is_contextual_or_negated, match_crisis_regex, THIRD_PARTY_GUIDANCE_TEMPLATE,
+    SAFETY_RESPONSE_TEMPLATE
 )
 from services.huggingface_service import (
     analyze_user_message, load_ml_pipelines
@@ -267,16 +268,14 @@ def system_health():
 
 @app.route("/api/resources", methods=["GET"])
 def get_crisis_resources():
-    region = request.args.get("region", "pakistan").strip().lower()
+    region = "pakistan"
     reg_res = get_resources_for_region(region)
-    intl_res = get_resources_for_region("international")
     return jsonify({
         "success": True,
         "data": {
             "region": region,
             "resources": {
                 region: reg_res,
-                "international": intl_res
             }
         },
         "error": None
@@ -412,7 +411,21 @@ def user_settings_endpoint():
 
     body = request.get_json(silent=True) or {}
     updated = update_user_settings(user_id, body)
-    return jsonify({"success": True, "data": {"user": updated}, "error": None}), 200
+    return jsonify({"success": True, "data": {"user": updated, "settings": (updated or {}).get("settings", {})}, "error": None}), 200
+
+
+@app.route("/api/user/safety-profile", methods=["POST", "GET"])
+@jwt_required
+def safety_profile_endpoint():
+    user_id = g.current_user["id"]
+    if request.method == "GET":
+        user = get_user_by_id(user_id) or {}
+        return jsonify({"success": True, "data": {"safety_profile": user.get("safety_profile", {})}, "error": None}), 200
+
+    body = request.get_json(silent=True) or {}
+    updated = update_safety_profile(user_id, body)
+    save_audit_event("safety_profile_updated", user_id)
+    return jsonify({"success": True, "data": {"user": updated, "safety_profile": (updated or {}).get("safety_profile", {})}, "error": None}), 200
 
 
 @app.route("/api/user/trusted-contact", methods=["POST", "GET"])
@@ -498,7 +511,7 @@ def delete_mood_endpoint(log_id):
 def analytics_endpoint():
     user_id = g.current_user["id"]
     period = request.args.get("period", "monthly").lower()
-    days = 365 if period == "yearly" else (90 if period == "quarterly" else (7 if period == "weekly" else 30))
+    days = 1 if period == "daily" else (7 if period == "weekly" else (365 if period == "yearly" else (90 if period == "quarterly" else 30)))
 
     summary = get_analytics_summary(user_id, days=days)
     return jsonify({"success": True, "data": summary, "error": None}), 200
@@ -561,7 +574,7 @@ def admin_cleanup():
 SAFETY_DISCLAIMER = (
     "MindGuard is an AI-powered conversational support companion, not a licensed therapist or medical diagnostic tool. "
     "If you or someone you know is in immediate danger or experiencing a life-threatening mental health emergency, "
-    "please call emergency services (911 in the US) or contact the 988 Suicide & Crisis Lifeline immediately."
+    "please call Rescue 1122, Police 15 when another person is at immediate risk, or go to the nearest hospital emergency department."
 )
 
 
@@ -599,7 +612,7 @@ def chat():
     retention_enabled = True
     retention_days = 30
     expires_at = None
-    user_locale = "international"
+    user_locale = "pakistan"
 
     if user_id:
         user = get_user_by_id(user_id)
@@ -607,7 +620,7 @@ def chat():
             settings = user.get("settings", {})
             retention_enabled = bool(settings.get("retention_enabled", True))
             retention_days = int(settings.get("retention_days", 30))
-            user_locale = settings.get("locale", "international")
+            user_locale = "pakistan"
             if retention_enabled:
                 expires_at = (datetime.utcnow() + timedelta(days=retention_days)).isoformat()
 
@@ -833,6 +846,8 @@ def chat():
             duration_ms = round((time.time() - start_req_time) * 1000, 2)
             logger.warning(f"[{req_id}] CRISIS DETECTED via Tier 2/2.5 Pipeline. Duration={duration_ms}ms")
 
+            crisis_reply = crisis_eval.get("safety_message") or SAFETY_RESPONSE_TEMPLATE.strip()
+
             if session_id:
                 set_session_risk_state(session_id, user_id, "crisis_active", "HIGH_CRISIS")
 
@@ -840,7 +855,7 @@ def chat():
                 save_chat_message(
                     user_id=user_id,
                     sender="assistant",
-                    text=crisis_eval["safety_message"],
+                    text=crisis_reply,
                     risk_level="HIGH_CRISIS",
                     intent=ml_results["intent"],
                     intent_confidence=ml_results["intent_confidence"],
@@ -859,7 +874,7 @@ def chat():
                 "data": {
                     "status": "success",
                     "risk_level": "HIGH_CRISIS",
-                    "reply": crisis_eval["safety_message"],
+                    "reply": crisis_reply,
                     "disclaimer": SAFETY_DISCLAIMER,
                     "intent": ml_results["intent"],
                     "intent_confidence": ml_results["intent_confidence"],
@@ -879,7 +894,7 @@ def chat():
                 "I hear how overwhelming things feel right now, and I want you to know that you are not alone. "
                 "Please consider reaching out to a supportive friend, counselor, or helpline. "
                 "\n\n*(Note: If you feel overwhelmed or need someone to talk to, support is always free and confidential. "
-                "You can call or text 988 anytime.)*"
+                "If you feel at risk of acting on these thoughts, call Rescue 1122, go to the nearest hospital emergency department, or contact someone you trust.)*"
             )
             duration_ms = round((time.time() - start_req_time) * 1000, 2)
 

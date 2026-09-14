@@ -1143,11 +1143,10 @@ MindGuard is an automated AI tool and is NOT an emergency service or clinical me
 
 Please connect with one of these free, confidential, 24/7 crisis support services right now:
 
+🚑 **Rescue 1122 (medical emergency)**: 1122
+👮 **Police emergency (immediate threat to another person)**: 15
 📞 **Umang Pakistan Helpline (24/7)**: 0311-7786264
 📞 **Rozan Emotional Support Line**: 0800-22444
-📞 **Suicide & Crisis Lifeline (US & Canada)**: Call or Text 988
-💬 **Crisis Text Line**: Text HOME to 741741
-🌐 **Global Helpline Finder**: https://findahelpline.com
 """
 
 THIRD_PARTY_GUIDANCE_TEMPLATE = """
@@ -1157,11 +1156,10 @@ If you believe this person is in immediate physical danger, please contact local
 
 Please connect with one of these free, confidential, 24/7 crisis support services right now:
 
+🚑 **Rescue 1122 (medical emergency)**: 1122
+👮 **Police emergency (immediate threat to another person)**: 15
 📞 **Umang Pakistan Helpline (24/7)**: 0311-7786264
 📞 **Rozan Emotional Support Line**: 0800-22444
-📞 **Suicide & Crisis Lifeline (US & Canada)**: Call or Text 988
-💬 **Crisis Text Line**: Text HOME to 741741
-🌐 **Global Helpline Finder**: https://findahelpline.com
 
 💡 **Tips for Supporting Someone in Crisis**:
 1. Listen without judgment and acknowledge their emotional pain.

@@ -45,10 +45,6 @@ export default function DocScreenshots() {
         { name: 'Rozan Counseling Helpline', contact: '0800-22444', hours: 'Mon-Sat 9AM-5PM', available: true },
         { name: 'Emergency Rescue Services', contact: '1122', hours: '24/7 Immediate Response', available: true },
       ],
-      international: [
-        { name: '988 Suicide & Crisis Lifeline (US/CA)', contact: 'Call/Text 988', hours: '24/7 Free & Confidential', available: true },
-        { name: 'Befrienders Worldwide', contact: 'www.befrienders.org', hours: 'Global Helplines Directory', available: true },
-      ]
     }
   };
 

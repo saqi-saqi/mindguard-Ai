@@ -124,9 +124,10 @@ _MODEL_QUOTA_EXCEEDED_UNTIL: dict = {}
 # gemini-flash-lite-latest: ~1.17s
 # gemini-flash-latest: full flash as final fallback
 GEMINI_CANDIDATE_MODELS = [
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash-lite",
     "gemini-flash-lite-latest",
     "gemini-flash-latest",
-    "gemini-2.5-flash-lite",
 ]
 
 # Normal conversations must remain responsive even when a local model is slow.

@@ -26,7 +26,7 @@ describe("CrisisModal Accessibility & Clinical Hierarchy", () => {
     // Action 1: Immediate Emergency Dispatch
     expect(screen.getByText(/1\. Emergency Dispatch/i)).toBeDefined();
     expect(screen.getByText(/Call 1122 \(Pakistan Rescue\)/i)).toBeDefined();
-    expect(screen.getByText(/Call 988 \(US \/ Canada Lifeline\)/i)).toBeDefined();
+    expect(screen.getByText(/Call 15 \(Police Emergency\)/i)).toBeDefined();
 
     // Action 2: Designated Personal Anchor
     expect(screen.getByText(/2\. Designated Personal Anchor/i)).toBeDefined();
@@ -37,14 +37,14 @@ describe("CrisisModal Accessibility & Clinical Hierarchy", () => {
     expect(screen.getByText(/Call Umang Pakistan Mental Health Helpline \(0311-7786264\)/i)).toBeDefined();
 
     // Progressive Disclosure Accordion exists and starts collapsed
-    const directoryToggle = screen.getByRole("button", { name: /view more helplines/i });
+    const directoryToggle = screen.getByRole("button", { name: /view more pakistan helplines/i });
     expect(directoryToggle).toBeDefined();
     expect(screen.queryByText(/Additional National Helplines/i)).toBeNull();
 
-    // Expanding directory reveals auxiliary and international hotlines
+    // Expanding directory reveals Pakistan support lines only.
     fireEvent.click(directoryToggle);
     expect(screen.getByText(/Additional National Helplines/i)).toBeDefined();
-    expect(screen.getByText(/International Lines & Global Directory/i)).toBeDefined();
+    expect(screen.queryByText(/International Lines & Global Directory/i)).toBeNull();
 
     const closeBtn = screen.getByRole("button", { name: /close emergency modal/i });
     expect(closeBtn).toBeDefined();

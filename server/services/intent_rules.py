@@ -51,7 +51,7 @@ CRISIS_EXPLICIT_PATTERNS_RAW: List[str] = [
     r"\bwant(?:s|ed|ing)?\s+to\s+end\s+(?:my\s+life|my\s+existence|everything)\b|\bending\s+my\s+life\b",
     r"\b(?:i\s+)?(?:want|wanna)\s+to\s+stop\s+existing(?:\s+(?:today|tonight|right\s+now|this\s+time))?\b",
     r"\b(?:i\s+)?want\s+(?:this\s+)?pain\s+to\s+stop\s+by\s+dying\b",
-    r"\b(?:wanna|want\s+to|need\s+to|going\s+to|gonna|decided\s+to|intend\s+to|ready\s+to)\s+end\s+(?:my\s+life|my\s+existence)\b",
+    r"\b(?:wanna|want\s+to|need\s+to|going\s+to|gonna|decided\s+to|intend\s+to|ready\s+to|about\s+to)?\s*end\s+(?:myself|my\s+life|my\s+existence)\b",
     r"\btake\s+my\s+(?:own\s+)?life\b",
     r"\bi(?:'m| am| feel| feeling)?\s+suicidal\b",
     r"\bfeel(?:ing)?\s+suicidal\b",

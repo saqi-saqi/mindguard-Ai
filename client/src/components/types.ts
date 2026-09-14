@@ -6,11 +6,19 @@ export interface TrustedContact {
   relationship?: string;
 }
 
+export interface SafetyProfile {
+  preferred_hospital_name: string;
+  preferred_hospital_phone: string;
+  city_or_district: string;
+  emergency_actions_consent: boolean;
+}
+
 export interface MindUser {
   id?: string;
   name: string;
   email: string;
   trusted_contact?: TrustedContact;
+  safety_profile?: SafetyProfile;
   settings?: UserSettings;
 }
 
@@ -58,5 +66,4 @@ export interface Helpline {
 
 export interface CrisisResources {
   pakistan?: Helpline[];
-  international?: Helpline[];
 }

@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Shield, Database, Phone, Download, Trash2, AlertOctagon, CheckCircle2, Eye, EyeOff, Lock, AlertCircle, Info } from "lucide-react";
-import type { MindUser, TrustedContact, UserSettings } from "./types";
+import { Shield, Database, Phone, Download, Trash2, AlertOctagon, CheckCircle2, Eye, EyeOff, Lock, AlertCircle, Info, Building2 } from "lucide-react";
+import type { MindUser, SafetyProfile, TrustedContact, UserSettings } from "./types";
 
 interface Props {
   user: MindUser;
   token: string;
-  onUpdated: (settings: UserSettings, trustedContact?: TrustedContact) => void;
+  onUpdated: (settings: UserSettings, trustedContact?: TrustedContact, safetyProfile?: SafetyProfile) => void;
   onAccountDeleted: () => void;
 }
 
@@ -16,11 +16,22 @@ const defaults: UserSettings = {
   locale: "pakistan"
 };
 
+const safetyProfileDefaults: SafetyProfile = {
+  preferred_hospital_name: "",
+  preferred_hospital_phone: "",
+  city_or_district: "",
+  emergency_actions_consent: false,
+};
+
 export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted }: Props) {
   const [settings, setSettings] = useState<UserSettings>(user.settings || defaults);
   const [contact, setContact] = useState<TrustedContact>(
     user.trusted_contact || { name: "", phone: "", relationship: "Friend or family" }
   );
+  const [safetyProfile, setSafetyProfile] = useState<SafetyProfile>({
+    ...safetyProfileDefaults,
+    ...(user.safety_profile || {})
+  });
   const [maskPhone, setMaskPhone] = useState(true);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -63,25 +74,34 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
       }
 
       let trustedContact = user.trusted_contact;
-      if (contact.name.trim() || contact.phone.trim()) {
-        const contactResponse = await fetch("/api/user/trusted-contact", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify(contact)
-        });
-        let contactResult: any = null;
-        try {
-          contactResult = await contactResponse.json();
-        } catch {
-          if (!contactResponse.ok) throw new Error(`Server error (${contactResponse.status}): Could not save trusted contact.`);
-          throw new Error("Invalid response from server.");
-        }
-        if (!contactResponse.ok || contactResult.success === false) {
-          throw new Error(contactResult?.error?.message || "Could not save trusted contact.");
-        }
-        trustedContact = contactResult.data?.user?.trusted_contact;
+      const contactResponse = await fetch("/api/user/trusted-contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(contact)
+      });
+      let contactResult: any = null;
+      try {
+        contactResult = await contactResponse.json();
+      } catch {
+        if (!contactResponse.ok) throw new Error(`Server error (${contactResponse.status}): Could not save trusted contact.`);
+        throw new Error("Invalid response from server.");
       }
-      onUpdated(result.data.settings, trustedContact);
+      if (!contactResponse.ok || contactResult.success === false) {
+        throw new Error(contactResult?.error?.message || "Could not save trusted contact.");
+      }
+      trustedContact = contactResult.data?.user?.trusted_contact;
+
+      const profileResponse = await fetch("/api/user/safety-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(safetyProfile)
+      });
+      const profileResult = await profileResponse.json().catch(() => null);
+      if (!profileResponse.ok || profileResult?.success === false) {
+        throw new Error(profileResult?.error?.message || "Could not save safety profile.");
+      }
+
+      onUpdated(result.data.settings, trustedContact, profileResult.data?.safety_profile);
       showNotification("Settings and privacy preferences updated successfully.", "success");
     } catch (err) {
       showNotification((err as Error).message, "error");
@@ -233,7 +253,7 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
             </span>
           </label>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 pt-2">
+          <div className="grid grid-cols-1 gap-3 pt-2">
             <div>
               <label htmlFor="retention-days" className="block text-xs font-semibold text-slate-800">
                 Retention Window (Days: 1–365)
@@ -253,21 +273,39 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
               </p>
             </div>
 
+          </div>
+          <p className="rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2 text-[11px] text-indigo-900">
+            Emergency resources are configured for Pakistan: Rescue 1122, Police 15, and local support services.
+          </p>
+        </div>
+
+        {/* Optional Hospital & Safety Preferences */}
+        <div className="space-y-3 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <Building2 className="size-4 text-indigo-600" />
+            <h2 className="text-sm font-bold text-slate-900 font-heading">Optional Hospital &amp; Safety Preferences</h2>
+          </div>
+          <p className="text-xs leading-relaxed text-slate-600">
+            Save a preferred hospital only if it would help you act quickly in an emergency. MindGuard does not share this information or contact a hospital, police, or anyone else automatically.
+          </p>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div>
-              <label htmlFor="crisis-locale" className="block text-xs font-semibold text-slate-800">
-                Crisis Helpline Region
-              </label>
-              <select
-                id="crisis-locale"
-                className={inputClass}
-                value={settings.locale}
-                onChange={(e) => setSettings({ ...settings, locale: e.target.value })}
-              >
-                <option value="pakistan">Pakistan (1122, Umang, Rozan)</option>
-                <option value="international">International (988 US/CA, Global)</option>
-              </select>
+              <label htmlFor="safety-city" className="block text-xs font-semibold text-slate-700">City or District (optional)</label>
+              <input id="safety-city" className={inputClass} placeholder="e.g. Lahore" value={safetyProfile.city_or_district} onChange={(e) => setSafetyProfile({ ...safetyProfile, city_or_district: e.target.value })} />
+            </div>
+            <div>
+              <label htmlFor="hospital-name" className="block text-xs font-semibold text-slate-700">Preferred Hospital (optional)</label>
+              <input id="hospital-name" className={inputClass} placeholder="e.g. Services Hospital" value={safetyProfile.preferred_hospital_name} onChange={(e) => setSafetyProfile({ ...safetyProfile, preferred_hospital_name: e.target.value })} />
+            </div>
+            <div>
+              <label htmlFor="hospital-phone" className="block text-xs font-semibold text-slate-700">Hospital Phone (optional)</label>
+              <input id="hospital-phone" className={inputClass} placeholder="e.g. 042-99203402" value={safetyProfile.preferred_hospital_phone} onChange={(e) => setSafetyProfile({ ...safetyProfile, preferred_hospital_phone: e.target.value })} />
             </div>
           </div>
+          <label className="flex items-start gap-3 text-xs text-slate-800 cursor-pointer">
+            <input type="checkbox" checked={safetyProfile.emergency_actions_consent} onChange={(e) => setSafetyProfile({ ...safetyProfile, emergency_actions_consent: e.target.checked })} className="mt-0.5 size-4 accent-indigo-600 rounded cursor-pointer" />
+            <span><strong className="font-semibold text-slate-900">Show my saved emergency actions during a crisis</strong><br /><span className="text-slate-600 font-normal">This only enables call and SMS buttons that you press yourself. It does not grant MindGuard permission to dispatch services or send messages for you.</span></span>
+          </label>
         </div>
 
         {/* Designated Emergency Trusted Contact */}

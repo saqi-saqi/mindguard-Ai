@@ -261,13 +261,15 @@ export default function ChatInterface({
         throw new Error("Invalid or empty response received from server.");
       }
       const data = resData.data || resData;
+      const isCrisisAlert = data.risk_level === "HIGH_CRISIS" || data.requires_immediate_action;
+      const replyText = data.reply || (isCrisisAlert ? "I want to make sure you are safe right now. Please connect with emergency services immediately." : "");
 
-      if (resData.success !== false && data.reply) {
+      if (resData.success !== false && (replyText || isCrisisAlert)) {
         if (data.session_id) setActiveSessionId(data.session_id);
         const botMsg: ChatMessage = {
           id: (Date.now() + 1).toString(),
           sender: "bot",
-          text: data.reply,
+          text: replyText,
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           risk_level: data.risk_level,
           intent: data.intent,
@@ -278,7 +280,7 @@ export default function ChatInterface({
         };
 
         setMessages((prev) => [...prev, botMsg]);
-        setLiveAnnouncement(`New message from MindGuard: ${data.reply}`);
+        setLiveAnnouncement(`New message from MindGuard: ${replyText}`);
 
         if (data.risk_level === "HIGH_CRISIS" || data.risk_level === "ELEVATED_DISTRESS") {
           setDismissedEmergencyBanner(false);
@@ -703,7 +705,7 @@ export default function ChatInterface({
           <div className="pt-0.5 text-center">
             <p className="text-[11px] leading-tight text-slate-500 font-normal">
               MindGuard is an automated self-help tool, not a clinical medical provider. For emergencies,
-              contact <strong className="font-bold text-rose-700">1122 PK</strong> / <strong className="font-bold text-rose-700">988 US/CA</strong> or your local emergency hospital.
+              call <strong className="font-bold text-rose-700">Rescue 1122</strong>, call <strong className="font-bold text-rose-700">Police 15</strong> if another person is in immediate danger, or go to your nearest emergency hospital.
             </p>
           </div>
         </div>

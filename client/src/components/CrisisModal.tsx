@@ -14,16 +14,16 @@ import {
   Check,
   Info,
   ChevronDown,
-  ChevronUp,
-  Globe
+  ChevronUp
 } from "lucide-react";
-import type { CrisisResources, Helpline, TrustedContact } from "./types";
+import type { CrisisResources, Helpline, SafetyProfile, TrustedContact } from "./types";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   resources?: CrisisResources | null;
   trustedContact?: TrustedContact | null;
+  safetyProfile?: SafetyProfile | null;
   mode?: "manual" | "detected";
   onSafetyStatus?: (outcome: "safe_for_now" | "urgent_help_requested") => void;
 }
@@ -206,7 +206,7 @@ function HelplineCard({
             className="flex min-h-[34px] w-full items-center justify-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-2.5 py-1 text-[11px] font-semibold text-slate-200 hover:bg-slate-700 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 cursor-pointer"
           >
             <ExternalLink className="size-3 shrink-0 text-cyan-400" />
-            <span>{isWebOnly ? "Open Global Directory (findahelpline.com)" : "Official Website & Resources"}</span>
+            <span>{isWebOnly ? "Open support website" : "Official Website & Resources"}</span>
           </a>
         )}
       </div>
@@ -214,7 +214,7 @@ function HelplineCard({
   );
 }
 
-export default function CrisisModal({ isOpen, onClose, resources, trustedContact, mode = "manual", onSafetyStatus }: Props) {
+export default function CrisisModal({ isOpen, onClose, resources, trustedContact, safetyProfile, mode = "manual", onSafetyStatus }: Props) {
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -248,6 +248,13 @@ export default function CrisisModal({ isOpen, onClose, resources, trustedContact
       navigator.clipboard.writeText(phoneDigits);
       showNotification(`Copied ${label} (${phoneDigits}) to clipboard.`);
     }
+  };
+
+  const handleQuickText = (phoneDigits: string, label: string) => {
+    const message = "I need support right now. Please call me or stay with me if you can.";
+    if (navigator.clipboard) navigator.clipboard.writeText(message);
+    showNotification(`Opening a message to ${label}. The message is copied in case your device does not open SMS.`);
+    window.location.href = `sms:${phoneDigits}?body=${encodeURIComponent(message)}`;
   };
 
   // Focus management, restoration, and keyboard trap
@@ -352,50 +359,6 @@ export default function CrisisModal({ isOpen, onClose, resources, trustedContact
         description: "Free mental health support and clinical navigation.",
       },
     ],
-    international: [
-      {
-        name: "Suicide & Crisis Lifeline (US & Canada)",
-        organization: "SAMHSA 988",
-        contact: "988",
-        website: "https://988lifeline.org",
-        description: "Free, confidential 24/7 call and text crisis line.",
-      },
-      {
-        name: "Crisis Text Line",
-        organization: "Crisis Text Line",
-        contact: "Text HOME to 741741",
-        website: "https://www.crisistextline.org",
-        description: "Free 24/7 text support with trained crisis counselors.",
-      },
-      {
-        name: "Teen Line (Youth Peer Support)",
-        organization: "Teen Line",
-        contact: "Call 800-852-8336 / Text TEEN to 839863",
-        website: "https://www.teenline.org",
-        description: "Confidential peer-to-peer mental health support for teenagers.",
-      },
-      {
-        name: "The Trevor Project (LGBTQ Youth)",
-        organization: "The Trevor Project",
-        contact: "Call 866-488-7386 / Text START to 678-678",
-        website: "https://www.thetrevorproject.org",
-        description: "24/7 suicide prevention and crisis intervention for young people.",
-      },
-      {
-        name: "Childline UK",
-        organization: "Childline NSPCC",
-        contact: "0800 1111",
-        website: "https://www.childline.org.uk",
-        description: "Free, confidential counseling for children and young people under 19.",
-      },
-      {
-        name: "Find A Helpline (Global Directory)",
-        organization: "Find A Helpline",
-        contact: "https://findahelpline.com",
-        website: "https://findahelpline.com",
-        description: "Confidential crisis lines in over 130 countries worldwide.",
-      },
-    ],
   };
 
   // Primary mental health line for acute 3-action triage (Umang in PK)
@@ -407,8 +370,7 @@ export default function CrisisModal({ isOpen, onClose, resources, trustedContact
 
   // Auxiliary resources for progressive disclosure directory
   const auxiliaryPakistanLines = (defaultHelplines.pakistan || []).slice(1);
-  const internationalLines = defaultHelplines.international || [];
-  const totalDirectoryCount = auxiliaryPakistanLines.length + internationalLines.length;
+  const totalDirectoryCount = auxiliaryPakistanLines.length;
 
   return (
     <div
@@ -520,17 +482,17 @@ export default function CrisisModal({ isOpen, onClose, resources, trustedContact
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  onClick={(e) => handleQuickCall(e, "988", "US / Canada 988 Lifeline")}
+                  onClick={(e) => handleQuickCall(e, "15", "Pakistan Police Emergency")}
                   className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-rose-700 px-3 py-2 text-xs font-bold text-white shadow-md transition-colors hover:bg-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 cursor-pointer"
                 >
                   <PhoneCall className="size-4 shrink-0" />
-                  <span>Call 988 (US / Canada Lifeline)</span>
+                  <span>Call 15 (Police Emergency)</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleQuickCopy("988", "988 Lifeline")}
-                  title="Copy 988"
-                  aria-label="Copy 988 emergency number"
+                  onClick={() => handleQuickCopy("15", "Pakistan Police Emergency")}
+                  title="Copy 15"
+                  aria-label="Copy 15 emergency number"
                   className="grid size-11 shrink-0 place-items-center rounded-xl border border-rose-400/40 bg-rose-900/60 text-rose-200 hover:bg-rose-800 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 cursor-pointer"
                 >
                   <Copy className="size-4" />
@@ -564,6 +526,14 @@ export default function CrisisModal({ isOpen, onClose, resources, trustedContact
                   </button>
                   <button
                     type="button"
+                    onClick={() => handleQuickText(trustedContact.phone.replace(/[^0-9+]/g, ""), trustedContact.name)}
+                    aria-label={`Text ${trustedContact.name} for support`}
+                    className="grid size-10 shrink-0 place-items-center rounded-xl border border-emerald-500/40 bg-emerald-900/60 text-emerald-200 hover:bg-emerald-800 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 cursor-pointer"
+                  >
+                    <MessageSquare className="size-3.5" />
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => handleQuickCopy(trustedContact.phone, trustedContact.name)}
                     title={`Copy ${trustedContact.name}'s phone number`}
                     aria-label={`Copy ${trustedContact.name}'s phone number`}
@@ -572,6 +542,21 @@ export default function CrisisModal({ isOpen, onClose, resources, trustedContact
                     <Copy className="size-3.5" />
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {safetyProfile?.emergency_actions_consent && safetyProfile.preferred_hospital_phone && (
+            <div className="rounded-2xl border border-indigo-500/50 bg-indigo-950/30 p-3 shadow-lg">
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-300 flex items-center gap-1.5">
+                  <ShieldAlert className="size-3.5 text-indigo-400" /> Preferred Hospital
+                </h3>
+                <span className="text-[9px] font-semibold text-indigo-200">You choose when to call</span>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div><p className="text-sm font-bold text-white font-heading">{safetyProfile.preferred_hospital_name || "Saved hospital"}</p><p className="text-[11px] text-indigo-200/80">{safetyProfile.city_or_district || "Pakistan"}</p></div>
+                <button type="button" onClick={(e) => handleQuickCall(e, safetyProfile.preferred_hospital_phone.replace(/[^0-9+]/g, ""), safetyProfile.preferred_hospital_name || "saved hospital")} className="flex min-h-[40px] items-center gap-2 rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white transition-colors hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 cursor-pointer"><PhoneCall className="size-3.5 shrink-0" /><span>Call hospital</span></button>
               </div>
             </div>
           )}
@@ -619,7 +604,7 @@ export default function CrisisModal({ isOpen, onClose, resources, trustedContact
             </div>
           </div>
 
-          {/* PROGRESSIVE DISCLOSURE ACCORDION: FULL DIRECTORY & INTERNATIONAL OPTIONS */}
+          {/* PROGRESSIVE DISCLOSURE: PAKISTAN SUPPORT DIRECTORY */}
           <div className="rounded-2xl border border-slate-700/80 bg-slate-900/60 p-3">
             <button
               type="button"
@@ -627,11 +612,10 @@ export default function CrisisModal({ isOpen, onClose, resources, trustedContact
               className="flex w-full items-center justify-between text-left text-xs font-bold text-slate-200 hover:text-white transition-colors cursor-pointer focus-visible:outline-none"
             >
               <div className="flex items-center gap-2">
-                <Globe className="size-4 text-cyan-400" />
                 <span>
                   {showFullDirectory
-                    ? "Hide Comprehensive Directory"
-                    : `View More Helplines, Youth Lines & Global Directory (${totalDirectoryCount}+ resources)`}
+                    ? "Hide Pakistan Support Directory"
+                    : `View More Pakistan Helplines (${totalDirectoryCount} resources)`}
                 </span>
               </div>
               {showFullDirectory ? (
@@ -652,20 +636,6 @@ export default function CrisisModal({ isOpen, onClose, resources, trustedContact
                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       {auxiliaryPakistanLines.map((h, i) => (
                         <HelplineCard key={i} h={h} tone="rose" onNotify={showNotification} />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* International Helplines & Global Finder */}
-                {internationalLines.length > 0 && (
-                  <div>
-                    <h4 className="mb-2 pt-1 text-[10px] font-bold uppercase tracking-wider text-cyan-400">
-                      International Lines &amp; Global Directory (130+ Countries)
-                    </h4>
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      {internationalLines.map((h, i) => (
-                        <HelplineCard key={i} h={h} tone="cyan" onNotify={showNotification} />
                       ))}
                     </div>
                   </div>

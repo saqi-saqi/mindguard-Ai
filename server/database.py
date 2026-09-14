@@ -163,7 +163,13 @@ def create_user(name: str, email: str, password_hash: str, consent_given: bool =
             "retention_enabled": True,
             "retention_days": 30,
             "locale": "pakistan"
-        }
+        },
+        "safety_profile": {
+            "preferred_hospital_name": "",
+            "preferred_hospital_phone": "",
+            "city_or_district": "",
+            "emergency_actions_consent": False,
+        },
     }
 
     db.users.insert_one(doc)
@@ -239,9 +245,30 @@ def update_user_settings(user_id: str, settings: Dict[str, Any]) -> Optional[Dic
     if "retention_days" in clean:
         clean["retention_days"] = max(1, min(365, int(clean["retention_days"])))
     if "locale" in clean:
-        clean["locale"] = str(clean["locale"]).strip().lower() or "international"
+        clean["locale"] = "pakistan"
     if clean:
         get_db().users.update_one({"id": user_id}, {"$set": {f"settings.{key}": value for key, value in clean.items()}})
+    return get_user_by_id(user_id)
+
+
+def update_safety_profile(user_id: str, profile: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Persist optional, user-controlled emergency preferences without any dispatch capability."""
+    allowed = {
+        "preferred_hospital_name",
+        "preferred_hospital_phone",
+        "city_or_district",
+        "emergency_actions_consent",
+    }
+    clean = {key: profile.get(key) for key in allowed if key in profile}
+    for key in {"preferred_hospital_name", "preferred_hospital_phone", "city_or_district"} & clean.keys():
+        clean[key] = str(clean[key]).strip()[:160]
+    if "emergency_actions_consent" in clean:
+        clean["emergency_actions_consent"] = bool(clean["emergency_actions_consent"])
+    if clean:
+        get_db().users.update_one(
+            {"id": user_id},
+            {"$set": {f"safety_profile.{key}": value for key, value in clean.items()}},
+        )
     return get_user_by_id(user_id)
 
 

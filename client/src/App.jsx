@@ -135,8 +135,8 @@ export default function App() {
     setMoodLogs((prev) => [...prev, log]);
   };
 
-  const handleSettingsUpdated = (settings, trustedContact) => {
-    setUser((current) => current ? { ...current, settings, trusted_contact: trustedContact || current.trusted_contact } : current);
+  const handleSettingsUpdated = (settings, trustedContact, safetyProfile) => {
+    setUser((current) => current ? { ...current, settings, trusted_contact: trustedContact || current.trusted_contact, safety_profile: safetyProfile || current.safety_profile } : current);
   };
 
   const handleAccountDeleted = () => handleLogout();
@@ -213,6 +213,7 @@ export default function App() {
             onClearLogs={handleWipePersonalData}
             token={token}
             onMoodCreated={handleRecordMood}
+            onStartChat={() => setActiveTab('chat')}
           />
         )}
         {activeTab === 'settings' && user && (
@@ -236,6 +237,7 @@ export default function App() {
         onClose={() => setIsCrisisModalOpen(false)}
         resources={crisisResources}
         trustedContact={user?.trusted_contact}
+        safetyProfile={user?.safety_profile}
         mode={crisisMode}
         onSafetyStatus={handleSafetyStatus}
       />

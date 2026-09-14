@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import React from "react";
 import AnalyticsDashboard from "../components/AnalyticsDashboard";
@@ -16,18 +16,22 @@ describe("AnalyticsDashboard Accessibility & Quality", () => {
     }) as any;
   });
 
-  it("renders guided onboarding empty state when no logs exist", () => {
-    render(<AnalyticsDashboard moodLogs={[]} token="valid-token" />);
+  it("renders guided onboarding empty state when no logs exist", async () => {
+    await act(async () => {
+      render(<AnalyticsDashboard moodLogs={[]} token="valid-token" />);
+    });
 
-    expect(screen.getByText(/Start Tracking Your Emotional Well-being/i)).toBeDefined();
-    expect(screen.getByText(/Your mood history and reflection trends will appear here/i)).toBeDefined();
+    expect(screen.getByText(/Start with one honest check-in/i)).toBeDefined();
+    expect(screen.getByText(/After three check-ins, this page can begin describing your recent pattern/i)).toBeDefined();
     expect(screen.getByRole("button", { name: /Log your first mood check-in/i })).toBeDefined();
   });
 
-  it("provides accessible slider with keyboard arrows support and ARIA attributes", () => {
-    render(<AnalyticsDashboard moodLogs={[]} token="valid-token" />);
+  it("provides accessible slider with keyboard arrows support and ARIA attributes", async () => {
+    await act(async () => {
+      render(<AnalyticsDashboard moodLogs={[]} token="valid-token" />);
+    });
 
-    const slider = screen.getByLabelText(/Select Mood Rating/i);
+    const slider = screen.getByLabelText(/How are you feeling right now/i);
     expect(slider.getAttribute("aria-valuemin")).toBe("1");
     expect(slider.getAttribute("aria-valuemax")).toBe("10");
     expect(slider.getAttribute("aria-valuenow")).toBe("5");
@@ -41,8 +45,10 @@ describe("AnalyticsDashboard Accessibility & Quality", () => {
     expect(slider.getAttribute("aria-valuenow")).toBe("5");
   });
 
-  it("toggles activity context tag chips", () => {
-    render(<AnalyticsDashboard moodLogs={[]} token="valid-token" />);
+  it("toggles activity context tag chips", async () => {
+    await act(async () => {
+      render(<AnalyticsDashboard moodLogs={[]} token="valid-token" />);
+    });
 
     const examTag = screen.getByRole("button", { name: /#Exam/i });
     expect(examTag.getAttribute("aria-pressed")).toBe("false");
@@ -67,12 +73,14 @@ describe("AnalyticsDashboard Accessibility & Quality", () => {
     });
     globalThis.fetch = mockFetch as any;
 
-    render(<AnalyticsDashboard moodLogs={[]} token="valid-token" onMoodCreated={onMoodCreated} />);
+    await act(async () => {
+      render(<AnalyticsDashboard moodLogs={[]} token="valid-token" onMoodCreated={onMoodCreated} />);
+    });
 
     const exerciseTag = screen.getByRole("button", { name: /#Exercise/i });
     fireEvent.click(exerciseTag);
 
-    const submitBtn = screen.getByRole("button", { name: /Save Mood Entry/i });
+    const submitBtn = screen.getByRole("button", { name: /Save check-in/i });
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
@@ -95,7 +103,7 @@ describe("AnalyticsDashboard Accessibility & Quality", () => {
     });
   });
 
-  it("displays cautious, non-causal reflection insights when 5+ logs exist", () => {
+  it("turns enough check-ins into a cautious reflection and context observation", async () => {
     const sampleLogs: MoodLog[] = [
       { id: "1", score: 2, tags: ["Exam"], notes: "Stressed", created_at: new Date().toISOString() },
       { id: "2", score: 3, tags: ["Exam"], notes: "Hard day", created_at: new Date().toISOString() },
@@ -104,10 +112,47 @@ describe("AnalyticsDashboard Accessibility & Quality", () => {
       { id: "5", score: 8, tags: ["Exercise"], notes: "Great", created_at: new Date().toISOString() },
     ];
 
-    render(<AnalyticsDashboard moodLogs={sampleLogs} token="valid-token" />);
+    await act(async () => {
+      render(<AnalyticsDashboard moodLogs={sampleLogs} />);
+    });
 
-    expect(screen.getByText(/Self-Reflection Pattern/i)).toBeDefined();
-    expect(screen.getByText(/Topic "exam" appeared frequently alongside lower mood scores/i)).toBeDefined();
-    expect(screen.getByText(/Note: Patterns describe correlation in your entries, not medical causation or diagnosis/i)).toBeDefined();
+    expect(screen.getByText(/Your recent check-in story/i)).toBeDefined();
+    expect(screen.getByText(/appeared in 2 check-ins; those entries averaged 2.5/i)).toBeDefined();
+    expect(screen.getByText(/A change is a prompt to reflect, not proof of a cause/i)).toBeDefined();
+  });
+
+  it("shows supportive guidance and talk it through button when score is low", async () => {
+    const onStartChat = vi.fn();
+    await act(async () => {
+      render(<AnalyticsDashboard moodLogs={[]} token="valid-token" onStartChat={onStartChat} />);
+    });
+
+    const slider = screen.getByLabelText(/How are you feeling right now/i);
+    // Lower score to 2
+    fireEvent.change(slider, { target: { value: "2" } });
+
+    expect(screen.getByText(/It takes honesty to notice when things feel heavy/i)).toBeDefined();
+    const talkThroughBtn = screen.getByRole("button", { name: /Would you like to talk it through in chat\?/i });
+    expect(talkThroughBtn).toBeDefined();
+
+    fireEvent.click(talkThroughBtn);
+    expect(onStartChat).toHaveBeenCalledTimes(1);
+  });
+
+  it("adds custom tag and allows toggling it as a chip", async () => {
+    await act(async () => {
+      render(<AnalyticsDashboard moodLogs={[]} token="valid-token" />);
+    });
+
+    const customTagInput = screen.getByLabelText(/Add custom tag/i);
+    fireEvent.change(customTagInput, { target: { value: "Midterms" } });
+    fireEvent.keyDown(customTagInput, { key: "Enter" });
+
+    const midtermsChip = screen.getByRole("button", { name: /#Midterms/i });
+    expect(midtermsChip).toBeDefined();
+    expect(midtermsChip.getAttribute("aria-pressed")).toBe("true");
+
+    fireEvent.click(midtermsChip);
+    expect(midtermsChip.getAttribute("aria-pressed")).toBe("false");
   });
 });

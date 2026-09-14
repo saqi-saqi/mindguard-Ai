@@ -117,14 +117,14 @@ class ApiAuthPrivacyTestCase(unittest.TestCase):
         )
         self.assertEqual(preflight.status_code, 200)
 
-    def test_resources_endpoint_regional_and_fallback(self):
-        """GET /api/resources returns active helplines, handles fallback for unknown regions."""
+    def test_resources_endpoint_returns_pakistan_directory(self):
+        """GET /api/resources returns the Pakistan-only emergency directory."""
         # Regional query
         res_pk = self.client.get("/api/resources?region=pakistan")
         self.assertEqual(res_pk.status_code, 200)
         data = res_pk.get_json().get("data", {}).get("resources", {})
         self.assertIn("pakistan", data)
-        self.assertIn("international", data)
+        self.assertNotIn("international", data)
 
         # Outdated detection logic
         valid_res = {
@@ -145,7 +145,7 @@ class ApiAuthPrivacyTestCase(unittest.TestCase):
         # Unknown region fallback
         fallback = get_resources_for_region("unknown_region_xyz")
         self.assertGreater(len(fallback), 0)
-        self.assertIn("Suicide & Crisis Lifeline", str(fallback))
+        self.assertIn("Umang Pakistan Helpline", str(fallback))
 
     # --- 2. PASSWORD SECURITY & AUTHENTICATION ---
 
@@ -348,6 +348,26 @@ class ApiAuthPrivacyTestCase(unittest.TestCase):
         tc_res = self.client.post("/api/user/trusted-contact", json=payload, headers={"Authorization": f"Bearer {self.user1_token}"})
         self.assertEqual(tc_res.status_code, 200)
         self.assertTrue(tc_res.get_json().get("success"))
+
+    def test_safety_profile_is_user_controlled_and_persisted(self):
+        """A saved hospital is a preference only; it does not create a dispatch action."""
+        payload = {
+            "preferred_hospital_name": "Services Hospital",
+            "preferred_hospital_phone": "042-99203402",
+            "city_or_district": "Lahore",
+            "emergency_actions_consent": True,
+            "untrusted_field": "must_not_be_stored",
+        }
+        headers = {"Authorization": f"Bearer {self.user1_token}"}
+        save_res = self.client.post("/api/user/safety-profile", json=payload, headers=headers)
+        self.assertEqual(save_res.status_code, 200)
+        saved = save_res.get_json()["data"]["safety_profile"]
+        self.assertEqual(saved["preferred_hospital_name"], "Services Hospital")
+        self.assertTrue(saved["emergency_actions_consent"])
+        self.assertNotIn("untrusted_field", saved)
+
+        get_res = self.client.get("/api/user/safety-profile", headers=headers)
+        self.assertEqual(get_res.get_json()["data"]["safety_profile"], saved)
 
     # --- 6. PRIVACY, DATA EXPORT, WIPE & ACCOUNT PURGE ---
 
