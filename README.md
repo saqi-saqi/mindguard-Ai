@@ -1,6 +1,6 @@
 # MindGuard AI — Intelligent Mental Health Support Companion
 
-> **NON-CLINICAL DISCLAIMER**: MindGuard is an automated AI self-help support tool designed for early intervention, self-monitoring, and crisis resource guidance. MindGuard is **not** a licensed medical provider, hospital, or clinical emergency service. It does **not** provide clinical diagnosis, therapy, or guaranteed crisis prevention. If you or someone you know is in immediate physical danger, please call your local emergency services (1122 in Pakistan, 911 in US/Canada, 999 in UK) or go to the nearest emergency room.
+> **NON-CLINICAL DISCLAIMER**: MindGuard is an automated AI self-help support tool designed for early intervention, self-monitoring, and crisis resource guidance. MindGuard is **not** a licensed medical provider, hospital, or clinical emergency service. It does **not** provide clinical diagnosis, therapy, or guaranteed crisis prevention. If you or someone you know is in immediate physical danger, please call your local emergency services (1122 in Pakistan) or go to the nearest emergency room.
 
 ---
 
