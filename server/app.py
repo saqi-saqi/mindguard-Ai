@@ -672,7 +672,8 @@ def chat():
         safety_eval = classify_safety_risk(
             user_message,
             context_turns=recent_context,
-            api_key=user_api_key
+            api_key=user_api_key,
+            session_id=session_id,
         )
 
         if safety_eval.category in (
@@ -682,6 +683,7 @@ def chat():
         ):
             duration_ms = round((time.time() - start_req_time) * 1000, 2)
             # Preserve "HIGH_CRISIS" for pure self-harm to maintain existing API contracts
+            # COMBINED_HIGH_CRISIS and HARM_TO_OTHERS_RISK keep their enum value as risk_label
             risk_label = "HIGH_CRISIS" if safety_eval.category == SafetyRiskCategory.SELF_HARM_RISK else safety_eval.category.value
             logger.warning(
                 f"[{req_id}] CRITICAL SAFETY RISK DETECTED: {safety_eval.category.value}. "
@@ -776,7 +778,7 @@ def chat():
         # -------------------------------------------------------------------
         # Step 1: Tier 1 - Deterministic Rules & Pipeline Preprocessing
         # -------------------------------------------------------------------
-        crisis_eval = evaluate_crisis_pipeline(user_message, allow_ml_fallback=False)
+        crisis_eval = evaluate_crisis_pipeline(user_message, allow_ml_fallback=False, context_turns=recent_context)
 
         if crisis_eval.get("is_third_party"):
             duration_ms = round((time.time() - start_req_time) * 1000, 2)

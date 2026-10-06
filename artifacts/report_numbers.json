@@ -1,0 +1,59 @@
+{
+ "generated": "2026-10-06",
+ "aggressive_gate": "238/238 (16 categories, formatting variants)",
+ "edge_case_suite": "16/16 cases: 0 FP / 0 FN",
+ "stress_suite": {
+  "n": null,
+  "accuracy": null,
+  "recall": null,
+  "f1": null,
+  "median_latency_ms": null
+ },
+ "locked_holdout_recall": "98.11% (gate >= 95%) \u2014 docs/REQUIREMENTS_TRACEABILITY.md",
+ "tfidf_detector": {
+  "test_recall": 0.9502,
+  "test_f1": 0.9211,
+  "test_roc_auc": 0.9755
+ },
+ "intent_classifier": {
+  "test_accuracy": 0.9465
+ },
+ "roman_urdu": {
+  "dev": {
+   "tier1_recall": 0.9508,
+   "tier2_recall": 0.8989,
+   "tier3_any_esc": 0.9778,
+   "fpr": 0.0124,
+   "adversarial_accuracy": 0.9449
+  },
+  "test_run1": {
+   "tier1_recall": 0.6562,
+   "tier2_recall": 0.5,
+   "tier3_any_esc": 0.5455,
+   "fpr": 0.0,
+   "t1_wilson95_case": [
+    0.4831,
+    0.7959
+   ],
+   "t1_skeletons_n": 16,
+   "t1_skeleton_lower": 0.3318
+  },
+  "gates_verdict": {
+   "tier1_ge_99_zero_miss": "FAIL (65.62%, 11 misses reported by id in test_runs.json)",
+   "tier2_ge_97": "FAIL (50.0%)",
+   "tier3_ge_90_guidance": "FAIL (54.55%)",
+   "fpr_le_3": "PASS (0.0%)",
+   "adversarial_ge_95": "FAIL on DEV-adversarial (94.49%); TEST has no separate adversarial gate"
+  },
+  "patterns": "\u224880 Roman Urdu patterns in 6 severity-mapped families",
+  "ml_kit": "21,748 augmented samples ready; disjointness PASS; training owner-launched"
+ },
+ "distilroberta_english": {
+  "accuracy": 0.993,
+  "recall": 0.991,
+  "precision": 0.995,
+  "f1": 0.993,
+  "roc_auc": 0.9995,
+  "note": "stratified n=2000 of 14k held-out test; subsample CI ~\u00b11%"
+ }
+}

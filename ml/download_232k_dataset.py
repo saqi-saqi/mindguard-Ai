@@ -103,13 +103,16 @@ if edge_cases_path.exists():
 
 if edge_data:
     df_edge = pd.DataFrame(edge_data)
-    df = pd.concat([df, df_edge], ignore_index=True)
 
 # 3. Clean Text and Remove Duplicates
 print("\n[3/4] Cleaning & Deduplicating text...")
 df["text"] = df["text"].astype(str).str.strip()
 df = df[df["text"].str.len() > 10]  # Filter empty/short garbage
+# Deduplicate the BASE corpus BEFORE the 10x edge-case oversample: running
+# drop_duplicates after the concat silently collapsed the oversample to 1x.
 df = df.drop_duplicates(subset=["text"])
+if edge_data:
+    df = pd.concat([df, df_edge], ignore_index=True)
 df = df.sample(frac=1.0, random_state=42).reset_index(drop=True)
 
 # 4. Stratified 80 / 10 / 10 Train-Val-Test Split

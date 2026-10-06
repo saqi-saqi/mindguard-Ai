@@ -1,0 +1,59 @@
+{
+  "title": "Roman Urdu Crisis Detection — Final Report",
+  "generated": "2026-10-06",
+  "method": "Rules-only hybrid (feature-flagged ROMAN_URDU_RULES_ENABLED, default on). ML parity kit built and validated but NOT trained — training is owner-launched.",
+  "dev_evaluation": {
+    "source": "artifacts/roman_urdu_dev_metrics.json (DEV 310 + adversarial 127 cases)",
+    "tier1_crisis_route_recall": "58/61 = 95.08% (Wilson95 case [0.863, 0.989])",
+    "tier2_crisis_route_recall": "80/89 = 89.89% (Wilson95 case [0.819, 0.946])",
+    "tier3_any_escalation_recall": "44/45 = 97.78% (guidance route counted separately)",
+    "fpr_crisis_route": "3/242 = 1.24% (Wilson95 [0.42%, 3.58%])",
+    "adversarial_suite": "120/127 = 94.49% (gate 95%: FAIL by 0.5pp)",
+    "low_confidence_tips_on_benign": 28,
+    "low_confidence_note": "gentle check-in responses; excluded from crisis-FPR by design; never a recall hit"
+  },
+  "test_evaluation": {
+    "source": "artifacts/roman_urdu_test_metrics.json (frozen holdout run #1, sha baac5f33…)",
+    "tier1_crisis_route_recall": "21/32 = 65.62% (Wilson95 case [0.483, 0.796]; skeletons n=16, conservative 0.5625, lower bound 0.332)",
+    "tier2_crisis_route_recall": "25/50 = 50.0% (Wilson95 case [0.366, 0.634]; skeletons n=25, conservative 0.4, lower bound 0.234)",
+    "tier3_any_escalation_recall": "12/22 = 54.55%",
+    "fpr_crisis_route": "0/108 = 0.0% (Wilson95 upper 3.43%)",
+    "gates": {
+      "tier1_ge_99_zero_miss": "FAIL (65.62%, 11 misses reported by id in test_runs.json)",
+      "tier2_ge_97": "FAIL (50.0%)",
+      "tier3_ge_90_guidance": "FAIL (54.55%)",
+      "fpr_le_3": "PASS (0.0%)",
+      "adversarial_ge_95": "FAIL on DEV-adversarial (94.49%); TEST has no separate adversarial gate"
+    }
+  },
+  "gate_failures_honest_summary": "DEV numbers (95/90/98) are inflated by same-author overlap with the rules. On the frozen TEST (unseen skeletons) the rules-only system generalizes at 50–66% recall — far below the 99/97 gates. The misses are exactly the unseen-phrasing gap that the ML parity kit (augmented training, 21,748 samples ready) and native-speaker label review are designed to close. Per protocol, TEST was run once and the misses were NOT tuned against.",
+  "pattern_review": {
+    "families": ["roman_urdu_imminent_intent (sev5)", "roman_urdu_means_attempt (sev5)", "roman_urdu_burden_goodbye (sev4)", "roman_urdu_self_harm (sev4)", "roman_urdu_ideation_present (sev4)", "roman_urdu_indirect_distress (sev3)"],
+    "count": "≈80 patterns",
+    "authorship": "ai_assisted_v1 — authored from linguistic coverage (inflections, means, idioms, code-switch anchors), never copied from TEST/TEST-2 text",
+    "guards": ["urdu_hyperbole", "urdu_past_recovery", "urdu_negation", "urdu_sarcasm_frame"],
+    "suppression_scope": "span-scoped: contrastive conjunctions + sentence-final punctuation split; commas never split; markers carry across commas"
+  },
+  "ml_parity_kit": {
+    "augmented_data": "ml/data/roman_urdu_augmented.csv — 21,748 samples (11,008 crisis / 10,740 benign), 107 templates, max template share 1.03% (<=2% PASS), 3-level typo noise + code-switch, exact dedupe (33 benchmark-overlap rows excluded)",
+    "disjointness": "PASS (scripts/check_ml_disjoint.py — zero overlap with DEV/TEST/adversarial)",
+    "training_script": "ml/finetune_crisis_roberta_urdu.py (fixed seed 42, temperature scaling, recall-first threshold, candidate dir, promotion gates)",
+    "bug_fixed": "ml/download_232k_dataset.py drop_duplicates-after-oversample silently nullified the 10x edge-case oversampling",
+    "status": "NOT TRAINED — owner launches when plugged in (~2-4 h CPU)"
+  },
+  "reviewer_process": {
+    "kit": "artifacts/reviewer_sheets/ (pilot_40.csv, dev_sheet.csv, add_your_own_cases.csv, llm_reviewer_prompt.md)",
+    "planned_reviewers": "LLMs (Claude/ChatGPT) per owner decision; human volunteers upgrade later",
+    "kappa_gate": ">= 0.60 pilot before full sheets (scripts/compute_kappa.py)",
+    "test2": "reviewer-written cases = second untouched holdout; quoted with its n ('too small for a strong claim' if small)"
+  },
+  "test_runs_ledger": {
+    "count": 1,
+    "contamination_flag": false,
+    "note": "TEST run once; hash-verified; failing IDs logged in artifacts/test_runs.json"
+  },
+  "english_regression": {
+    "release_gate": "PASS (all gates, including 238/238 aggressive suite and 43/43 fixture)",
+    "note": "splitter change verified non-regressive on English"
+  }
+}

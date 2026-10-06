@@ -195,10 +195,10 @@ _GEMINI_CONNECTIVITY_BROKEN_UNTIL: float = 0.0
 # gemini-flash-lite-latest: ~1.17s
 # gemini-flash-latest: full flash as final fallback
 GEMINI_CANDIDATE_MODELS = [
-    "gemini-3.1-flash-lite",
-    "gemini-3.5-flash-lite",
     "gemini-flash-lite-latest",
     "gemini-flash-latest",
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash-lite",
 ]
 
 # Normal conversations must remain responsive even when a local model is slow.
@@ -269,7 +269,7 @@ def _call_gemini(client, model_name: str, system_prompt: str, user_prompt: str, 
         elif any(k in err for k in [
             "connection", "connectionerror", "gaierror", "timeout",
             "network", "ssl", "certificate", "api_key", "invalid_argument",
-            "permission_denied", "unauthenticated", "transport",
+            "permission_denied", "unauthenticated", "transport", "deadline", "504",
         ]):
             # Connection / configuration failure — affects ALL models, not just this one.
             # Activate the module-level connectivity circuit breaker for 60 s so that

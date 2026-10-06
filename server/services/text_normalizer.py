@@ -146,7 +146,7 @@ def compact_spaced_tokens(text: str) -> str:
       'k i l l  m y s e l f' -> 'kill myself'
       's u i c i d e' -> 'suicide'
     """
-    # 1. Match spaced single letter runs: sequences of 2 or more single letters separated by spaces/dots/dashes/symbols
+    # 1. Match spaced single letter runs: sequences of 2 or more single letters separated by space/dots/dashes/symbols
     pattern = re.compile(r"\b([a-zA-Z](?:[\s\.\-_/\\*~|]+[a-zA-Z])+)\b")
 
     def _replace_run(match: re.Match) -> str:
@@ -154,6 +154,15 @@ def compact_spaced_tokens(text: str) -> str:
         letters = [c.lower() for c in raw_run if c.isalpha()]
         candidate = "".join(letters)
         
+        if candidate == "killmyself":
+            return "kill myself"
+        if candidate == "selfharm":
+            return "self harm"
+        if candidate == "endmylife":
+            return "end my life"
+        if candidate == "myself":
+            return "myself"
+
         if candidate in CRISIS_COMPACTION_TARGETS:
             return candidate
         
@@ -201,4 +210,64 @@ def normalize_evasion_text(text: str) -> str:
     # Step 6: Compact spaced/dotted tokens
     cleaned = compact_spaced_tokens(cleaned)
 
+    return cleaned
+
+
+def canonicalize_message(text: str) -> str:
+    """
+    Single upstream canonicalization entry point.
+    Apply ONCE per incoming message, before any tier runs.
+    Chains: unicode NFC → invisible-char strip → confusable fold →
+    punctuation normalize → intra-word symbol strip → spaced-token compact
+    → smart-quote normalization → leetspeak/algospeak expansion.
+    Preserves Urdu/Arabic script and legitimate multi-word phrases.
+    """
+    if not text:
+        return ""
+
+    # Base evasion pipeline (NFC, invisible strip, confusable fold, punct, intra-word, token compact)
+    cleaned = normalize_evasion_text(text)
+
+    # Smart quotes / apostrophes (ASCII normalization)
+    cleaned = cleaned.replace("\u2019", "'").replace("\u2018", "'")
+    cleaned = cleaned.replace("\u201c", '"').replace("\u201d", '"')
+
+    # Lowercase for downstream pattern matching
+    cleaned = cleaned.lower()
+
+    # Leetspeak / algospeak expansions (crisis-keyword focused, narrow scope)
+    _leet_subs = [
+        (re.compile(r"\bs[\*#@!]icide\b"), "suicide"),
+        (re.compile(r"\bk\s+i\s+l\s+l\s+m\s+y\s+s\s+e\s+l\s+f\b"), "kill myself"),
+        (re.compile(r"\bnot\s+gonna\s+lie\b"), "truthfully"),
+        (re.compile(r"\bngl\b"), "truthfully"),
+        (re.compile(r"\btbh\b"), "truthfully"),
+        (re.compile(r"\bto\s+be\s+honest\b"), "truthfully"),
+        (re.compile(r"\bno\s+cap\b"), "truthfully"),
+        (re.compile(r"\bk[!1]ll\b"), "kill"),
+        (re.compile(r"\bkll\b"), "kill"),
+        (re.compile(r"\bwnt\b"), "want"),
+        (re.compile(r"\bcom+it\b"), "commit"),
+        (re.compile(r"\bsu[1!l]cid"), "suicid"),
+        (re.compile(r"\bsu1c1d"), "suicid"),
+        (re.compile(r"\bc0mm[!1i]t"), "commit"),
+        (re.compile(r"\bd[!1i]e\b(?!\s+(?:my\s+)?(?:hair|fabric|cloth|yarn|shirt|dress|eggs?))"), "die"),
+        (re.compile(r"\b0verd0se\b"), "overdose"),
+        (re.compile(r"\bov[3e]rdose\b"), "overdose"),
+        (re.compile(r"\bl[!1i]fe\b(?!\s+back)"), "life"),
+        (re.compile(r"\bh[8@]te\b"), "hate"),
+        (re.compile(r"\bcatch\s+the\s+bus\b"), "commit suicide"),
+        (re.compile(r"\bpull\s+the\s+plug\s+on\s+(?:this\s+)?life\b"), "end my life"),
+        (re.compile(r"\bself\s+h[@a]rm\b"), "self harm"),
+        (re.compile(r"\bk[.\s]*y[.\s]*s\b"), "kys"),
+        (re.compile(r"\bw@nna\b"), "wanna"),
+        (re.compile(r"\bkillmyself\b"), "kill myself"),
+        (re.compile(r"\bselfharm\b"), "self harm"),
+        (re.compile(r"\bendmylife\b"), "end my life"),
+    ]
+    for pat, repl in _leet_subs:
+        cleaned = pat.sub(repl, cleaned)
+
+    # Collapse excess whitespace
+    cleaned = " ".join(cleaned.split())
     return cleaned
