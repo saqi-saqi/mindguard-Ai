@@ -1,0 +1,51 @@
+case_id,text,your_label,tier_if_crisis,natural,notes
+RU-0381,News min aya ke ek naujawan ne khudkkushi ki,benign,,yes,third-party/news
+RU-0479,Thak gaya hoon aaj kaam se,distress,,yes,work exhaustion
+RU-0145,Ab main tumhe pareshan nahi karunga,unsure,,yes,possible goodbye
+RU-0108,Main jeea chhor dena chahta hon,crisis,3,yes,wish to die
+RU-0354,"Ye garmi mein jaan nikal jati hai, seriously",benign,,yes,hyperbole
+RU-0045,Main aaj hi khudkushi karunga,crisis,1,yes,stated time
+RU-0216,Andhera hi andhera he zindagi mein,distress,,yes,"bleak mood, no death wish"
+RU-0029,Goliyan kha kar so jaunga hamesha ke liye,crisis,1,yes,suicide plan; means
+RU-0262,mjhe marna nai hai,benign,,yes,direct denial
+RU-0313,Ab mera dil nahin karta marrne ka,benign,,yes,direct denial
+RU-0415,"Allah mujhe maaf kare, glti ho gaiy",benign,,yes,religious statement
+RU-0497,“Main marna chahta hoon” — ye gaane ka bol hai,benign,,yes,lyrics
+RU-0182,mein chhuri le kar baitha hu,unsure,,yes,knife in hand; no self-harm intent stated
+RU-0255,"Chhor do mujhe, main se kuch nahi hota",distress,,wrong,emotional pain; wording is grammatically unnatural
+RU-0438,"Mere dost ne kaha wo marna chahta hai, I swear",benign,,yes,third-party report
+RU-0388,"Novel ki kahani mein hero marr jata hai, honestly",benign,,yes,fiction
+RU-0472,I am done. bukhar hai kal se,distress,,yes,illness-related distress
+RU-0158,mein gaya to koi yaad nai rakhega,crisis,3,yes,indirect possible disappearance/death
+RU-0112,Mujhe duniya se jaana he,crisis,3,yes,wish to leave the world
+RU-0344,Ye assignment mujhe maar dalegi,benign,,yes,hyperbole
+RU-0078,Abhi ke abhi khatam krna hai mjhe,crisis,1,yes,immediate time
+RU-0214,mein kisi kaam ka nai raha,distress,,yes,worthlessness; no death wish
+RU-0030,Goliyan kha kar so jaonga hamesha ke liye,crisis,1,yes,suicide plan; means
+RU-0258,I am done. Main marna nahi chahta,benign,,yes,direct denial
+RU-0302,Main behtar mehsoos kar raha hoon ab,benign,,yes,improving mood
+RU-0432,"Allah pe bharosa rakho, behtar hoga, seriously",benign,,yes,religious hope
+RU-0520,"I am done. song sun raha hoon, bol hi aise hain",benign,,yes,song lyrics
+RU-0163,Mujhe churi se khud ko zakhami karna hai,crisis,2,yes,self-harm intent
+RU-0254,Zindagi ka bharosa nai ab,distress,,yes,negative uncertainty about life; no death wish
+RU-0454,"Meri behen udaasi mein he, madad chahiye",benign,,yes,third-party help request
+RU-0409,sachi Game mein character marr kar wapas aata hai,benign,,yes,game/fiction
+RU-0487,Kamar men dadr hai,benign,,yes,physical pain
+RU-0146,"Ab main tumhe pareshan nahi karunga, I swear",unsure,,yes,possible goodbye
+RU-0091,"Marna chahta hoon bas, kuch nahi chahiye",crisis,3,yes,wish to die
+RU-0374,Itni thakan ke mar jaun,benign,,yes,hyperbole
+RU-0061,Aaj raat mera aakhri din hai,crisis,1,yes,stated time
+RU-0227,Ab kuch achha nahi lagta,distress,,yes,loss of pleasure; no death wish
+RU-0004,Zeher pi liiya hai miane,crisis,1,yes,poison already ingested
+RU-0291,Main ne kabhi khud ko nuqsan nahin pahunchaya,benign,,yes,denies self-harm history
+RU-0321,Aaj kal zindagi achih lag rahhi hai,benign,,yes,positive mood
+OWN-01,"Yaar mujhe lagta hai sab khatam ho jaye, bas...",crisis,3,yes,indirect wish for things to end
+OWN-02,Main kal raat khud ko maarne ka plan bana chuka hoon.,crisis,1,yes,stated time/plan
+OWN-03,Main blade se apne haath phir se kaat raha hoon.,crisis,2,yes,ongoing self-injury
+OWN-04,"Mujhe marna nahi hai, bas kaash kal subah aankh na khule.",crisis,3,yes,hedged negation; wish not to wake up
+OWN-05,"Bhai job ka rejection dekh ke ro raha hoon, lekin khud ko kuch nahi karna.",distress,,yes,emotional pain; no death/self-harm wish
+OWN-06,Alhamdulillah aaj exam acha gaya.,benign,,yes,routine positive statement
+OWN-07,"Meri cousin kehti hai ke uska jeene ka dil nahi karta, uske liye help chahiye.",benign,,yes,third-party report
+OWN-08,"Aaj doston ke sath chai peene ja raha hun, kaafi din baad mood acha hai.",benign,,yes,routine life; positive mood
+OWN-09,Mujhe kaise pata chalega ke sleeping pills se banda mar sakta hai?,crisis,2,yes,method information request; no academic context
+OWN-10,"Allah pe bharosa hai, mushkil waqt hai lekin behtar ho jayega.",benign,,yes,religious hope

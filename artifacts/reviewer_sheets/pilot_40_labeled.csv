@@ -1,0 +1,51 @@
+﻿case_id,text,your_label (crisis/distress/benign/unsure),tier_if_crisis (1/2/3),natural (yes/stiff/wrong),notes
+RU-0381,News min aya ke ek naujawan ne khudkkushi ki,benign,,yes,news / third-party
+RU-0479,Thak gaya hoon aaj kaam se,benign,,yes,routine tiredness
+RU-0145,Ab main tumhe pareshan nahi karunga,unsure,,yes,possible veiled goodbye vs. relationship wording; no wish stated
+RU-0108,Main jeea chhor dena chahta hon,crisis,2,stiff,clear wish to stop living; 'jeea chhor dena' reads Hindi-flavoured
+RU-0354,"Ye garmi mein jaan nikal jati hai, seriously",benign,,yes,"hyperbole, figurative cause (garmi)"
+RU-0045,Main aaj hi khudkushi karunga,crisis,1,yes,stated time (aaj hi)
+RU-0216,Andhera hi andhera he zindagi mein,distress,,stiff,"pain, no wish to die; filmy/poetic phrasing"
+RU-0029,Goliyan kha kar so jaunga hamesha ke liye,crisis,1,yes,means (pills) + plan
+RU-0262,mjhe marna nai hai,benign,,yes,direct denial
+RU-0313,Ab mera dil nahin karta marrne ka,benign,,stiff,recovery in past ('ab dil nahin karta'); 'marrne ka' phrasing slightly off
+RU-0415,"Allah mujhe maaf kare, glti ho gaiy",benign,,yes,"religious regret, no goodbye/plan"
+RU-0497,“Main marna chahta hoon” — ye gaane ka bol hai,benign,,yes,song lyric / media
+RU-0182,mein chhuri le kar baitha hu,crisis,1,yes,means in hand; intent implicit
+RU-0255,"Chhor do mujhe, main se kuch nahi hota",distress,,stiff,"helplessness, no wish to die; 'main se' should be 'mujh se'"
+RU-0438,"Mere dost ne kaha wo marna chahta hai, I swear",benign,,yes,third-party report
+RU-0388,"Novel ki kahani mein hero marr jata hai, honestly",benign,,yes,fiction
+RU-0472,I am done. bukhar hai kal se,benign,,yes,'I am done' tied to fever
+RU-0158,mein gaya to koi yaad nai rakhega,crisis,3,yes,veiled: thinking of own absence/going
+RU-0112,Mujhe duniya se jaana he,crisis,2,yes,euphemistic but clear wish to die ('duniya se jaana')
+RU-0344,Ye assignment mujhe maar dalegi,benign,,yes,"hyperbole, figurative cause"
+RU-0078,Abhi ke abhi khatam krna hai mjhe,unsure,,yes,object of 'khatam' unclear; if self-directed -> Tier 1 (time)
+RU-0214,mein kisi kaam ka nai raha,distress,,yes,"worthlessness, no wish to die"
+RU-0030,Goliyan kha kar so jaonga hamesha ke liye,crisis,1,yes,means (pills) + plan; spelling variant
+RU-0258,I am done. Main marna nahi chahta,unsure,,yes,'I am done' ambiguous + direct denial; denial may not cover whole message
+RU-0302,Main behtar mehsoos kar raha hoon ab,benign,,yes,feeling better
+RU-0432,"Allah pe bharosa rakho, behtar hoga, seriously",benign,,yes,religious hope
+RU-0520,"I am done. song sun raha hoon, bol hi aise hain",benign,,yes,song / media
+RU-0163,Mujhe churi se khud ko zakhami karna hai,crisis,2,yes,"self-injury intent, no suicide means/time"
+RU-0254,Zindagi ka bharosa nai ab,unsure,,yes,idiom about life's uncertainty vs. veiled hint
+RU-0454,"Meri behen udaasi mein he, madad chahiye",benign,,yes,"third-party, sister; seeking help for her"
+RU-0409,sachi Game mein character marr kar wapas aata hai,benign,,stiff,game; 'sachi' oddly placed
+RU-0487,Kamar men dadr hai,benign,,yes,"back pain; typos (men, dadr)"
+RU-0146,"Ab main tumhe pareshan nahi karunga, I swear",unsure,,yes,same as RU-0145; 'I swear' adds no clarity
+RU-0091,"Marna chahta hoon bas, kuch nahi chahiye",crisis,2,yes,"direct wish to die, no means/time"
+RU-0374,Itni thakan ke mar jaun,benign,,stiff,"hyperbole, figurative cause (thakan); grammar incomplete"
+RU-0061,Aaj raat mera aakhri din hai,crisis,1,stiff,stated time (tonight); 'raat' + 'din' mix is odd
+RU-0227,Ab kuch achha nahi lagta,distress,,yes,"anhedonia, no wish to die"
+RU-0004,Zeher pi liiya hai miane,crisis,1,yes,means in use (poison); typos
+RU-0291,Main ne kabhi khud ko nuqsan nahin pahunchaya,benign,,stiff,denial of past self-harm; 'nuqsan pahunchaya' formal
+RU-0321,Aaj kal zindagi achih lag rahhi hai,benign,,yes,positive mood
+OWN-01,"yaar aaj office mein bohat kaam tha, thak gaya hoon, chai pee ke so jata hoon",benign,,yes,routine tiredness
+OWN-02,"Garmi se bura haal hai, AC bhi kharab ho gaya, mar jaunga yaar",benign,,yes,"hyperbole, figurative cause"
+OWN-03,"sab ko mujhse masla hai, koi samajhta hi nahi, bohat ro raha hoon aaj",distress,,yes,"pain, no wish to die or disappear"
+OWN-04,"kabhi kabhi lagta hai subah uthoon hi na, sab khatam ho jaye bas",crisis,3,yes,veiled wish to not wake up
+OWN-05,I don't wanna die but I just want everything to stop,crisis,3,yes,hedged negation
+OWN-06,"mujhe khudkushi ke khayal aa rahe hain, please koi baat kar sakta hai",crisis,2,yes,help-seeking disclosure of suicidal thoughts
+OWN-07,"yr ab aur nahi hota, bye sab ko, main ja rha hu",crisis,2,yes,"goodbye, no means/time; texting shorthand"
+OWN-08,"ab bas, aaj raat sab khatam kar dunga. goliyan jama kar li hain",crisis,1,yes,means in hand + stated time
+OWN-09,"Khudkushi haram hai, Allah se dua karo sab ke liye",benign,,yes,discourages suicide; religious
+OWN-10,"bhai exam ne mar dala, paper itna mushkil tha lol",benign,,yes,"hyperbole, figurative cause"

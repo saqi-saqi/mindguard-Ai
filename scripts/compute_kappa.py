@@ -32,8 +32,14 @@ def load_sheet(path: Path) -> dict:
     with open(path, encoding="utf-8-sig") as f:
         for r in csv.DictReader(f):
             cid = (r.get("case_id") or "").strip()
-            if cid and not cid.startswith("("):
-                rows[cid] = (r.get("your_label (crisis/distress/benign/unsure)") or "").strip().lower()
+            if not cid or cid.startswith("("):
+                continue
+            label = None
+            for key in r:  # tolerate both long and short header variants
+                if key and key.strip().lower().startswith("your_label"):
+                    label = (r[key] or "").strip().lower()
+                    break
+            rows[cid] = label or ""
     return rows
 
 

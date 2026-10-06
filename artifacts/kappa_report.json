@@ -1,0 +1,192 @@
+{
+ "generated": "2026-10-06T18:05:03.761438+00:00",
+ "sheets": [
+  "pilot_40_labeled",
+  "pilot_40_labeled_gpt"
+ ],
+ "common_cases": 50,
+ "kappa_overall_pairs": {
+  "pilot_40_labeled|pilot_40_labeled_gpt": 0.572
+ },
+ "kappa_per_cohort_min": {
+  "academic_media_fiction": 1.0,
+  "benign_physical": 0.0,
+  "burden_goodbye": 1.0,
+  "explicit_intent": 1.0,
+  "hyperbole": 1.0,
+  "imminent_intent": 0.0,
+  "indirect_distress": 1.0,
+  "means_attempt": 1.0,
+  "negation": 1.0,
+  "recovery": 1.0,
+  "religious_benign": 1.0,
+  "sarcasm_quoted": 1.0,
+  "self_harm": 0.0,
+  "subtle_slang": 0.143,
+  "third_party": 1.0,
+  "unknown": -0.379
+ },
+ "pilot_gate_060": false,
+ "needs_adjudication": [
+  {
+   "case_id": "OWN-01",
+   "labels": {
+    "pilot_40_labeled": "benign",
+    "pilot_40_labeled_gpt": "crisis"
+   },
+   "category": null,
+   "adjudicator": "owner_pending",
+   "note": "decide blind (labels only, never rule output)"
+  },
+  {
+   "case_id": "OWN-02",
+   "labels": {
+    "pilot_40_labeled": "benign",
+    "pilot_40_labeled_gpt": "crisis"
+   },
+   "category": null,
+   "adjudicator": "owner_pending",
+   "note": "decide blind (labels only, never rule output)"
+  },
+  {
+   "case_id": "OWN-03",
+   "labels": {
+    "pilot_40_labeled": "distress",
+    "pilot_40_labeled_gpt": "crisis"
+   },
+   "category": null,
+   "adjudicator": "owner_pending",
+   "note": "decide blind (labels only, never rule output)"
+  },
+  {
+   "case_id": "OWN-05",
+   "labels": {
+    "pilot_40_labeled": "crisis",
+    "pilot_40_labeled_gpt": "distress"
+   },
+   "category": null,
+   "adjudicator": "owner_pending",
+   "note": "decide blind (labels only, never rule output)"
+  },
+  {
+   "case_id": "OWN-06",
+   "labels": {
+    "pilot_40_labeled": "crisis",
+    "pilot_40_labeled_gpt": "benign"
+   },
+   "category": null,
+   "adjudicator": "owner_pending",
+   "note": "decide blind (labels only, never rule output)"
+  },
+  {
+   "case_id": "OWN-07",
+   "labels": {
+    "pilot_40_labeled": "crisis",
+    "pilot_40_labeled_gpt": "benign"
+   },
+   "category": null,
+   "adjudicator": "owner_pending",
+   "note": "decide blind (labels only, never rule output)"
+  },
+  {
+   "case_id": "OWN-08",
+   "labels": {
+    "pilot_40_labeled": "crisis",
+    "pilot_40_labeled_gpt": "benign"
+   },
+   "category": null,
+   "adjudicator": "owner_pending",
+   "note": "decide blind (labels only, never rule output)"
+  },
+  {
+   "case_id": "OWN-09",
+   "labels": {
+    "pilot_40_labeled": "benign",
+    "pilot_40_labeled_gpt": "crisis"
+   },
+   "category": null,
+   "adjudicator": "owner_pending",
+   "note": "decide blind (labels only, never rule output)"
+  },
+  {
+   "case_id": "RU-0078",
+   "labels": {
+    "pilot_40_labeled": "unsure",
+    "pilot_40_labeled_gpt": "crisis"
+   },
+   "category": "imminent_intent",
+   "adjudicator": "owner_pending",
+   "note": "decide blind (labels only, never rule output)"
+  },
+  {
+   "case_id": "RU-0145",
+   "labels": {
+    "pilot_40_labeled": "unsure",
+    "pilot_40_labeled_gpt": "unsure"
+   },
+   "category": "burden_goodbye",
+   "adjudicator": "owner_pending",
+   "note": "decide blind (labels only, never rule output)"
+  },
+  {
+   "case_id": "RU-0146",
+   "labels": {
+    "pilot_40_labeled": "unsure",
+    "pilot_40_labeled_gpt": "unsure"
+   },
+   "category": "burden_goodbye",
+   "adjudicator": "owner_pending",
+   "note": "decide blind (labels only, never rule output)"
+  },
+  {
+   "case_id": "RU-0182",
+   "labels": {
+    "pilot_40_labeled": "crisis",
+    "pilot_40_labeled_gpt": "unsure"
+   },
+   "category": "self_harm",
+   "adjudicator": "owner_pending",
+   "note": "decide blind (labels only, never rule output)"
+  },
+  {
+   "case_id": "RU-0254",
+   "labels": {
+    "pilot_40_labeled": "unsure",
+    "pilot_40_labeled_gpt": "distress"
+   },
+   "category": "subtle_slang",
+   "adjudicator": "owner_pending",
+   "note": "decide blind (labels only, never rule output)"
+  },
+  {
+   "case_id": "RU-0258",
+   "labels": {
+    "pilot_40_labeled": "unsure",
+    "pilot_40_labeled_gpt": "benign"
+   },
+   "category": "subtle_slang",
+   "adjudicator": "owner_pending",
+   "note": "decide blind (labels only, never rule output)"
+  },
+  {
+   "case_id": "RU-0472",
+   "labels": {
+    "pilot_40_labeled": "benign",
+    "pilot_40_labeled_gpt": "distress"
+   },
+   "category": "benign_physical",
+   "adjudicator": "owner_pending",
+   "note": "decide blind (labels only, never rule output)"
+  },
+  {
+   "case_id": "RU-0479",
+   "labels": {
+    "pilot_40_labeled": "benign",
+    "pilot_40_labeled_gpt": "distress"
+   },
+   "category": "benign_physical",
+   "adjudicator": "owner_pending",
+   "note": "decide blind (labels only, never rule output)"
+  }
+ ]
+}
