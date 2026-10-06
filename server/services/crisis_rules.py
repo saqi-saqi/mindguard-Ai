@@ -138,6 +138,27 @@ def _split_sentences(text: str) -> List[str]:
     return sentences or ([text.strip()] if text.strip() else [])
 
 
+# Contrastive conjunctions that DO split evaluation spans. Commas never split:
+# negation and temporal markers must carry across commas within a sentence
+# ("pehle nahi sochta tha, ab sochta hoon" stays one span).
+_CONTRASTIVE_SPLIT_RE = re.compile(
+    r"(?:,)?(?:\s+|^)(?:lekin|magar|phir\s+bhi|but|however)(?:\s+,|,?\s+)",
+    re.IGNORECASE,
+)
+
+
+def _split_contrastive_segments(text: str) -> List[str]:
+    """Split into evaluation spans: sentence-final punctuation AND contrastive
+    conjunctions — never commas (tested in test_roman_urdu_splitter.py)."""
+    if not text or not text.strip():
+        return []
+    spans: List[str] = []
+    for sentence in _split_sentences(text):
+        pieces = [p.strip(" ,;") for p in _CONTRASTIVE_SPLIT_RE.split(sentence) if p and p.strip(" ,;")]
+        spans.extend(pieces if pieces else [sentence.strip()])
+    return spans or ([text.strip()] if text.strip() else [])
+
+
 # ---------------------------------------------------------------------------
 # SECTION 1 -- CRISIS SIGNAL PATTERNS
 # ---------------------------------------------------------------------------
@@ -499,6 +520,175 @@ CRISIS_PATTERN_CATEGORIES: List[PatternCategory] = [
     PatternCategory("self_harm_and_cutting", 4, [_c(p) for p in _SELF_HARM_AND_CUTTING]),
     PatternCategory("active_escalation_in_progress", 5, [_c(p) for p in _ACTIVE_ESCALATION_IN_PROGRESS]),
 ]
+
+# ---------------------------------------------------------------------------
+# SECTION 1b -- ROMAN URDU (Pakistani) PATTERN PACK
+# Feature-flagged: ROMAN_URDU_RULES_ENABLED=false restores the exact
+# pre-Urdu behavior (tested). Patterns are authored from linguistic
+# coverage (inflections/means/idioms), never copied from TEST text.
+# Rationale table per family lives in the final report (pattern_review).
+# ---------------------------------------------------------------------------
+import os as _os
+_URDU_RULES_ENABLED = _os.environ.get("ROMAN_URDU_RULES_ENABLED", "true").strip().lower() != "false"
+
+_URDU_EXPLICIT_INTENT = [
+    r"\bmarr?ne?\s+ja\s+raha?\s+hoo?n\b",
+    r"\b(?:aaj|abhi)\b[^.!?]{0,30}\bmarr?na?\s+chaht[ai]\b",
+    r"\b(?:aaj|abhi)\b[^.!?]{0,30}\bkhudkushi\s+karn[ei]\b",
+    r"\bkhudkushi\s+karu?ng[ai]\b",
+    r"\baaj\s+(?:hi\s+)?marr?\s*(?:jao+un?ga|jaunga)\b",
+    r"\bmarr?\s*(?:jao+un?ga|jaunga)\s*(?:aaj|abhi|bas)\b",
+    r"\baaj\s+(?:mera\s+|meri\s+)?aakh?ri\s+(?:raat|din)\b",
+    r"\b(?:aaj|ab)\s+hi\s+khatam\s+(?:ho\s+)?jao+un?ga\b",
+    r"\bab\s+hi\s+khatam\s+karna\s+hai\b",
+    r"\baaj\s+raat\s+ke\s+baad\b[^.!?]{0,40}\b(?:yaad|nahi\s+rahoo?nga|kahin\s+nahi|nahin\s+rahoo?nga)\b",
+    r"\bkal\s+subah\s+tak\b[^.!?]{0,40}\b(?:nahi|nahin|khatam)\b",
+    r"\bjaan\s+de\s+rah[ai]\b",
+    r"\bmarr?ne?\s+ka\s+waqt\s+aa\s*gay[ai]\b",
+    r"\bmujhe\s+zinda\s+nahi\s+rehn[ai]\b",
+    r"\b(?:aaj\s+raat|abhi)\b[^.!?]{0,25}\b(?:ja\s+raha|chal[ai]\s+raha)\b",
+    r"\b(?:ab|aaj\s+hi)\b[^.!?]{0,25}\bis\s+duniya\b[^.!?]{0,20}\b(?:nahi|nahin)\b",
+    r"\bmaut\s+chun(?:i|li)\b",
+    r"\bphir\b[^.!?]{0,12}\bmain\s+khatam\b",
+    r"\bab\s+mera\s+waqt\s+hai\b",
+    r"\b(?:aaj|abhi|ab)\b[^.!?]{0,25}\bkhatam\s+karna\s+hai\b",
+    r"\bmarr?na?\s+(?:decide|faisla)\s+kar\s+li[ai]\b",
+    r"\b(?:tay|tao)\s+kar\s+liy[ai]\b[^.!?]{0,30}\baakh?ri\s+(?:din|raat)\b",
+    r"\bintezar\s+nahi\b[^.!?]{0,25}\baaj\s+hi\b",
+    r"\bbas\s+waqt\s+aa\s*gay[ai]\b",
+    r"\bmarne\s+ka\s+irada\s+kar\s+liy[ai]\b",
+]
+_URDU_LETHAL_MEANS = [
+    r"\bgoli(?:ya|ia|a)?n?\s+kha\s*(?:li|liya|lia|raha|rahi)\b",
+    r"\bgoli(?:ya|ia|a)?n?\s+(?:gin|ginn)\s*rah[ai]\b",
+    r"\bgoli\s+nigal\s*rah[ai]\b",
+    r"\bzeher\s+(?:pi|pia|pe|kharid|khared|mila|milay|khali)\b",
+    r"\bzeher\b[^.!?]{0,25}\bmangw[ai]\b",
+    r"\bzeher\s+ka\s+bottle\b",
+    r"\bphansi\s+(?:laga|lagai)\b",
+    r"\bphanda\s+(?:taiyar|bandh)\b",
+    r"\brassi\b[^.!?]{0,25}\bbandh\s+(?:li|di|ki)\b",
+    r"\bgas\s+(?:chula|chulah)\s+lag[ai]\b",
+    r"\bchhat\s+se\s+kud\b",
+    r"\bchhat\s+par\s+khara?\b",
+    r"\bkudne\s+(?:wala|wali|ke\s+liye)\b",
+    r"\bnadi\s+mein\s+kud\b",
+    r"\bkerosene\s+(?:pi|peene)\b",
+    r"\bneend\s+ki\s+goli(?:ya|ia)?n?\b[^.!?]{0,25}\b(?:khali|bohat\s+saari|saari|gin)\b",
+    r"\bgoli(?:ya|ia|a)?n?\b[^.!?]{0,25}\b(?:nikal\s+kar\s+rakhi|rakhi\s+hain|saamne)\b",
+    r"\bkhu?d\s+bhi\s+khatam\s+kar\b",
+]
+_URDU_BURDEN_GOODBYE = [
+    r"\bsab\s+ka\s+bojh\b",
+    r"\bbojh\s+ban\s*gay[ai]\b",
+    r"\bhamesha\s+ke\s+liye\s+(?:ja|chala|chali|ghayab)\b",
+    r"\bja\s+raha?\s+hoo?n\b[^.!?]{0,30}\bhamesha\b",
+    r"\bhamesha\b[^.!?]{0,30}\bja\s+raha?\s+hoo?n\b",
+    r"\bsab\s+ko\s+alvida\b",
+    r"\bmujhe\s+maaf\s+kar\s*dena\b",
+    r"\bmaaf\s+karna\b[^.!?]{0,25}\b(?:ja\s+raha|akhri)\b",
+    r"\bmeri\s+wajah\s+se\s+sab\b",
+    r"\bmeri\s+zaroorat\s+nahi\b",
+    r"\bmere\s+bina\b[^.!?]{0,25}\b(?:behtar|theek)\b",
+    r"\bmain\s+gaya\s+to\b[^.!?]{0,25}\b(?:behtar|yaad\s+nahi)\b",
+    r"\bkisi\s+ki\s+zarr?oorat\s+nahi\b",
+    r"\bakh?ri\s+baat\b",
+    r"\ballah\s+hafiz\b[^.!?]{0,30}\b(?:hamesha|ja\s*raha|akhri)\b",
+    r"\bakhri\s+baat\b",
+    r"\bmain\s+ab\s+yahan\s+ka\s+nahi\b",
+    r"\b(?:tumhe|tumhein|kisi\s+ko)\s+pareshan\s+nahi\s+karu?nga\b",
+    r"\bsab\s+ko\b[^.!?]{0,20}\bsalam\b[^.!?]{0,25}\b(?:ja\s*raha|akhri)\b",
+]
+_URDU_SELF_HARM = [
+    r"\bkalai\s+kaat\b",
+    r"\b(?:khud|apne\s+aap)\s+ko\s+(?:nuqsan|zakhami|chot|chubhot|jalat|kaat)",
+    
+    r"\bchhuri\s+le\s+kar\s+baith[ai]\b",
+    r"\bdard\s+mein\s+sukoon\s+milt[ai]\b",
+    r"\bkhud\s+ko\s+saza\s+deta\b",
+    r"\bkhud\s+ko\s+kaat\b",
+    r"\bdobara\s+kaat\b",
+    r"\bkalai\s+par\s+blade\b|\bblade\s+chal[ai]\s+chuk[ai]\b",
+    r"\bchot\s+lagane\s+se\s+dil\b",
+]
+_URDU_INDIRECT = [
+    r"\bjee?ne\s+ki\s+himmat\s+nahi\b",
+    r"\bzindagi\s+se\s+tang\b",
+    r"\bkoi\s+umeed\s+nahi\b",
+    r"\bjeena\s+mushkil\b",
+    r"\bmujhe\s+sukoon\s+nahi\s+milt[ai]\b",
+    r"\bsukoon\s+nahi\s+milt[ai]\s+kahin\b",
+    r"\bandhera\s+hi\s+andhera\b",
+    r"\bkisi\s+kaam\s+ka\s+nahi\b",
+    r"\bapne\s+aap\s+se\s+haar\b",
+    r"\bsab\s+(?:kuch\s+)?bekaar\s+lagt[ai]\b",
+    r"\bkoi\s+haal\s+nahi\b",
+    r"\bjee?ne?\s+ka\s+dil\s+nahi\b",
+    r"\b(?:jee?|ji)\s+nahi\s+karta\b",
+    r"\bghayab\s+ho\s+(?:jaon|jaoon|jaunga)\b",
+    r"\bghayab\s+ho\s+jana\s+chahta\b",
+    r"\bmarr?\s*jao+un?\s+ga\s+to\b[^.!?]{0,30}\bsamajh\b",
+    r"\bzindagi\s+ka\s+bharosa\s+nahi\b",
+    r"\bkash\s+neend\s+na\s+tootey\b",
+    r"\bneend\s+mein\s+hi\s+na\s+jaagun\b",
+    r"\bsab\s+chhorr?\s+dun\b",
+    r"\bmujhe\s+uthaye\s+ga\s+nahi\b",
+    r"\bmain\s+se\s+kuch\s+nahi\s+hot[ai]\b",
+    r"\b(?:sab|sab\s+kuch)\s+khatam\s+(?:ho\s+)?jaye\b",
+    r"\bpehle\b[^.!?]{0,60}\b(?:tha|thi|thay)\b[^.!?]{0,30}\bab\b[^.!?]{0,25}\b(?:sochta|sochti|chahta|chahti)\s+hoo?n\b",
+    r"\bbas\s+marr?\s*(?:jao+un?|jaunga)\b",
+    r"\bmarr?\s*(?:jao+un?|jaunga)\s+sahi\b",
+    r"\bso\s+(?:jao+un?|jaunga)\s+hamesha\b",
+    r"\bhamesha\s+ke\s+liye\s+so\s+(?:jao+un?|jaunga)\b",
+    r"\bmain\s+khatam\s+ho\s+jaon\b",
+    r"\bkuch\s+achha\s+nahi\s+lagt[ai]\b",
+    r"\bbehtar\s+hog[ai]\s+mere\s+bina\b",
+    r"\bthak\s+chuk[ai]\s+hoo?n\b[^.!?]{0,20}\bsab\b",
+    r"\bkhud\s+par\s+bharosa\s+u?th\s*gay[ai]\b",
+    r"\bdil\s+nahi\s+karta\b",
+    r"\bmera\s+kuch\s+nahi\s+hot[ai]\b",
+    r"\b(?:jee?|ji)\s+chahta\s+hai\b[^.!?]{0,25}\bghayab\b",
+]
+# Tier-2 ideation present-tense (help-seeking disclosure) — own category, sev 4
+_URDU_IDEATION_PRESENT = [
+    r"\bkhudkushi\s+ke\s+khayal\s+aate?\s+hain\b",
+    r"\bab\b[^.!?]{0,25}\bkhayal\s+aate?\s+hain\b",
+    r"\bmarr?ne?\s+ke\s+khayal\s+aate?\s+hain\b",
+    r"\bphir\s+bhi\b[^.!?]{0,25}\b(?:marr?na?\s+chaht[ai]|khatam\s+ho\s+jana\s+chaht[ai]|khatam\s+karna\s+chaht[ai])\b",
+    r"\bmarr?na?\s+chaht[ai]\s+hoo?n\b",
+    r"\bkhatam\s+ho\s+jana\s+chaht[ai]\b",
+    r"\bmujhe\s+marr?na?\s+hai\b",
+    r"\bmarr?na?\s+hai\s+mujhe\b",
+    r"\bmujhe\s+nahi\s+rehn[ai]\b",
+    r"\bmujhe\s+rehn[ai]\s+nahi\b",
+    r"\bjaan\s+dena?\s+chaht[ai]\b",
+    r"\b(?:ab|aaj|abhi)\b[^.!?]{0,25}\bkhatam\s+karna\s+chaht[ai]\b",
+    r"\bmain\s+bhi\b[^.!?]{0,20}\b(?:marr?na?|jaan\s+de|khatam)\b",
+    r"\b(?:mujhe|main)\s+bhi\b[^.!?]{0,20}\b(?:marr?na?\s+hai|marr?na?\s+chaht|khatam)\b",
+    r"\bmarr?ne?\s+ka\s+dil\s+karta\b",
+    r"\b(?:je|ji)\s+bhi\s+nahi\s+sakt[ai]\b",
+    r"\bkhudkushi\s+karna\s+chaht[ai]\b",
+    r"\bkhu?d\s+bhi\s+marr?na?\s+hai\b",
+    r"\bmujhe\b[^.!?]{0,12}\bmarr?\s*jana\s+hai\b",
+    r"\bkhudkushi\s+ka\s+soch\s*rah[ai]\b",
+    r"\bjeena?\s+chhorr?\s+dena?\s+chaht[ai]\b",
+    r"\bjaan\s+de\s+dena?\s+chaht[ai]\b",
+    r"\bduniya\s+se\s+jaan[ai]\s+hai\b",
+    r"\bmaut\s+hi\s+rahat\b",
+    r"\bmarr?\s*kar\s+rahat\s+paan[ai]\s+chaht[ai]\b",
+    r"\bzindagi\s+ka\s+ant\s+khud\s+karna?\s+chaht[ai]\b",
+    r"\bzinda\s+rehna?\s+mujhe\s+qabool\s+nahi\b",
+]
+
+if _URDU_RULES_ENABLED:
+    CRISIS_PATTERN_CATEGORIES = CRISIS_PATTERN_CATEGORIES + [
+        PatternCategory("roman_urdu_imminent_intent", 5, [_c(p) for p in _URDU_EXPLICIT_INTENT]),
+        PatternCategory("roman_urdu_means_attempt", 5, [_c(p) for p in _URDU_LETHAL_MEANS]),
+        PatternCategory("roman_urdu_burden_goodbye", 4, [_c(p) for p in _URDU_BURDEN_GOODBYE]),
+        PatternCategory("roman_urdu_self_harm", 4, [_c(p) for p in _URDU_SELF_HARM]),
+        PatternCategory("roman_urdu_ideation_present", 4, [_c(p) for p in _URDU_IDEATION_PRESENT]),
+        PatternCategory("roman_urdu_indirect_distress", 3, [_c(p) for p in _URDU_INDIRECT]),
+    ]
 
 CRISIS_PATTERNS: List[re.Pattern] = [
     pat for cat in CRISIS_PATTERN_CATEGORIES for pat in cat.patterns
@@ -902,6 +1092,42 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
                     return None
                 # else: first clause is itself bypassable (past history etc.); continue normal flow
 
+    # (1.4) Roman Urdu guards (feature-flagged). Span-scoped: a suppression
+    # applies ONLY to the segment it matched; escalation markers (ab/abhi/aaj,
+    # contrastive phir bhi/bas) veto suppression. Gated on Urdu-token presence
+    # so English text can never trip these.
+    if _URDU_RULES_ENABLED and re.search(r"\b(?:mujhe|main|mein|mera|meri|nahi|nahin|hoon|karna|zindagi|khudkushi|dil|allah|yaar|mar|marr|bore|garmi|bhook|zeher|phansi|chhat|alvida|akhri|aakhri|maut|sochta|jaoon|jaunga|himmat|tang|umeed)\b", t, re.IGNORECASE):
+        _has_escalation = bool(re.search(r"\b(?:ab|abhi|aaj|phir\s+bhi|bas)\b", t, re.IGNORECASE))
+        if (
+            re.search(r"\b(?:garmi|bhook|bhok|bhookh|bukhar|exam|assignment|thakan|traffic|has\s*ke|has-has|hans|bore|maza|mazak|mauz|paise)\b", t, re.IGNORECASE)
+            and re.search(r"\bmarr?\b|\bmar\s*(?:jao+un?ga|jaunga|gaya|gayi|dala|dalegi|jao|jati)\b|\bjaan\s+nikal\b", t, re.IGNORECASE)
+            and not re.search(r"\b(?:lekin|magar|phir\s+bhi)\b", t, re.IGNORECASE)
+        ):
+            return "urdu_hyperbole"
+        if (
+            re.search(r"\b(?:pehle|pehlay|puran[ai]|kabhi)\b", t, re.IGNORECASE)
+            and re.search(r"\b(?:tha|thi|thay)\b", t, re.IGNORECASE)
+            and not _has_escalation
+        ):
+            return "urdu_past_recovery"
+        # sarcasm / joke / quoted-song frame: suppresses within its own span
+        if re.search(r"\b(?:maza+k|mazaaq|joke|drama\s+hai|gaane?\s+ka\s+bol|gaane?\s+ki\s+line|song|filmy)\b", t, re.IGNORECASE):
+            return "urdu_sarcasm_frame"
+        _urdu_denials = [
+            r"\bmarr?na?\s+(?:nahi|nahin|nai|nhe)\b",
+            r"\b(?:nahi|nahin|nai|nhe)\s+marr?na?\b",
+            r"\bkhudkushi\s+(?:nahi|nahin|nai|nhe)\b",
+            r"\bmaut\s+(?:nahi|nahin|nai|nhe)\b",
+            r"\bjaan\s+(?:nahi|nahin|nai|nhe)\s+den[ai]\b",
+            r"\bnuqsan\s+(?:nahi|nahin|nai|nhe)\b",
+            r"\bkhayal\s+(?:nahi|nahin|nai|nhe)\s+aata?\b",
+            r"\bkabhi\b[^.!?]{0,30}\b(?:nahi|nahin|nai|nhe)\b",
+            r"\b(?:irada|iraada)\s+(?:nahi|nahin|nai|nhe)\b",
+            r"\bdil\s+(?:nahi|nahin|nai|nhe)\s+karta?\s+marr?ne?\s+ka\b",
+        ]
+        if any(re.search(p, t, re.IGNORECASE) for p in _urdu_denials) and not _has_escalation:
+            return "urdu_negation"
+
     # (2) Specific compound distress pattern that is active distress:
     if re.search(r"\bi\s+feel\s+like\s+everything\s+is\s+falling\s+apart\s+and\s+i\s+can'?t\s+stop\s+it\b", t):
         return None
@@ -1072,6 +1298,7 @@ def _empty_result(risk_level: str = "none") -> Dict:
         "sentence_findings": [],
         "confidence": 0.95,
         "recommended_action": "none",
+        "suppressed_tier12": False,
     }
 
 
@@ -1082,7 +1309,19 @@ def evaluate_crisis(text: str, preprocess_result: Optional[PreprocessResult] = N
     pp = preprocess_result or preprocess_text(text)
     clean_text = pp.text
 
-    sentences = _split_sentences(clean_text)
+    # Roman Urdu normalization (router-gated; English passes through unchanged)
+    if _URDU_RULES_ENABLED:
+        try:
+            from .roman_urdu_router import route as _urdu_route, ROUTE_URDU, ROUTE_BOTH
+            _r, _d = _urdu_route(clean_text)
+            if _r in (ROUTE_URDU, ROUTE_BOTH):
+                from .roman_urdu_normalizer import normalize_roman_urdu
+                clean_text = normalize_roman_urdu(clean_text)
+        except Exception:
+            pass
+
+    # Evaluation spans: sentences + contrastive conjunctions; commas never split
+    sentences = _split_contrastive_segments(clean_text)
 
     sentence_findings: List[Dict] = []
     escalating_categories: set = set()
@@ -1154,6 +1393,12 @@ def evaluate_crisis(text: str, preprocess_result: Optional[PreprocessResult] = N
             "preprocess_result": pp,
         }
 
+    # Bypassed case: expose whether a Tier-1/2 (severity >= 4) anchor was
+    # suppressed — the pipeline uses this for LOW_CONFIDENCE_RISK.
+    _suppressed_tier12 = any(
+        next((cat.severity for cat in CRISIS_PATTERN_CATEGORIES if cat.name == c), 0) >= 4
+        for c in all_matched_categories
+    )
     return {
         "is_crisis": False,
         "risk_level": "none",
@@ -1164,6 +1409,7 @@ def evaluate_crisis(text: str, preprocess_result: Optional[PreprocessResult] = N
         "sentence_findings": sentence_findings,
         "confidence": 0.85,
         "recommended_action": "log_only",
+        "suppressed_tier12": _suppressed_tier12,
         "preprocess_result": pp,
     }
 
@@ -1183,8 +1429,33 @@ Please connect with one of these free, confidential, 24/7 crisis support service
 📞 **Rozan Emotional Support Line**: 0800-22444
 """
 
-THIRD_PARTY_GUIDANCE_TEMPLATE = """
-Thank you for reaching out and caring about someone in distress. Supporting a friend, family member, or colleague through a crisis is deeply important, and you do not have to carry this alone.
+LOW_CONFIDENCE_CHECKIN_TEMPLATE = """
+Thanks for sharing that with me. I want to make sure I understood you correctly — sometimes it's hard to tell exactly what someone means over text.
+
+If you are having thoughts of harming yourself right now, please reach out to one of these free, confidential, 24/7 crisis support services immediately:
+
+🚑 **Rescue 1122 (medical emergency)**: 1122
+📞 **Umang Pakistan Helpline (24/7)**: 0311-7786264
+📞 **Rozan Emotional Support Line**: 0800-22444
+
+If not, I'm here whenever you'd like to talk about what's been on your mind.
+"""
+
+# Gentle check-in for LOW_CONFIDENCE_RISK: deliberately calmer than the crisis
+# modal — supportive, no urgency framing, resources available but not pushed.
+# Listed in docs/roman_urdu_response_templates.md for native-speaker review.
+LOW_CONFIDENCE_CHECKIN_TEMPLATE = """
+It sounds like things may be feeling heavy right now, and I'm glad you said something.
+
+I'm not fully sure how you're doing — and that's okay. If you'd like to talk about what's going on, I'm here to listen. And if it ever feels like too much, real people are ready to help, any time, for free:
+
+📞 **Umang Pakistan Helpline (24/7)**: 0311-7786264
+📞 **Rozan Emotional Support Line**: 0800-22444
+
+There's no pressure — telling me more, or just taking a slow breath first, are both fine.
+"""
+
+THIRD_PARTY_GUIDANCE_TEMPLATE = """Thank you for reaching out and caring about someone in distress. Supporting a friend, family member, or colleague through a crisis is deeply important, and you do not have to carry this alone.
 
 If you believe this person is in immediate physical danger, please contact local emergency services immediately or notify a trusted authority or family member who can stay with them.
 
@@ -1253,6 +1524,55 @@ def evaluate_crisis_pipeline(
 
         # Step 1: Preprocess text cleanly
         pp = preprocess_text(raw_text)
+
+        # Step 1a: Roman Urdu routing + normalization (feature-flagged)
+        if _URDU_RULES_ENABLED:
+            from .roman_urdu_router import route as _urdu_route, ROUTE_ARABIC_SCRIPT as _ROUTE_ARABIC
+            _route, _density = _urdu_route(raw_text)
+            if _route == _ROUTE_ARABIC:
+                # Urdu-script (Nastaliq) is out of detection scope but must NOT
+                # fail silently: gentle generic check-in with resources.
+                return {
+                    "is_crisis": False,
+                    "risk_level": "script_checkin",
+                    "high_risk": False,
+                    "imminent_risk": False,
+                    "protective_factor": False,
+                    "is_third_party": False,
+                    "source": "arabic_script_fallback",
+                    "confidence": 0.9,
+                    "safety_message": (
+                        "We may not fully understand this language yet, but we're glad you reached out. "
+                        "If you are struggling, please talk to someone who can help right now."
+                    ),
+                    "disclaimer": SAFETY_DISCLAIMER,
+                    "resources": CRISIS_RESOURCES,
+                    "preprocess_result": pp,
+                }
+            if _route in ("roman_urdu", "both"):
+                from .roman_urdu_normalizer import normalize_roman_urdu
+                pp.text = normalize_roman_urdu(pp.text)
+
+        # Step 1b: Urdu third-party routing (mirrors the English third-party
+        # subject check; suppressed when the writer's own risk is present)
+        if _URDU_RULES_ENABLED and not pp.is_third_party:
+            _u_tp = re.search(
+                r"\b(?:mer[aei]|hamar[aei]|us\s+ka|us\s+ki|us\s+ne|un\s+ka)\s+"
+                r"(?:dost|doston|cousin|bhai|behen|bahan|ammi|abbu|colleague|saathi|beta|beti)\b",
+                pp.text, re.IGNORECASE)
+            _u_tp = _u_tp or bool(re.search(
+                r"\b(?:wo|woh|us)\s+khud\s+ko\s+(?:nuqsan|khatam|zakhami|maarta|maare?)\b",
+                pp.text, re.IGNORECASE))
+            _u_tp_risk = re.search(
+                r"\b(?:marr?na?\s+chaht[ai]|khudkushi|theek\s+nahi|pareshan|udaas|depress|rot[ai]\s+(?:hai|raha|rahi)|self\s*harm|nuqsan|khatam)\b",
+                pp.text, re.IGNORECASE)
+            if _u_tp and _u_tp_risk:
+                _u_own = re.search(
+                    r"\bmain\s+(?:khud\s+ko\s+)?(?:marr?na?|khudkushi|jaan\s+dena?|khatam)\b"
+                    r"|\bmujhe\s+(?:marna\s+hai|marr?\s*jana)\b|\bmeri\s+jaan\b",
+                    pp.text, re.IGNORECASE)
+                if not _u_own:
+                    pp.is_third_party = True
 
         # Step 2: Third-party subject crisis routing (L1)
         if pp.is_third_party:
@@ -1332,18 +1652,23 @@ def evaluate_crisis_pipeline(
 
         # Step 4b: Contextual Bypass Gating (suppress ML fallback)
         if arb_result.bypass_triggered:
+            # LOW_CONFIDENCE_RISK: a Tier-1/2 lexical anchor was present but
+            # suppressed by a guard (negation/recovery/hyperbole). Never a hit
+            # for recall gates; gentle check-in instead of silence. Tier 1
+            # matches are never auto-downgraded (arbitration already ran).
+            _low_conf = _URDU_RULES_ENABLED and det_result.get("suppressed_tier12")
             return {
                 "is_crisis": False,
-                "risk_level": "none",
+                "risk_level": "LOW_CONFIDENCE_RISK" if _low_conf else "none",
                 "high_risk": False,
                 "imminent_risk": False,
                 "protective_factor": arb_result.protective_factor,
                 "is_third_party": False,
                 "bypass_triggered": True,
                 "bypass_reason": arb_result.bypass_reason or det_result.get("bypass_reason"),
-                "source": arb_result.source,
+                "source": "low_confidence_checkin" if _low_conf else arb_result.source,
                 "confidence": arb_result.confidence,
-                "safety_message": "",
+                "safety_message": LOW_CONFIDENCE_CHECKIN_TEMPLATE.strip() if _low_conf else "",
                 "disclaimer": SAFETY_DISCLAIMER,
                 "resources": CRISIS_RESOURCES,
                 "preprocess_result": pp,
@@ -1383,6 +1708,30 @@ def evaluate_crisis_pipeline(
                     "intent_confidence": ml_res.get("intent_confidence"),
                     "confidence": ml_res.get("intent_confidence", 0.85),
                     "safety_message": SAFETY_RESPONSE_TEMPLATE.strip(),
+                    "disclaimer": SAFETY_DISCLAIMER,
+                    "resources": CRISIS_RESOURCES,
+                    "preprocess_result": pp,
+                }
+
+            # LOW_CONFIDENCE_RISK (ML side): crisis signal present but below
+            # the crisis threshold (>= 0.30) — gentle check-in, never silent.
+            if (
+                _URDU_RULES_ENABLED
+                and ml_res.get("intent") == "SUICIDE CRISIS OR SELF HARM RISK"
+                and ml_res.get("intent_confidence", 0) >= 0.30
+            ):
+                return {
+                    "is_crisis": False,
+                    "risk_level": "LOW_CONFIDENCE_RISK",
+                    "high_risk": False,
+                    "imminent_risk": False,
+                    "protective_factor": pp.has_protective_behavior,
+                    "is_third_party": False,
+                    "source": "low_confidence_checkin",
+                    "intent": ml_res.get("intent"),
+                    "intent_confidence": ml_res.get("intent_confidence"),
+                    "confidence": 0.7,
+                    "safety_message": LOW_CONFIDENCE_CHECKIN_TEMPLATE.strip(),
                     "disclaimer": SAFETY_DISCLAIMER,
                     "resources": CRISIS_RESOURCES,
                     "preprocess_result": pp,

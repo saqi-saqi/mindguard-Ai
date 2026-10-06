@@ -1,13 +1,13 @@
 {
   "metrics": {
     "total_samples": 549,
-    "accuracy": 0.9235,
-    "precision": 0.9412,
-    "recall": 0.9697,
-    "f1_score": 0.9552,
-    "avg_latency_ms": 26.76,
-    "false_positives": 28,
-    "false_negatives": 14
+    "accuracy": 0.9381,
+    "precision": 0.9592,
+    "recall": 0.9675,
+    "f1_score": 0.9634,
+    "avg_latency_ms": 3.31,
+    "false_positives": 19,
+    "false_negatives": 15
   },
   "failures": [
     {
@@ -23,6 +23,14 @@
       "expected": true,
       "predicted": false,
       "source": "dataset_crisis_sev5_subtle_slang",
+      "type": "False Negative",
+      "decision": "safe_or_low_risk"
+    },
+    {
+      "text": "I keep feeling like dont know how much longer i can hold on more and more each day.",
+      "expected": true,
+      "predicted": false,
+      "source": "dataset_crisis_sev3_indirect_distress",
       "type": "False Negative",
       "decision": "safe_or_low_risk"
     },
@@ -139,14 +147,6 @@
       "decision": "deterministic_rule"
     },
     {
-      "text": "I dont know how much longer i can hold on and it wont stop.",
-      "expected": false,
-      "predicted": true,
-      "source": "dataset_non_crisis_sev2_indirect_distress",
-      "type": "False Positive",
-      "decision": "zero_shot_ml (0.91)"
-    },
-    {
       "text": "These days I feel hopeless about pretty much everything honestly.",
       "expected": false,
       "predicted": true,
@@ -155,28 +155,12 @@
       "decision": "deterministic_rule"
     },
     {
-      "text": "I just feel like I dont know how much longer i can hold on lately.",
-      "expected": false,
-      "predicted": true,
-      "source": "dataset_non_crisis_sev2_indirect_distress",
-      "type": "False Positive",
-      "decision": "zero_shot_ml (0.84)"
-    },
-    {
       "text": "Honestly I feel like im just going thru the motions.",
       "expected": false,
       "predicted": true,
       "source": "dataset_non_crisis_sev2_indirect_distress",
       "type": "False Positive",
       "decision": "deterministic_rule"
-    },
-    {
-      "text": "I used to have suicidal thoughts a few years ago but im in a better place now.",
-      "expected": false,
-      "predicted": true,
-      "source": "dataset_non_crisis_sev1_negation_past_academic",
-      "type": "False Positive",
-      "decision": "zero_shot_ml (0.85)"
     },
     {
       "text": "I just feel like I feel hopeless about pretty much everything more and more each day.",
@@ -193,14 +177,6 @@
       "source": "dataset_non_crisis_sev2_indirect_distress",
       "type": "False Positive",
       "decision": "deterministic_rule"
-    },
-    {
-      "text": "I dont know how much longer i can hold on honestly.",
-      "expected": false,
-      "predicted": true,
-      "source": "dataset_non_crisis_sev2_indirect_distress",
-      "type": "False Positive",
-      "decision": "zero_shot_ml (0.71)"
     },
     {
       "text": "I just feel like I feel numb to everything these days these days.",
@@ -227,44 +203,12 @@
       "decision": "deterministic_rule"
     },
     {
-      "text": "I just feel like I dont know how much longer i can hold on honestly.",
-      "expected": false,
-      "predicted": true,
-      "source": "dataset_non_crisis_sev2_indirect_distress",
-      "type": "False Positive",
-      "decision": "zero_shot_ml (0.87)"
-    },
-    {
       "text": "I just feel like I feel like im stuck and theres no way forward lately.",
       "expected": false,
       "predicted": true,
       "source": "dataset_non_crisis_sev2_indirect_distress",
       "type": "False Positive",
       "decision": "deterministic_rule"
-    },
-    {
-      "text": "I would honestly die for a vacation right now.",
-      "expected": false,
-      "predicted": true,
-      "source": "dataset_non_crisis_sev1_idiom_non_crisis",
-      "type": "False Positive",
-      "decision": "zero_shot_ml (0.59)"
-    },
-    {
-      "text": "My therapist and i talked about my suicidal thoughts from last year in todays session.",
-      "expected": false,
-      "predicted": true,
-      "source": "dataset_non_crisis_sev1_negation_past_academic",
-      "type": "False Positive",
-      "decision": "zero_shot_ml (0.90)"
-    },
-    {
-      "text": "Years ago i went through a period of suicidal thoughts, but therapy really helped.",
-      "expected": false,
-      "predicted": true,
-      "source": "dataset_non_crisis_sev1_negation_past_academic",
-      "type": "False Positive",
-      "decision": "zero_shot_ml (0.85)"
     },
     {
       "text": "i cant remember the last time i felt okay more and more each day.",
@@ -321,14 +265,6 @@
       "source": "dataset_non_crisis_sev2_indirect_distress",
       "type": "False Positive",
       "decision": "deterministic_rule"
-    },
-    {
-      "text": "The podcast episode was about surviving a suicide attempt and recovering.",
-      "expected": false,
-      "predicted": true,
-      "source": "dataset_non_crisis_sev1_negation_past_academic",
-      "type": "False Positive",
-      "decision": "zero_shot_ml (0.77)"
     },
     {
       "text": "Tbh I feel like im drowning and no one notices lately.",

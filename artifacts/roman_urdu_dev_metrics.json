@@ -1,0 +1,348 @@
+{
+ "generated": "2026-10-06T17:01:06.134897+00:00",
+ "dev": {
+  "T1": {
+   "positives": 46,
+   "crisis_route_hits": 43,
+   "crisis_route_recall": 0.9348,
+   "wilson95_case": [
+    0.825,
+    0.9776
+   ],
+   "any_escalation_hits": 43,
+   "any_escalation_recall": 0.9348,
+   "skeletons": 23,
+   "skeleton_conservative_hits": 21,
+   "skeleton_conservative_recall": 0.913,
+   "wilson95_skeleton_lower": 0.732
+  },
+  "T2": {
+   "positives": 74,
+   "crisis_route_hits": 66,
+   "crisis_route_recall": 0.8919,
+   "wilson95_case": [
+    0.8009,
+    0.9442
+   ],
+   "any_escalation_hits": 66,
+   "any_escalation_recall": 0.8919,
+   "skeletons": 37,
+   "skeleton_conservative_hits": 30,
+   "skeleton_conservative_recall": 0.8108,
+   "wilson95_skeleton_lower": 0.6579
+  },
+  "T3": {
+   "positives": 34,
+   "crisis_route_hits": 33,
+   "crisis_route_recall": 0.9706,
+   "wilson95_case": [
+    0.8508,
+    0.9948
+   ],
+   "any_escalation_hits": 33,
+   "any_escalation_recall": 0.9706,
+   "skeletons": 17,
+   "skeleton_conservative_hits": 16,
+   "skeleton_conservative_recall": 0.9412,
+   "wilson95_skeleton_lower": 0.7302
+  },
+  "NEG": {
+   "negatives": 156,
+   "false_positives_crisis_route": 3,
+   "fpr_crisis_route": 0.0192,
+   "wilson95_fpr": [
+    0.0066,
+    0.055
+   ],
+   "low_confidence_tips": 21
+  }
+ },
+ "dev_plus_adversarial": {
+  "T1": {
+   "positives": 61,
+   "crisis_route_hits": 58,
+   "crisis_route_recall": 0.9508,
+   "wilson95_case": [
+    0.8651,
+    0.9831
+   ],
+   "any_escalation_hits": 58,
+   "any_escalation_recall": 0.9508,
+   "skeletons": 38,
+   "skeleton_conservative_hits": 36,
+   "skeleton_conservative_recall": 0.9474,
+   "wilson95_skeleton_lower": 0.8271
+  },
+  "T2": {
+   "positives": 89,
+   "crisis_route_hits": 80,
+   "crisis_route_recall": 0.8989,
+   "wilson95_case": [
+    0.8189,
+    0.9459
+   ],
+   "any_escalation_hits": 81,
+   "any_escalation_recall": 0.9101,
+   "skeletons": 52,
+   "skeleton_conservative_hits": 45,
+   "skeleton_conservative_recall": 0.8654,
+   "wilson95_skeleton_lower": 0.7473
+  },
+  "T3": {
+   "positives": 45,
+   "crisis_route_hits": 44,
+   "crisis_route_recall": 0.9778,
+   "wilson95_case": [
+    0.8843,
+    0.9961
+   ],
+   "any_escalation_hits": 44,
+   "any_escalation_recall": 0.9778,
+   "skeletons": 28,
+   "skeleton_conservative_hits": 27,
+   "skeleton_conservative_recall": 0.9643,
+   "wilson95_skeleton_lower": 0.8229
+  },
+  "NEG": {
+   "negatives": 242,
+   "false_positives_crisis_route": 3,
+   "fpr_crisis_route": 0.0124,
+   "wilson95_fpr": [
+    0.0042,
+    0.0358
+   ],
+   "low_confidence_tips": 28
+  }
+ },
+ "per_category": {
+  "academic_media_fiction": {
+   "n": 29,
+   "pos": 0,
+   "tp": 0,
+   "esc": 0,
+   "fp": 0,
+   "neg": 29
+  },
+  "bare_mar": {
+   "n": 9,
+   "pos": 0,
+   "tp": 0,
+   "esc": 0,
+   "fp": 0,
+   "neg": 9
+  },
+  "benign_physical": {
+   "n": 18,
+   "pos": 0,
+   "tp": 0,
+   "esc": 0,
+   "fp": 0,
+   "neg": 18
+  },
+  "burden_goodbye": {
+   "n": 26,
+   "pos": 26,
+   "tp": 23,
+   "esc": 23,
+   "fp": 0,
+   "neg": 0
+  },
+  "disguised_third_party": {
+   "n": 3,
+   "pos": 0,
+   "tp": 0,
+   "esc": 0,
+   "fp": 0,
+   "neg": 3
+  },
+  "explicit_intent": {
+   "n": 24,
+   "pos": 24,
+   "tp": 22,
+   "esc": 22,
+   "fp": 0,
+   "neg": 0
+  },
+  "harm_others": {
+   "n": 4,
+   "pos": 0,
+   "tp": 0,
+   "esc": 0,
+   "fp": 0,
+   "neg": 4
+  },
+  "harm_others_self_risk": {
+   "n": 1,
+   "pos": 1,
+   "tp": 1,
+   "esc": 1,
+   "fp": 0,
+   "neg": 0
+  },
+  "hedged_negation": {
+   "n": 14,
+   "pos": 14,
+   "tp": 14,
+   "esc": 14,
+   "fp": 0,
+   "neg": 0
+  },
+  "hyperbole": {
+   "n": 24,
+   "pos": 0,
+   "tp": 0,
+   "esc": 0,
+   "fp": 0,
+   "neg": 24
+  },
+  "imminent_intent": {
+   "n": 24,
+   "pos": 24,
+   "tp": 21,
+   "esc": 21,
+   "fp": 0,
+   "neg": 0
+  },
+  "indirect_distress": {
+   "n": 20,
+   "pos": 20,
+   "tp": 20,
+   "esc": 20,
+   "fp": 0,
+   "neg": 0
+  },
+  "means_attempt": {
+   "n": 28,
+   "pos": 28,
+   "tp": 28,
+   "esc": 28,
+   "fp": 0,
+   "neg": 0
+  },
+  "negation": {
+   "n": 44,
+   "pos": 0,
+   "tp": 0,
+   "esc": 0,
+   "fp": 0,
+   "neg": 44
+  },
+  "obfuscation_typo": {
+   "n": 6,
+   "pos": 6,
+   "tp": 6,
+   "esc": 6,
+   "fp": 0,
+   "neg": 0
+  },
+  "recovery": {
+   "n": 21,
+   "pos": 0,
+   "tp": 0,
+   "esc": 0,
+   "fp": 3,
+   "neg": 21
+  },
+  "religious_benign": {
+   "n": 21,
+   "pos": 0,
+   "tp": 0,
+   "esc": 0,
+   "fp": 0,
+   "neg": 21
+  },
+  "religious_crisis": {
+   "n": 6,
+   "pos": 6,
+   "tp": 6,
+   "esc": 6,
+   "fp": 0,
+   "neg": 0
+  },
+  "sarcasm_quoted": {
+   "n": 29,
+   "pos": 0,
+   "tp": 0,
+   "esc": 0,
+   "fp": 0,
+   "neg": 29
+  },
+  "self_harm": {
+   "n": 24,
+   "pos": 24,
+   "tp": 21,
+   "esc": 21,
+   "fp": 0,
+   "neg": 0
+  },
+  "subtle_slang": {
+   "n": 14,
+   "pos": 14,
+   "tp": 13,
+   "esc": 13,
+   "fp": 0,
+   "neg": 0
+  },
+  "temporal": {
+   "n": 13,
+   "pos": 5,
+   "tp": 5,
+   "esc": 5,
+   "fp": 0,
+   "neg": 8
+  },
+  "third_party": {
+   "n": 32,
+   "pos": 0,
+   "tp": 0,
+   "esc": 0,
+   "fp": 0,
+   "neg": 32
+  },
+  "third_party_own_risk": {
+   "n": 3,
+   "pos": 3,
+   "tp": 2,
+   "esc": 3,
+   "fp": 0,
+   "neg": 0
+  }
+ },
+ "per_script_style": {
+  "code_switch": {
+   "n": 69,
+   "pos": 34,
+   "tp": 34,
+   "fp": 1
+  },
+  "pure_roman": {
+   "n": 256,
+   "pos": 118,
+   "tp": 115,
+   "fp": 1
+  },
+  "slang": {
+   "n": 30,
+   "pos": 16,
+   "tp": 15,
+   "fp": 0
+  },
+  "spelling": {
+   "n": 33,
+   "pos": 14,
+   "tp": 13,
+   "fp": 1
+  },
+  "typo_heavy": {
+   "n": 49,
+   "pos": 13,
+   "tp": 5,
+   "fp": 0
+  }
+ },
+ "adversarial": {
+  "n": 127,
+  "correct": 120,
+  "accuracy": 0.9449
+ }
+}

@@ -6,8 +6,8 @@
  },
  "cases": [
   {
-   "id": "RU-0398",
-   "skeleton_id": "academic_media_fiction-175",
+   "id": "RU-0400",
+   "skeleton_id": "academic_media_fiction-176",
    "text": "Documentary dekhi mental health par",
    "label": 0,
    "label_text": "benign",
@@ -18,9 +18,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0399",
-   "skeleton_id": "academic_media_fiction-175",
-   "text": "sachi documentary dekhi mental health par",
+   "id": "RU-0401",
+   "skeleton_id": "academic_media_fiction-176",
+   "text": "Documentary dekhi mental health par, I swear",
    "label": 0,
    "label_text": "benign",
    "category": "academic_media_fiction",
@@ -30,33 +30,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0400",
-   "skeleton_id": "academic_media_fiction-175",
-   "text": "Documentary deki mental heatlh par",
-   "label": 0,
-   "label_text": "benign",
-   "category": "academic_media_fiction",
-   "severity_tier": "NEG",
-   "script_style": "typo_heavy",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0392",
-   "skeleton_id": "academic_media_fiction-173",
-   "text": "Drama mein wo character aakhir mein marr jata hai",
-   "label": 0,
-   "label_text": "benign",
-   "category": "academic_media_fiction",
-   "severity_tier": "NEG",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0393",
-   "skeleton_id": "academic_media_fiction-173",
-   "text": "Drama mein wo character aakhir mein mrar jaat hai",
+   "id": "RU-0402",
+   "skeleton_id": "academic_media_fiction-176",
+   "text": "Documentarry dekhi mental healtth par",
    "label": 0,
    "label_text": "benign",
    "category": "academic_media_fiction",
@@ -67,7 +43,19 @@
   },
   {
    "id": "RU-0394",
-   "skeleton_id": "academic_media_fiction-173",
+   "skeleton_id": "academic_media_fiction-174",
+   "text": "Drama mein wo character aakhir mein marr jata hai",
+   "label": 0,
+   "label_text": "benign",
+   "category": "academic_media_fiction",
+   "severity_tier": "NEG",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0395",
+   "skeleton_id": "academic_media_fiction-174",
    "text": "Drama mein wo character aakhir mein marr jata he",
    "label": 0,
    "label_text": "benign",
@@ -78,8 +66,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0383",
-   "skeleton_id": "academic_media_fiction-170",
+   "id": "RU-0396",
+   "skeleton_id": "academic_media_fiction-174",
+   "text": "Drama mein wo character aakhir mein marr jata hai, I swear",
+   "label": 0,
+   "label_text": "benign",
+   "category": "academic_media_fiction",
+   "severity_tier": "NEG",
+   "script_style": "code_switch",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0385",
+   "skeleton_id": "academic_media_fiction-171",
    "text": "Movie mein villain khudkushi karta hai",
    "label": 0,
    "label_text": "benign",
@@ -90,20 +90,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0384",
-   "skeleton_id": "academic_media_fiction-170",
-   "text": "Movie mein villain khudkushi krta hai",
-   "label": 0,
-   "label_text": "benign",
-   "category": "academic_media_fiction",
-   "severity_tier": "NEG",
-   "script_style": "slang",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0385",
-   "skeleton_id": "academic_media_fiction-170",
+   "id": "RU-0386",
+   "skeleton_id": "academic_media_fiction-171",
    "text": "Movie mein villain khudkushi karta he",
    "label": 0,
    "label_text": "benign",
@@ -114,21 +102,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0401",
-   "skeleton_id": "academic_media_fiction-176",
-   "text": "Kitaab mein ek scene hai jahan wo jaan deti hai",
-   "label": 0,
-   "label_text": "benign",
-   "category": "academic_media_fiction",
-   "severity_tier": "NEG",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0402",
-   "skeleton_id": "academic_media_fiction-176",
-   "text": "Kitaab mein ek scene hai jahan wo jaan deti hai, honestly",
+   "id": "RU-0387",
+   "skeleton_id": "academic_media_fiction-171",
+   "text": "Movie mein villain khudkushi karta hai, seriously",
    "label": 0,
    "label_text": "benign",
    "category": "academic_media_fiction",
@@ -139,8 +115,20 @@
   },
   {
    "id": "RU-0403",
-   "skeleton_id": "academic_media_fiction-176",
-   "text": "Kitaab meein ek scene hai jahan wo jaan dei hai",
+   "skeleton_id": "academic_media_fiction-177",
+   "text": "Kitaab mein ek scene hai jahan wo jaan deti hai",
+   "label": 0,
+   "label_text": "benign",
+   "category": "academic_media_fiction",
+   "severity_tier": "NEG",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0404",
+   "skeleton_id": "academic_media_fiction-177",
+   "text": "Kitaab mein ek scenne hai jahan wo jaaan deti hai",
    "label": 0,
    "label_text": "benign",
    "category": "academic_media_fiction",
@@ -150,8 +138,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0404",
+   "id": "RU-0405",
    "skeleton_id": "academic_media_fiction-177",
+   "text": "Kitaab mein ek scene he jahan wo jaan deti he",
+   "label": 0,
+   "label_text": "benign",
+   "category": "academic_media_fiction",
+   "severity_tier": "NEG",
+   "script_style": "spelling",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0406",
+   "skeleton_id": "academic_media_fiction-178",
    "text": "Professor ne suicide statistics par research batayi",
    "label": 0,
    "label_text": "benign",
@@ -162,21 +162,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0405",
-   "skeleton_id": "academic_media_fiction-177",
-   "text": "Professor ne suiccide statitics par research batayi",
-   "label": 0,
-   "label_text": "benign",
-   "category": "academic_media_fiction",
-   "severity_tier": "NEG",
-   "script_style": "typo_heavy",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0406",
-   "skeleton_id": "academic_media_fiction-177",
-   "text": "sachi professor ne suicide statistics par research batayi",
+   "id": "RU-0407",
+   "skeleton_id": "academic_media_fiction-178",
+   "text": "pata hai professor ne suicide statistics par research batayi",
    "label": 0,
    "label_text": "benign",
    "category": "academic_media_fiction",
@@ -186,8 +174,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0482",
-   "skeleton_id": "benign_physical-203",
+   "id": "RU-0408",
+   "skeleton_id": "academic_media_fiction-178",
+   "text": "Professor ne suicde statistics par ressearch batayi",
+   "label": 0,
+   "label_text": "benign",
+   "category": "academic_media_fiction",
+   "severity_tier": "NEG",
+   "script_style": "typo_heavy",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0484",
+   "skeleton_id": "benign_physical-204",
    "text": "Pait kharab hai",
    "label": 0,
    "label_text": "benign",
@@ -198,21 +198,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0483",
-   "skeleton_id": "benign_physical-203",
-   "text": "Pait kharab he",
-   "label": 0,
-   "label_text": "benign",
-   "category": "benign_physical",
-   "severity_tier": "NEG",
-   "script_style": "spelling",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0484",
-   "skeleton_id": "benign_physical-203",
-   "text": "pata hai pait kharab hai",
+   "id": "RU-0485",
+   "skeleton_id": "benign_physical-204",
+   "text": "Pait kharab hai, honestly",
    "label": 0,
    "label_text": "benign",
    "category": "benign_physical",
@@ -222,21 +210,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0476",
-   "skeleton_id": "benign_physical-201",
-   "text": "Sar dard kar raha hai",
-   "label": 0,
-   "label_text": "benign",
-   "category": "benign_physical",
-   "severity_tier": "NEG",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0477",
-   "skeleton_id": "benign_physical-201",
-   "text": "Sar dad kar raa hai",
+   "id": "RU-0486",
+   "skeleton_id": "benign_physical-204",
+   "text": "Paait kharrab hai",
    "label": 0,
    "label_text": "benign",
    "category": "benign_physical",
@@ -247,7 +223,19 @@
   },
   {
    "id": "RU-0478",
-   "skeleton_id": "benign_physical-201",
+   "skeleton_id": "benign_physical-202",
+   "text": "Sar dard kar raha hai",
+   "label": 0,
+   "label_text": "benign",
+   "category": "benign_physical",
+   "severity_tier": "NEG",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0479",
+   "skeleton_id": "benign_physical-202",
    "text": "Sar dard kar raha he",
    "label": 0,
    "label_text": "benign",
@@ -258,21 +246,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0473",
-   "skeleton_id": "benign_physical-200",
-   "text": "Neend nahi aa rahi",
-   "label": 0,
-   "label_text": "benign",
-   "category": "benign_physical",
-   "severity_tier": "NEG",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0474",
-   "skeleton_id": "benign_physical-200",
-   "text": "Neend nahi aa rahi, honestly",
+   "id": "RU-0480",
+   "skeleton_id": "benign_physical-202",
+   "text": "Sar dard kar raha hai, I swear",
    "label": 0,
    "label_text": "benign",
    "category": "benign_physical",
@@ -283,20 +259,8 @@
   },
   {
    "id": "RU-0475",
-   "skeleton_id": "benign_physical-200",
-   "text": "Neennd nahi aa raih",
-   "label": 0,
-   "label_text": "benign",
-   "category": "benign_physical",
-   "severity_tier": "NEG",
-   "script_style": "typo_heavy",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0491",
-   "skeleton_id": "benign_physical-206",
-   "text": "Nind poori nahi hui",
+   "skeleton_id": "benign_physical-201",
+   "text": "Neend nahi aa rahi",
    "label": 0,
    "label_text": "benign",
    "category": "benign_physical",
@@ -306,9 +270,21 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0492",
-   "skeleton_id": "benign_physical-206",
-   "text": "Nind poori nai hui",
+   "id": "RU-0476",
+   "skeleton_id": "benign_physical-201",
+   "text": "Need nahi aa rhi",
+   "label": 0,
+   "label_text": "benign",
+   "category": "benign_physical",
+   "severity_tier": "NEG",
+   "script_style": "typo_heavy",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0477",
+   "skeleton_id": "benign_physical-201",
+   "text": "Neend nai aa rahi",
    "label": 0,
    "label_text": "benign",
    "category": "benign_physical",
@@ -319,7 +295,19 @@
   },
   {
    "id": "RU-0493",
-   "skeleton_id": "benign_physical-206",
+   "skeleton_id": "benign_physical-207",
+   "text": "Nind poori nahi hui",
+   "label": 0,
+   "label_text": "benign",
+   "category": "benign_physical",
+   "severity_tier": "NEG",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0494",
+   "skeleton_id": "benign_physical-207",
    "text": "Nind poori nahin hui",
    "label": 0,
    "label_text": "benign",
@@ -330,9 +318,69 @@
    "reviewer_status": "unlabeled"
   },
   {
+   "id": "RU-0495",
+   "skeleton_id": "benign_physical-207",
+   "text": "pata hai nind poori nahi hui",
+   "label": 0,
+   "label_text": "benign",
+   "category": "benign_physical",
+   "severity_tier": "NEG",
+   "script_style": "code_switch",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0137",
+   "skeleton_id": "burden_goodbye-068",
+   "text": "Main ab yahan ka nahi raha",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "burden_goodbye",
+   "severity_tier": "T2",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0138",
+   "skeleton_id": "burden_goodbye-068",
+   "text": "I am done. Main ab yahan ka nahi raha",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "burden_goodbye",
+   "severity_tier": "T2",
+   "script_style": "code_switch",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0125",
+   "skeleton_id": "burden_goodbye-062",
+   "text": "Ab main jaa raha hoon, hamesha ke liye",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "burden_goodbye",
+   "severity_tier": "T2",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0126",
+   "skeleton_id": "burden_goodbye-062",
+   "text": "Ab mein jaa raha hu, hamesha ke liye",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "burden_goodbye",
+   "severity_tier": "T2",
+   "script_style": "slang",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
    "id": "RU-0139",
    "skeleton_id": "burden_goodbye-069",
-   "text": "Meri zaroorat nahi hai kisi ko",
+   "text": "Allah hafiz, hamesha ke liye",
    "label": 1,
    "label_text": "crisis",
    "category": "burden_goodbye",
@@ -344,7 +392,7 @@
   {
    "id": "RU-0140",
    "skeleton_id": "burden_goodbye-069",
-   "text": "Meri zarorat nhai hai kisi ko",
+   "text": "Allha hafiz, hmaesha ke liye",
    "label": 1,
    "label_text": "crisis",
    "category": "burden_goodbye",
@@ -354,57 +402,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0127",
-   "skeleton_id": "burden_goodbye-063",
-   "text": "Sab ko alvida keh raha hoon",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "burden_goodbye",
-   "severity_tier": "T2",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0128",
-   "skeleton_id": "burden_goodbye-063",
-   "text": "I am done. sab ko alvida keh raha hoon",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "burden_goodbye",
-   "severity_tier": "T2",
-   "script_style": "code_switch",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0141",
-   "skeleton_id": "burden_goodbye-070",
-   "text": "Main bojh ban gaya hoon sab par",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "burden_goodbye",
-   "severity_tier": "T2",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0142",
-   "skeleton_id": "burden_goodbye-070",
-   "text": "mein bojh ban gaya hu sab par",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "burden_goodbye",
-   "severity_tier": "T2",
-   "script_style": "slang",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
    "id": "RU-0151",
    "skeleton_id": "burden_goodbye-075",
-   "text": "Mere bina ghar behtar rahega",
+   "text": "Main hamesha ke liye chala jaunga",
    "label": 1,
    "label_text": "crisis",
    "category": "burden_goodbye",
@@ -416,18 +416,42 @@
   {
    "id": "RU-0152",
    "skeleton_id": "burden_goodbye-075",
-   "text": "pata hai mere bina ghar behtar rahega",
+   "text": "Main hamesha ke liye chala jaonga",
    "label": 1,
    "label_text": "crisis",
    "category": "burden_goodbye",
    "severity_tier": "T2",
-   "script_style": "code_switch",
+   "script_style": "spelling",
    "author": "ai_assisted_v1",
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0153",
-   "skeleton_id": "burden_goodbye-076",
+   "id": "RU-0149",
+   "skeleton_id": "burden_goodbye-074",
+   "text": "Sab kuch maaf karna, ye akhri baat hai",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "burden_goodbye",
+   "severity_tier": "T2",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0150",
+   "skeleton_id": "burden_goodbye-074",
+   "text": "Sab kuch maaf krna, ye akhri baat hai",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "burden_goodbye",
+   "severity_tier": "T2",
+   "script_style": "slang",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0155",
+   "skeleton_id": "burden_goodbye-077",
    "text": "Aakhri baar kuch kehna chahta hoon, alvida",
    "label": 1,
    "label_text": "crisis",
@@ -438,44 +462,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0154",
-   "skeleton_id": "burden_goodbye-076",
-   "text": "Aakhri baar kuch kehna chahta hoon, alvida, seriously",
+   "id": "RU-0156",
+   "skeleton_id": "burden_goodbye-077",
+   "text": "Aakhri baaar kuch kehna chata hoon, alvida",
    "label": 1,
    "label_text": "crisis",
    "category": "burden_goodbye",
    "severity_tier": "T2",
-   "script_style": "code_switch",
+   "script_style": "typo_heavy",
    "author": "ai_assisted_v1",
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0159",
-   "skeleton_id": "burden_goodbye-079",
-   "text": "Sab ko meri taraf se salam, main ja raha hoon",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "burden_goodbye",
-   "severity_tier": "T2",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0160",
-   "skeleton_id": "burden_goodbye-079",
-   "text": "I am done. sab ko meri taraf se salam, main ja raha hoon",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "burden_goodbye",
-   "severity_tier": "T2",
-   "script_style": "code_switch",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0123",
-   "skeleton_id": "burden_goodbye-061",
+   "id": "RU-0121",
+   "skeleton_id": "burden_goodbye-060",
    "text": "Meri wajah se sab pareshan hain",
    "label": 1,
    "label_text": "crisis",
@@ -486,33 +486,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0124",
-   "skeleton_id": "burden_goodbye-061",
-   "text": "Mri wajah se sab parshan hain",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "burden_goodbye",
-   "severity_tier": "T2",
-   "script_style": "typo_heavy",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0143",
-   "skeleton_id": "burden_goodbye-071",
-   "text": "Mujhe maaf karna, main ja raha hoon",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "burden_goodbye",
-   "severity_tier": "T2",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0144",
-   "skeleton_id": "burden_goodbye-071",
-   "text": "sachi Mujhe maaf karna, main ja raha hoon",
+   "id": "RU-0122",
+   "skeleton_id": "burden_goodbye-060",
+   "text": "I am done. meri wajah se sab pareshan hain",
    "label": 1,
    "label_text": "crisis",
    "category": "burden_goodbye",
@@ -522,8 +498,56 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0085",
-   "skeleton_id": "explicit_intent-042",
+   "id": "RU-0157",
+   "skeleton_id": "burden_goodbye-078",
+   "text": "Mujhe kisi ki zaroorat nahi, na kisi ko meri",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "burden_goodbye",
+   "severity_tier": "T2",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0158",
+   "skeleton_id": "burden_goodbye-078",
+   "text": "mjhe kisi ki zaroorat nai, na kisi ko meri",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "burden_goodbye",
+   "severity_tier": "T2",
+   "script_style": "slang",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0127",
+   "skeleton_id": "burden_goodbye-063",
+   "text": "pata hai Ab main jaa raha hoon, hamesha ke liye",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "burden_goodbye",
+   "severity_tier": "T2",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0128",
+   "skeleton_id": "burden_goodbye-063",
+   "text": "pata he Ab main jaa raha hoon, hamesha ke liye",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "burden_goodbye",
+   "severity_tier": "T2",
+   "script_style": "spelling",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0083",
+   "skeleton_id": "explicit_intent-041",
    "text": "Main apni jaan dena chahta hoon",
    "label": 1,
    "label_text": "crisis",
@@ -534,9 +558,57 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0086",
-   "skeleton_id": "explicit_intent-042",
-   "text": "mein apni jaan dena chahta hu",
+   "id": "RU-0084",
+   "skeleton_id": "explicit_intent-041",
+   "text": "Main apni jan dena chaahta hoon",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "explicit_intent",
+   "severity_tier": "T2",
+   "script_style": "typo_heavy",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0097",
+   "skeleton_id": "explicit_intent-048",
+   "text": "Mujhe ab kuch nahi chahiye sirf maut",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "explicit_intent",
+   "severity_tier": "T2",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0098",
+   "skeleton_id": "explicit_intent-048",
+   "text": "Mujhe ab kuch nahi chahiye sirf maut, honestly",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "explicit_intent",
+   "severity_tier": "T2",
+   "script_style": "code_switch",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0093",
+   "skeleton_id": "explicit_intent-046",
+   "text": "Mujhe khatam ho jana hai",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "explicit_intent",
+   "severity_tier": "T2",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0094",
+   "skeleton_id": "explicit_intent-046",
+   "text": "mjhe khatam ho jana hai",
    "label": 1,
    "label_text": "crisis",
    "category": "explicit_intent",
@@ -546,9 +618,81 @@
    "reviewer_status": "unlabeled"
   },
   {
+   "id": "RU-0115",
+   "skeleton_id": "explicit_intent-057",
+   "text": "Mujhe is duniya mein rehna nahi hai",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "explicit_intent",
+   "severity_tier": "T2",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0116",
+   "skeleton_id": "explicit_intent-057",
+   "text": "Muje is duniya min rehna nahi hai",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "explicit_intent",
+   "severity_tier": "T2",
+   "script_style": "typo_heavy",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0103",
+   "skeleton_id": "explicit_intent-051",
+   "text": "Mujhe maut chahiye bas",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "explicit_intent",
+   "severity_tier": "T2",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0104",
+   "skeleton_id": "explicit_intent-051",
+   "text": "Mujhe maut chahiye bas, I swear",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "explicit_intent",
+   "severity_tier": "T2",
+   "script_style": "code_switch",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0079",
+   "skeleton_id": "explicit_intent-039",
+   "text": "Mujhe marna hai",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "explicit_intent",
+   "severity_tier": "T2",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0080",
+   "skeleton_id": "explicit_intent-039",
+   "text": "Mujhe marna he",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "explicit_intent",
+   "severity_tier": "T2",
+   "script_style": "spelling",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
    "id": "RU-0099",
    "skeleton_id": "explicit_intent-049",
-   "text": "Mujhe ab kuch nahi chahiye sirf maut",
+   "text": "Main khud ko khatam karna chahta hoon",
    "label": 1,
    "label_text": "crisis",
    "category": "explicit_intent",
@@ -560,7 +704,7 @@
   {
    "id": "RU-0100",
    "skeleton_id": "explicit_intent-049",
-   "text": "Mujhe ab kuhc naahi chahiye sirf maut",
+   "text": "Main khdu ko khaatam karna chahta hoon",
    "label": 1,
    "label_text": "crisis",
    "category": "explicit_intent",
@@ -570,128 +714,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0095",
-   "skeleton_id": "explicit_intent-047",
-   "text": "Mujhe khatam ho jana hai",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "explicit_intent",
-   "severity_tier": "T2",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0096",
-   "skeleton_id": "explicit_intent-047",
-   "text": "Mujhe khatam ho jana he",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "explicit_intent",
-   "severity_tier": "T2",
-   "script_style": "spelling",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0117",
-   "skeleton_id": "explicit_intent-058",
-   "text": "Mujhe is duniya mein rehna nahi hai",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "explicit_intent",
-   "severity_tier": "T2",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0118",
-   "skeleton_id": "explicit_intent-058",
-   "text": "mjhe is duniya mein rehna nai hai",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "explicit_intent",
-   "severity_tier": "T2",
-   "script_style": "slang",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0105",
-   "skeleton_id": "explicit_intent-052",
-   "text": "Mujhe maut chahiye bas",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "explicit_intent",
-   "severity_tier": "T2",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0106",
-   "skeleton_id": "explicit_intent-052",
-   "text": "Mujhe maut chahiye bas, I swear",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "explicit_intent",
-   "severity_tier": "T2",
-   "script_style": "code_switch",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0081",
-   "skeleton_id": "explicit_intent-040",
-   "text": "Mujhe marna hai",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "explicit_intent",
-   "severity_tier": "T2",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0082",
-   "skeleton_id": "explicit_intent-040",
-   "text": "yaar Mujhe marna hai",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "explicit_intent",
-   "severity_tier": "T2",
-   "script_style": "code_switch",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0101",
-   "skeleton_id": "explicit_intent-050",
-   "text": "Main khud ko khatam karna chahta hoon",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "explicit_intent",
-   "severity_tier": "T2",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0102",
-   "skeleton_id": "explicit_intent-050",
-   "text": "mein khud ko khatam krna chahta hu",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "explicit_intent",
-   "severity_tier": "T2",
-   "script_style": "slang",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0087",
-   "skeleton_id": "explicit_intent-043",
+   "id": "RU-0085",
+   "skeleton_id": "explicit_intent-042",
    "text": "Mujhe jeena nahi hai",
    "label": 1,
    "label_text": "crisis",
@@ -702,20 +726,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0088",
-   "skeleton_id": "explicit_intent-043",
-   "text": "Mujhe jeena nahi he",
+   "id": "RU-0086",
+   "skeleton_id": "explicit_intent-042",
+   "text": "mjhe jeena nai hai",
    "label": 1,
    "label_text": "crisis",
    "category": "explicit_intent",
    "severity_tier": "T2",
-   "script_style": "spelling",
+   "script_style": "slang",
    "author": "ai_assisted_v1",
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0335",
-   "skeleton_id": "hyperbole-154",
+   "id": "RU-0337",
+   "skeleton_id": "hyperbole-155",
    "text": "Garmi ne maar dala aaj",
    "label": 0,
    "label_text": "benign",
@@ -726,9 +750,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0336",
-   "skeleton_id": "hyperbole-154",
-   "text": "yaar Garmi ne maar dala aaj",
+   "id": "RU-0338",
+   "skeleton_id": "hyperbole-155",
+   "text": "sachi Garmi ne maar dala aaj",
    "label": 0,
    "label_text": "benign",
    "category": "hyperbole",
@@ -738,9 +762,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0337",
-   "skeleton_id": "hyperbole-154",
-   "text": "Garmi ne maaar daal aaj",
+   "id": "RU-0339",
+   "skeleton_id": "hyperbole-155",
+   "text": "Garim ne maar daa aaj",
    "label": 0,
    "label_text": "benign",
    "category": "hyperbole",
@@ -750,8 +774,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0371",
-   "skeleton_id": "hyperbole-166",
+   "id": "RU-0373",
+   "skeleton_id": "hyperbole-167",
    "text": "Bhook lagi hai, marr jaon ga bhook se",
    "label": 0,
    "label_text": "benign",
@@ -762,8 +786,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0372",
-   "skeleton_id": "hyperbole-166",
+   "id": "RU-0374",
+   "skeleton_id": "hyperbole-167",
    "text": "Bhook lagi he, marr jaon ga bhook se",
    "label": 0,
    "label_text": "benign",
@@ -774,9 +798,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0373",
-   "skeleton_id": "hyperbole-166",
-   "text": "sachi bhook lagi hai, marr jaon ga bhook se",
+   "id": "RU-0375",
+   "skeleton_id": "hyperbole-167",
+   "text": "Bhook lagi hai, marr jaon ga bhook se, for real",
    "label": 0,
    "label_text": "benign",
    "category": "hyperbole",
@@ -786,8 +810,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0362",
-   "skeleton_id": "hyperbole-163",
+   "id": "RU-0364",
+   "skeleton_id": "hyperbole-164",
    "text": "Kal exam hai, mar hi jaoon ga",
    "label": 0,
    "label_text": "benign",
@@ -798,21 +822,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0363",
-   "skeleton_id": "hyperbole-163",
-   "text": "Kal exam he, mar hi jaoon ga",
-   "label": 0,
-   "label_text": "benign",
-   "category": "hyperbole",
-   "severity_tier": "NEG",
-   "script_style": "spelling",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0364",
-   "skeleton_id": "hyperbole-163",
-   "text": "Kal exam hai, mar hi jaoon ga, seriously",
+   "id": "RU-0365",
+   "skeleton_id": "hyperbole-164",
+   "text": "Kal exam hai, mar hi jaoon ga, for real",
    "label": 0,
    "label_text": "benign",
    "category": "hyperbole",
@@ -822,8 +834,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0365",
+   "id": "RU-0366",
    "skeleton_id": "hyperbole-164",
+   "text": "Kal exaam hai, mar hi jaon ga",
+   "label": 0,
+   "label_text": "benign",
+   "category": "hyperbole",
+   "severity_tier": "NEG",
+   "script_style": "typo_heavy",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0367",
+   "skeleton_id": "hyperbole-165",
    "text": "Mazaak mein keh raha tha, warna marr jata",
    "label": 0,
    "label_text": "benign",
@@ -834,21 +858,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0366",
-   "skeleton_id": "hyperbole-164",
-   "text": "pata hai Mazaak mein keh raha tha, warna marr jata",
-   "label": 0,
-   "label_text": "benign",
-   "category": "hyperbole",
-   "severity_tier": "NEG",
-   "script_style": "code_switch",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0367",
-   "skeleton_id": "hyperbole-164",
-   "text": "Mazaak min keh raha tha, warna marr jaa",
+   "id": "RU-0368",
+   "skeleton_id": "hyperbole-165",
+   "text": "Mazaak meiin keh raha tha, warna marr jatta",
    "label": 0,
    "label_text": "benign",
    "category": "hyperbole",
@@ -858,8 +870,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0359",
-   "skeleton_id": "hyperbole-162",
+   "id": "RU-0369",
+   "skeleton_id": "hyperbole-165",
+   "text": "Mazaak mein keh raha tha, warna marr jata, seriously",
+   "label": 0,
+   "label_text": "benign",
+   "category": "hyperbole",
+   "severity_tier": "NEG",
+   "script_style": "code_switch",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0361",
+   "skeleton_id": "hyperbole-163",
    "text": "Thoray paise ki wajah se mar jaunga kya?",
    "label": 0,
    "label_text": "benign",
@@ -870,8 +894,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0360",
-   "skeleton_id": "hyperbole-162",
+   "id": "RU-0362",
+   "skeleton_id": "hyperbole-163",
    "text": "Thoray paise ki wajah se mar jaonga kya?",
    "label": 0,
    "label_text": "benign",
@@ -882,33 +906,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0361",
-   "skeleton_id": "hyperbole-162",
-   "text": "pata hai thoray paise ki wajah se mar jaunga kya?",
-   "label": 0,
-   "label_text": "benign",
-   "category": "hyperbole",
-   "severity_tier": "NEG",
-   "script_style": "code_switch",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0341",
-   "skeleton_id": "hyperbole-156",
-   "text": "Has has ke mar jaunga",
-   "label": 0,
-   "label_text": "benign",
-   "category": "hyperbole",
-   "severity_tier": "NEG",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0342",
-   "skeleton_id": "hyperbole-156",
-   "text": "I am done. has has ke mar jaunga",
+   "id": "RU-0363",
+   "skeleton_id": "hyperbole-163",
+   "text": "Thoray paise ki wajah se mar jaunga kya?, I swear",
    "label": 0,
    "label_text": "benign",
    "category": "hyperbole",
@@ -919,8 +919,20 @@
   },
   {
    "id": "RU-0343",
-   "skeleton_id": "hyperbole-156",
-   "text": "Has has ke mar jaaunga",
+   "skeleton_id": "hyperbole-157",
+   "text": "Has has ke mar jaunga",
+   "label": 0,
+   "label_text": "benign",
+   "category": "hyperbole",
+   "severity_tier": "NEG",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0344",
+   "skeleton_id": "hyperbole-157",
+   "text": "Has has ke mar junga",
    "label": 0,
    "label_text": "benign",
    "category": "hyperbole",
@@ -930,9 +942,21 @@
    "reviewer_status": "unlabeled"
   },
   {
+   "id": "RU-0345",
+   "skeleton_id": "hyperbole-157",
+   "text": "Has has ke mar jaonga",
+   "label": 0,
+   "label_text": "benign",
+   "category": "hyperbole",
+   "severity_tier": "NEG",
+   "script_style": "spelling",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
    "id": "RU-0065",
    "skeleton_id": "imminent_intent-032",
-   "text": "Bas kuch der aur, phir main khatam",
+   "text": "Aaj hi khatam ho jaunga main",
    "label": 1,
    "label_text": "crisis",
    "category": "imminent_intent",
@@ -944,7 +968,7 @@
   {
    "id": "RU-0066",
    "skeleton_id": "imminent_intent-032",
-   "text": "yaar bas kuch der aur, phir main khatam",
+   "text": "Aaj hi khatam ho jaunga main, I swear",
    "label": 1,
    "label_text": "crisis",
    "category": "imminent_intent",
@@ -956,7 +980,7 @@
   {
    "id": "RU-0063",
    "skeleton_id": "imminent_intent-031",
-   "text": "Main ne aaj marne ka irada kar liya hai",
+   "text": "Bas kuch der aur, phir main khatam",
    "label": 1,
    "label_text": "crisis",
    "category": "imminent_intent",
@@ -968,7 +992,7 @@
   {
    "id": "RU-0064",
    "skeleton_id": "imminent_intent-031",
-   "text": "Main ne aaj marne ka irada kar liya he",
+   "text": "Bas kuch der aur, phir main khatum",
    "label": 1,
    "label_text": "crisis",
    "category": "imminent_intent",
@@ -980,7 +1004,7 @@
   {
    "id": "RU-0067",
    "skeleton_id": "imminent_intent-033",
-   "text": "Aaj hi khatam ho jaunga main",
+   "text": "Main ne waqt tay kar liya hai, aaj raat",
    "label": 1,
    "label_text": "crisis",
    "category": "imminent_intent",
@@ -992,7 +1016,7 @@
   {
    "id": "RU-0068",
    "skeleton_id": "imminent_intent-033",
-   "text": "Aaj hi khatm ho jaunga mian",
+   "text": "Main ne wqat tay kar lia hai, aaj raat",
    "label": 1,
    "label_text": "crisis",
    "category": "imminent_intent",
@@ -1004,7 +1028,7 @@
   {
    "id": "RU-0059",
    "skeleton_id": "imminent_intent-029",
-   "text": "Ghadi dekh raha hoon, bas waqt aa gaya",
+   "text": "Aaj raat mera aakhri din hai",
    "label": 1,
    "label_text": "crisis",
    "category": "imminent_intent",
@@ -1016,7 +1040,7 @@
   {
    "id": "RU-0060",
    "skeleton_id": "imminent_intent-029",
-   "text": "Ghadi deekh raa hoon, bas waqt aa gaya",
+   "text": "Aaj raat mear aahri din hai",
    "label": 1,
    "label_text": "crisis",
    "category": "imminent_intent",
@@ -1026,8 +1050,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0079",
-   "skeleton_id": "imminent_intent-039",
+   "id": "RU-0077",
+   "skeleton_id": "imminent_intent-038",
    "text": "Aaj raat ke baad main kahin nahi hounga",
    "label": 1,
    "label_text": "crisis",
@@ -1038,21 +1062,21 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0080",
-   "skeleton_id": "imminent_intent-039",
-   "text": "Aaj raat ke baad main kahin nahin hounga",
+   "id": "RU-0078",
+   "skeleton_id": "imminent_intent-038",
+   "text": "Aaj raat ke baad mein kahin nai hounga",
    "label": 1,
    "label_text": "crisis",
    "category": "imminent_intent",
    "severity_tier": "T1",
-   "script_style": "spelling",
+   "script_style": "slang",
    "author": "ai_assisted_v1",
    "reviewer_status": "unlabeled"
   },
   {
    "id": "RU-0069",
    "skeleton_id": "imminent_intent-034",
-   "text": "Main ne waqt tay kar liya hai, aaj raat",
+   "text": "Ab intezar nahi hota, aaj hi karna hai",
    "label": 1,
    "label_text": "crisis",
    "category": "imminent_intent",
@@ -1064,7 +1088,7 @@
   {
    "id": "RU-0070",
    "skeleton_id": "imminent_intent-034",
-   "text": "mein ne waqt tay kar liya hai, aaj raat",
+   "text": "Ab intezar nai hota, aaj hi krna hai",
    "label": 1,
    "label_text": "crisis",
    "category": "imminent_intent",
@@ -1122,8 +1146,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0201",
-   "skeleton_id": "indirect_distress-100",
+   "id": "RU-0203",
+   "skeleton_id": "indirect_distress-101",
    "text": "Mujhe ab jeene ki himmat nahi",
    "label": 1,
    "label_text": "crisis",
@@ -1134,20 +1158,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0202",
-   "skeleton_id": "indirect_distress-100",
-   "text": "I am done. Mujhe ab jeene ki himmat nahi",
+   "id": "RU-0204",
+   "skeleton_id": "indirect_distress-101",
+   "text": "Mjuhe ab jeene ki himmat nai",
    "label": 1,
    "label_text": "crisis",
    "category": "indirect_distress",
    "severity_tier": "T3",
-   "script_style": "code_switch",
+   "script_style": "typo_heavy",
    "author": "ai_assisted_v1",
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0221",
-   "skeleton_id": "indirect_distress-110",
+   "id": "RU-0223",
+   "skeleton_id": "indirect_distress-111",
    "text": "Har cheez bekaar lagti hai ab",
    "label": 1,
    "label_text": "crisis",
@@ -1158,8 +1182,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0222",
-   "skeleton_id": "indirect_distress-110",
+   "id": "RU-0224",
+   "skeleton_id": "indirect_distress-111",
    "text": "Har cheez bekaar lagti he ab",
    "label": 1,
    "label_text": "crisis",
@@ -1170,8 +1194,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0225",
-   "skeleton_id": "indirect_distress-112",
+   "id": "RU-0227",
+   "skeleton_id": "indirect_distress-113",
    "text": "Koi haal nahi hai mera",
    "label": 1,
    "label_text": "crisis",
@@ -1182,20 +1206,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0226",
-   "skeleton_id": "indirect_distress-112",
-   "text": "Koi haal nahi hai mera, seriously",
+   "id": "RU-0228",
+   "skeleton_id": "indirect_distress-113",
+   "text": "Koi haal naih hai mra",
    "label": 1,
    "label_text": "crisis",
    "category": "indirect_distress",
    "severity_tier": "T3",
-   "script_style": "code_switch",
+   "script_style": "typo_heavy",
    "author": "ai_assisted_v1",
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0209",
-   "skeleton_id": "indirect_distress-104",
+   "id": "RU-0211",
+   "skeleton_id": "indirect_distress-105",
    "text": "Sukoon nahi milta kahin",
    "label": 1,
    "label_text": "crisis",
@@ -1206,20 +1230,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0210",
-   "skeleton_id": "indirect_distress-104",
-   "text": "I am done. sukoon nahi milta kahin",
+   "id": "RU-0212",
+   "skeleton_id": "indirect_distress-105",
+   "text": "Skuoon nahi mlita kahin",
    "label": 1,
    "label_text": "crisis",
    "category": "indirect_distress",
    "severity_tier": "T3",
-   "script_style": "code_switch",
+   "script_style": "typo_heavy",
    "author": "ai_assisted_v1",
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0217",
-   "skeleton_id": "indirect_distress-108",
+   "id": "RU-0219",
+   "skeleton_id": "indirect_distress-109",
    "text": "Dil karta hai sab chhor dun",
    "label": 1,
    "label_text": "crisis",
@@ -1230,20 +1254,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0218",
-   "skeleton_id": "indirect_distress-108",
-   "text": "Dil karta hai sab chhor dun, I swear",
+   "id": "RU-0220",
+   "skeleton_id": "indirect_distress-109",
+   "text": "Dil katra hai sab chor dun",
    "label": 1,
    "label_text": "crisis",
    "category": "indirect_distress",
    "severity_tier": "T3",
-   "script_style": "code_switch",
+   "script_style": "typo_heavy",
    "author": "ai_assisted_v1",
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0205",
-   "skeleton_id": "indirect_distress-102",
+   "id": "RU-0207",
+   "skeleton_id": "indirect_distress-103",
    "text": "Koi umeed nahi rahi ab",
    "label": 1,
    "label_text": "crisis",
@@ -1254,14 +1278,14 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0206",
-   "skeleton_id": "indirect_distress-102",
-   "text": "Koi umeed nai rahi ab",
+   "id": "RU-0208",
+   "skeleton_id": "indirect_distress-103",
+   "text": "Koi umeed nahin rahi ab",
    "label": 1,
    "label_text": "crisis",
    "category": "indirect_distress",
    "severity_tier": "T3",
-   "script_style": "slang",
+   "script_style": "spelling",
    "author": "ai_assisted_v1",
    "reviewer_status": "unlabeled"
   },
@@ -1458,8 +1482,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0266",
-   "skeleton_id": "negation-131",
+   "id": "RU-0268",
+   "skeleton_id": "negation-132",
    "text": "Maut mujhe nahi chahiye",
    "label": 0,
    "label_text": "benign",
@@ -1470,20 +1494,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0267",
-   "skeleton_id": "negation-131",
-   "text": "Maut mujhe nahin chahiye",
-   "label": 0,
-   "label_text": "benign",
-   "category": "negation",
-   "severity_tier": "NEG",
-   "script_style": "spelling",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0268",
-   "skeleton_id": "negation-131",
+   "id": "RU-0269",
+   "skeleton_id": "negation-132",
    "text": "yaar Maut mujhe nahi chahiye",
    "label": 0,
    "label_text": "benign",
@@ -1494,8 +1506,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0293",
-   "skeleton_id": "negation-140",
+   "id": "RU-0270",
+   "skeleton_id": "negation-132",
+   "text": "Muat mujeh nahi chahiye",
+   "label": 0,
+   "label_text": "benign",
+   "category": "negation",
+   "severity_tier": "NEG",
+   "script_style": "typo_heavy",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0295",
+   "skeleton_id": "negation-141",
    "text": "Main marrne ka sochta bhi nahi",
    "label": 0,
    "label_text": "benign",
@@ -1506,21 +1530,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0294",
-   "skeleton_id": "negation-140",
-   "text": "Main marrne ka sochta bhi nahi, for real",
-   "label": 0,
-   "label_text": "benign",
-   "category": "negation",
-   "severity_tier": "NEG",
-   "script_style": "code_switch",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0295",
-   "skeleton_id": "negation-140",
-   "text": "Main marre ka sochta bhi nhai",
+   "id": "RU-0296",
+   "skeleton_id": "negation-141",
+   "text": "Main marnre ka sochta bhi nhai",
    "label": 0,
    "label_text": "benign",
    "category": "negation",
@@ -1530,8 +1542,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0296",
+   "id": "RU-0297",
    "skeleton_id": "negation-141",
+   "text": "mein marrne ka sochta bhi nai",
+   "label": 0,
+   "label_text": "benign",
+   "category": "negation",
+   "severity_tier": "NEG",
+   "script_style": "slang",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0298",
+   "skeleton_id": "negation-142",
    "text": "Jeene ka dil karta hai, marne ka nahi",
    "label": 0,
    "label_text": "benign",
@@ -1542,20 +1566,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0297",
-   "skeleton_id": "negation-141",
-   "text": "Jenee ka dil karta hai, marne ka naih",
-   "label": 0,
-   "label_text": "benign",
-   "category": "negation",
-   "severity_tier": "NEG",
-   "script_style": "typo_heavy",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0298",
-   "skeleton_id": "negation-141",
+   "id": "RU-0299",
+   "skeleton_id": "negation-142",
    "text": "Jeene ka dil krta hai, marne ka nai",
    "label": 0,
    "label_text": "benign",
@@ -1566,8 +1578,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0275",
-   "skeleton_id": "negation-134",
+   "id": "RU-0300",
+   "skeleton_id": "negation-142",
+   "text": "Jeene ka dil karta he, marne ka nahi",
+   "label": 0,
+   "label_text": "benign",
+   "category": "negation",
+   "severity_tier": "NEG",
+   "script_style": "spelling",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0277",
+   "skeleton_id": "negation-135",
    "text": "Main apni jaan nahi dena chahta",
    "label": 0,
    "label_text": "benign",
@@ -1578,20 +1602,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0276",
-   "skeleton_id": "negation-134",
-   "text": "mein apni jaan nai dena chahta",
-   "label": 0,
-   "label_text": "benign",
-   "category": "negation",
-   "severity_tier": "NEG",
-   "script_style": "slang",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0277",
-   "skeleton_id": "negation-134",
+   "id": "RU-0278",
+   "skeleton_id": "negation-135",
    "text": "Main apni jaan nahin dena chahta",
    "label": 0,
    "label_text": "benign",
@@ -1602,8 +1614,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0263",
-   "skeleton_id": "negation-130",
+   "id": "RU-0279",
+   "skeleton_id": "negation-135",
+   "text": "sachi Main apni jaan nahi dena chahta",
+   "label": 0,
+   "label_text": "benign",
+   "category": "negation",
+   "severity_tier": "NEG",
+   "script_style": "code_switch",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0265",
+   "skeleton_id": "negation-131",
    "text": "Main khudkushi nahi karna chahta",
    "label": 0,
    "label_text": "benign",
@@ -1614,20 +1638,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0264",
-   "skeleton_id": "negation-130",
-   "text": "mein khudkushi nai krna chahta",
-   "label": 0,
-   "label_text": "benign",
-   "category": "negation",
-   "severity_tier": "NEG",
-   "script_style": "slang",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0265",
-   "skeleton_id": "negation-130",
+   "id": "RU-0266",
+   "skeleton_id": "negation-131",
    "text": "Main khudkushi nahin karna chahta",
    "label": 0,
    "label_text": "benign",
@@ -1638,8 +1650,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0287",
-   "skeleton_id": "negation-138",
+   "id": "RU-0267",
+   "skeleton_id": "negation-131",
+   "text": "Main khudkushi nahi karna chahta, honestly",
+   "label": 0,
+   "label_text": "benign",
+   "category": "negation",
+   "severity_tier": "NEG",
+   "script_style": "code_switch",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0289",
+   "skeleton_id": "negation-139",
    "text": "Mujhe bilkul nahi marna",
    "label": 0,
    "label_text": "benign",
@@ -1650,20 +1674,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0288",
-   "skeleton_id": "negation-138",
-   "text": "mjhe bilkul nai marna",
-   "label": 0,
-   "label_text": "benign",
-   "category": "negation",
-   "severity_tier": "NEG",
-   "script_style": "slang",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0289",
-   "skeleton_id": "negation-138",
+   "id": "RU-0290",
+   "skeleton_id": "negation-139",
    "text": "Mujhe bilkul nahin marna",
    "label": 0,
    "label_text": "benign",
@@ -1674,8 +1686,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0308",
-   "skeleton_id": "recovery-145",
+   "id": "RU-0291",
+   "skeleton_id": "negation-139",
+   "text": "sachi Mujhe bilkul nahi marna",
+   "label": 0,
+   "label_text": "benign",
+   "category": "negation",
+   "severity_tier": "NEG",
+   "script_style": "code_switch",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0310",
+   "skeleton_id": "recovery-146",
    "text": "Purani aadatein chhor di hain maine",
    "label": 0,
    "label_text": "benign",
@@ -1686,20 +1710,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0309",
-   "skeleton_id": "recovery-145",
-   "text": "Purrani aadatein chhhor di hain maine",
-   "label": 0,
-   "label_text": "benign",
-   "category": "recovery",
-   "severity_tier": "NEG",
-   "script_style": "typo_heavy",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0310",
-   "skeleton_id": "recovery-145",
+   "id": "RU-0311",
+   "skeleton_id": "recovery-146",
    "text": "Purani aadatein chhor di hen maine",
    "label": 0,
    "label_text": "benign",
@@ -1710,8 +1722,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0314",
-   "skeleton_id": "recovery-147",
+   "id": "RU-0312",
+   "skeleton_id": "recovery-146",
+   "text": "sachi purani aadatein chhor di hain maine",
+   "label": 0,
+   "label_text": "benign",
+   "category": "recovery",
+   "severity_tier": "NEG",
+   "script_style": "code_switch",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0316",
+   "skeleton_id": "recovery-148",
    "text": "Main pehle sochta tha, ab nahi sochta",
    "label": 0,
    "label_text": "benign",
@@ -1722,21 +1746,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0315",
-   "skeleton_id": "recovery-147",
-   "text": "Main pehle sochta tha, ab nahin sochta",
-   "label": 0,
-   "label_text": "benign",
-   "category": "recovery",
-   "severity_tier": "NEG",
-   "script_style": "spelling",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0316",
-   "skeleton_id": "recovery-147",
-   "text": "pata hai Main pehle sochta tha, ab nahi sochta",
+   "id": "RU-0317",
+   "skeleton_id": "recovery-148",
+   "text": "Main pehle sochta tha, ab nahi sochta, I swear",
    "label": 0,
    "label_text": "benign",
    "category": "recovery",
@@ -1746,8 +1758,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0329",
-   "skeleton_id": "recovery-152",
+   "id": "RU-0318",
+   "skeleton_id": "recovery-148",
+   "text": "Main phle socchta tha, ab nahi sochta",
+   "label": 0,
+   "label_text": "benign",
+   "category": "recovery",
+   "severity_tier": "NEG",
+   "script_style": "typo_heavy",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0331",
+   "skeleton_id": "recovery-153",
    "text": "Ab main apna khayal rakhta hoon",
    "label": 0,
    "label_text": "benign",
@@ -1758,21 +1782,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0330",
-   "skeleton_id": "recovery-152",
-   "text": "yaar Ab main apna khayal rakhta hoon",
-   "label": 0,
-   "label_text": "benign",
-   "category": "recovery",
-   "severity_tier": "NEG",
-   "script_style": "code_switch",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0331",
-   "skeleton_id": "recovery-152",
-   "text": "Ab main apa khayal rahta hoon",
+   "id": "RU-0332",
+   "skeleton_id": "recovery-153",
+   "text": "Ab mian apna khayal rakha hoon",
    "label": 0,
    "label_text": "benign",
    "category": "recovery",
@@ -1782,21 +1794,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0323",
-   "skeleton_id": "recovery-150",
-   "text": "Main ne apni zindagi sanwar li hai",
-   "label": 0,
-   "label_text": "benign",
-   "category": "recovery",
-   "severity_tier": "NEG",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0324",
-   "skeleton_id": "recovery-150",
-   "text": "mein ne apni zindagi sanwar li hai",
+   "id": "RU-0333",
+   "skeleton_id": "recovery-153",
+   "text": "Ab mein apna khayal rakhta hu",
    "label": 0,
    "label_text": "benign",
    "category": "recovery",
@@ -1807,7 +1807,19 @@
   },
   {
    "id": "RU-0325",
-   "skeleton_id": "recovery-150",
+   "skeleton_id": "recovery-151",
+   "text": "Main ne apni zindagi sanwar li hai",
+   "label": 0,
+   "label_text": "benign",
+   "category": "recovery",
+   "severity_tier": "NEG",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0326",
+   "skeleton_id": "recovery-151",
    "text": "Main ne apni zindagi sanwar li he",
    "label": 0,
    "label_text": "benign",
@@ -1818,8 +1830,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0332",
-   "skeleton_id": "recovery-153",
+   "id": "RU-0327",
+   "skeleton_id": "recovery-151",
+   "text": "I am done. Main ne apni zindagi sanwar li hai",
+   "label": 0,
+   "label_text": "benign",
+   "category": "recovery",
+   "severity_tier": "NEG",
+   "script_style": "code_switch",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0334",
+   "skeleton_id": "recovery-154",
    "text": "Khudkushi ka khayal ab nahi aata",
    "label": 0,
    "label_text": "benign",
@@ -1830,20 +1854,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0333",
-   "skeleton_id": "recovery-153",
-   "text": "Khdkushi ka khhayal ab nahi aata",
-   "label": 0,
-   "label_text": "benign",
-   "category": "recovery",
-   "severity_tier": "NEG",
-   "script_style": "typo_heavy",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0334",
-   "skeleton_id": "recovery-153",
+   "id": "RU-0335",
+   "skeleton_id": "recovery-154",
    "text": "Khudkushi ka khayal ab nai aata",
    "label": 0,
    "label_text": "benign",
@@ -1854,8 +1866,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0434",
-   "skeleton_id": "religious_benign-187",
+   "id": "RU-0336",
+   "skeleton_id": "recovery-154",
+   "text": "Khudkushi ka khayal ab nahin aata",
+   "label": 0,
+   "label_text": "benign",
+   "category": "recovery",
+   "severity_tier": "NEG",
+   "script_style": "spelling",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0436",
+   "skeleton_id": "religious_benign-188",
    "text": "Namaz ne sukoon diya aaj",
    "label": 0,
    "label_text": "benign",
@@ -1866,9 +1890,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0435",
-   "skeleton_id": "religious_benign-187",
-   "text": "pata hai namaz ne sukoon diya aaj",
+   "id": "RU-0437",
+   "skeleton_id": "religious_benign-188",
+   "text": "Namaz ne sukoon diya aaj, I swear",
    "label": 0,
    "label_text": "benign",
    "category": "religious_benign",
@@ -1878,9 +1902,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0436",
-   "skeleton_id": "religious_benign-187",
-   "text": "Namaz ne sukoon diay aaj",
+   "id": "RU-0438",
+   "skeleton_id": "religious_benign-188",
+   "text": "Nmaz ne suokon diya aaj",
    "label": 0,
    "label_text": "benign",
    "category": "religious_benign",
@@ -1890,8 +1914,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0425",
-   "skeleton_id": "religious_benign-184",
+   "id": "RU-0427",
+   "skeleton_id": "religious_benign-185",
    "text": "Allah ka shukar hai sab theek hai",
    "label": 0,
    "label_text": "benign",
@@ -1902,21 +1926,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0426",
-   "skeleton_id": "religious_benign-184",
-   "text": "pata hai Allah ka shukar hai sab theek hai",
-   "label": 0,
-   "label_text": "benign",
-   "category": "religious_benign",
-   "severity_tier": "NEG",
-   "script_style": "code_switch",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0427",
-   "skeleton_id": "religious_benign-184",
-   "text": "Allaah ka shukar hai sab theek hai",
+   "id": "RU-0428",
+   "skeleton_id": "religious_benign-185",
+   "text": "Alah ka shukar hai sab theek hai",
    "label": 0,
    "label_text": "benign",
    "category": "religious_benign",
@@ -1926,8 +1938,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0428",
+   "id": "RU-0429",
    "skeleton_id": "religious_benign-185",
+   "text": "Allah ka shukar he sab theek he",
+   "label": 0,
+   "label_text": "benign",
+   "category": "religious_benign",
+   "severity_tier": "NEG",
+   "script_style": "spelling",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0430",
+   "skeleton_id": "religious_benign-186",
    "text": "Dua karo mere liye, mushkil waqt hai",
    "label": 0,
    "label_text": "benign",
@@ -1938,20 +1962,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0429",
-   "skeleton_id": "religious_benign-185",
-   "text": "Dua krao meer liye, mushkil waqt hai",
-   "label": 0,
-   "label_text": "benign",
-   "category": "religious_benign",
-   "severity_tier": "NEG",
-   "script_style": "typo_heavy",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0430",
-   "skeleton_id": "religious_benign-185",
+   "id": "RU-0431",
+   "skeleton_id": "religious_benign-186",
    "text": "Dua karo mere liye, mushkil waqt he",
    "label": 0,
    "label_text": "benign",
@@ -1962,8 +1974,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0500",
-   "skeleton_id": "sarcasm_quoted-209",
+   "id": "RU-0432",
+   "skeleton_id": "religious_benign-186",
+   "text": "pata hai dua karo mere liye, mushkil waqt hai",
+   "label": 0,
+   "label_text": "benign",
+   "category": "religious_benign",
+   "severity_tier": "NEG",
+   "script_style": "code_switch",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0502",
+   "skeleton_id": "sarcasm_quoted-210",
    "text": "Marna chahta hoon... mazak kar raha hoon yaar",
    "label": 0,
    "label_text": "benign",
@@ -1974,20 +1998,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0501",
-   "skeleton_id": "sarcasm_quoted-209",
-   "text": "Marna chahta hoon... mazak kar raaha hoon yaaar",
-   "label": 0,
-   "label_text": "benign",
-   "category": "sarcasm_quoted",
-   "severity_tier": "NEG",
-   "script_style": "typo_heavy",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0502",
-   "skeleton_id": "sarcasm_quoted-209",
+   "id": "RU-0503",
+   "skeleton_id": "sarcasm_quoted-210",
    "text": "Marna chahta hu... mazak kar raha hu yaar",
    "label": 0,
    "label_text": "benign",
@@ -1998,21 +2010,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0506",
-   "skeleton_id": "sarcasm_quoted-211",
-   "text": "Filmy dialogue yaad aa gaya, “ab main nahi rahoon ga”",
-   "label": 0,
-   "label_text": "benign",
-   "category": "sarcasm_quoted",
-   "severity_tier": "NEG",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0507",
-   "skeleton_id": "sarcasm_quoted-211",
-   "text": "Filmy dialogue yaad aa gaya, “ab main nahin rahoon ga”",
+   "id": "RU-0504",
+   "skeleton_id": "sarcasm_quoted-210",
+   "text": "Marna chahtaa hoon... mazak kar raha hoon yaar",
    "label": 0,
    "label_text": "benign",
    "category": "sarcasm_quoted",
@@ -2023,20 +2023,8 @@
   },
   {
    "id": "RU-0508",
-   "skeleton_id": "sarcasm_quoted-211",
-   "text": "yaar filmy dialogue yaad aa gaya, “ab main nahi rahoon ga”",
-   "label": 0,
-   "label_text": "benign",
-   "category": "sarcasm_quoted",
-   "severity_tier": "NEG",
-   "script_style": "code_switch",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0512",
-   "skeleton_id": "sarcasm_quoted-213",
-   "text": "Mazaak mein keh diya, mar jaoon ga bore ho kar",
+   "skeleton_id": "sarcasm_quoted-212",
+   "text": "Filmy dialogue yaad aa gaya, “ab main nahi rahoon ga”",
    "label": 0,
    "label_text": "benign",
    "category": "sarcasm_quoted",
@@ -2046,9 +2034,21 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0513",
-   "skeleton_id": "sarcasm_quoted-213",
-   "text": "Mazaak mein keh diya, mar jaooon ga boe ho kar",
+   "id": "RU-0509",
+   "skeleton_id": "sarcasm_quoted-212",
+   "text": "Filmy dialogue yaad aa gaya, “ab main nahi rahoon ga”, seriously",
+   "label": 0,
+   "label_text": "benign",
+   "category": "sarcasm_quoted",
+   "severity_tier": "NEG",
+   "script_style": "code_switch",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0510",
+   "skeleton_id": "sarcasm_quoted-212",
+   "text": "Fily dialoogue yaad aa gaya, “ab main nahi rahoon ga”",
    "label": 0,
    "label_text": "benign",
    "category": "sarcasm_quoted",
@@ -2059,8 +2059,20 @@
   },
   {
    "id": "RU-0514",
-   "skeleton_id": "sarcasm_quoted-213",
-   "text": "pata hai Mazaak mein keh diya, mar jaoon ga bore ho kar",
+   "skeleton_id": "sarcasm_quoted-214",
+   "text": "Mazaak mein keh diya, mar jaoon ga bore ho kar",
+   "label": 0,
+   "label_text": "benign",
+   "category": "sarcasm_quoted",
+   "severity_tier": "NEG",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0515",
+   "skeleton_id": "sarcasm_quoted-214",
+   "text": "Mazaak mein keh diya, mar jaoon ga bore ho kar, I swear",
    "label": 0,
    "label_text": "benign",
    "category": "sarcasm_quoted",
@@ -2070,8 +2082,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0189",
-   "skeleton_id": "self_harm-094",
+   "id": "RU-0516",
+   "skeleton_id": "sarcasm_quoted-214",
+   "text": "Maaak mein keh diya, mar jaooon ga bore ho kar",
+   "label": 0,
+   "label_text": "benign",
+   "category": "sarcasm_quoted",
+   "severity_tier": "NEG",
+   "script_style": "typo_heavy",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0191",
+   "skeleton_id": "self_harm-095",
    "text": "Main khud ko marta hoon galtiyon par",
    "label": 1,
    "label_text": "crisis",
@@ -2082,20 +2106,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0190",
-   "skeleton_id": "self_harm-094",
-   "text": "mein khud ko marta hu galtiyon par",
+   "id": "RU-0192",
+   "skeleton_id": "self_harm-095",
+   "text": "pata hai Main khud ko marta hoon galtiyon par",
    "label": 1,
    "label_text": "crisis",
    "category": "self_harm",
    "severity_tier": "T2",
-   "script_style": "slang",
+   "script_style": "code_switch",
    "author": "ai_assisted_v1",
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0173",
-   "skeleton_id": "self_harm-086",
+   "id": "RU-0175",
+   "skeleton_id": "self_harm-087",
    "text": "Mujhe dard mein sukoon milta hai",
    "label": 1,
    "label_text": "crisis",
@@ -2106,20 +2130,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0174",
-   "skeleton_id": "self_harm-086",
-   "text": "mjhe dard mein sukoon milta hai",
+   "id": "RU-0176",
+   "skeleton_id": "self_harm-087",
+   "text": "Mujhe dard mein sukoon milta he",
    "label": 1,
    "label_text": "crisis",
    "category": "self_harm",
    "severity_tier": "T2",
-   "script_style": "slang",
+   "script_style": "spelling",
    "author": "ai_assisted_v1",
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0161",
-   "skeleton_id": "self_harm-080",
+   "id": "RU-0163",
+   "skeleton_id": "self_harm-081",
    "text": "Main apni kalai kaat raha hoon",
    "label": 1,
    "label_text": "crisis",
@@ -2130,57 +2154,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0162",
-   "skeleton_id": "self_harm-080",
-   "text": "pata hai Main apni kalai kaat raha hoon",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "self_harm",
-   "severity_tier": "T2",
-   "script_style": "code_switch",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0167",
-   "skeleton_id": "self_harm-083",
-   "text": "Blade mere paas hai, main kaatunga",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "self_harm",
-   "severity_tier": "T2",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0168",
-   "skeleton_id": "self_harm-083",
-   "text": "Blade mere paas he, main kaatunga",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "self_harm",
-   "severity_tier": "T2",
-   "script_style": "spelling",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0171",
-   "skeleton_id": "self_harm-085",
-   "text": "Kalai par nishan hain, phir bhi kaat raha hoon",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "self_harm",
-   "severity_tier": "T2",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0172",
-   "skeleton_id": "self_harm-085",
-   "text": "Kalai par nsihan hain, phir bhi kaat rhaa hoon",
+   "id": "RU-0164",
+   "skeleton_id": "self_harm-081",
+   "text": "Main apni kalai kata rhaa hoon",
    "label": 1,
    "label_text": "crisis",
    "category": "self_harm",
@@ -2192,7 +2168,7 @@
   {
    "id": "RU-0169",
    "skeleton_id": "self_harm-084",
-   "text": "Main har roz khud ko zakhami karta hoon",
+   "text": "Blade mere paas hai, main kaatunga",
    "label": 1,
    "label_text": "crisis",
    "category": "self_harm",
@@ -2204,7 +2180,7 @@
   {
    "id": "RU-0170",
    "skeleton_id": "self_harm-084",
-   "text": "Main har roz khud ko zakhami karta hoon, seriously",
+   "text": "Blade mere paas hai, main kaatunga, seriously",
    "label": 1,
    "label_text": "crisis",
    "category": "self_harm",
@@ -2214,8 +2190,56 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0183",
-   "skeleton_id": "self_harm-091",
+   "id": "RU-0173",
+   "skeleton_id": "self_harm-086",
+   "text": "Kalai par nishan hain, phir bhi kaat raha hoon",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "self_harm",
+   "severity_tier": "T2",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0174",
+   "skeleton_id": "self_harm-086",
+   "text": "Kalai par nishan hain, phir bhi kaat raha hu",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "self_harm",
+   "severity_tier": "T2",
+   "script_style": "slang",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0171",
+   "skeleton_id": "self_harm-085",
+   "text": "Main har roz khud ko zakhami karta hoon",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "self_harm",
+   "severity_tier": "T2",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0172",
+   "skeleton_id": "self_harm-085",
+   "text": "Main har roz kuhd ko zakhami karta hoon",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "self_harm",
+   "severity_tier": "T2",
+   "script_style": "typo_heavy",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0185",
+   "skeleton_id": "self_harm-092",
    "text": "Khud ko chot pahunchane ka dil karta hai",
    "label": 1,
    "label_text": "crisis",
@@ -2226,20 +2250,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0184",
-   "skeleton_id": "self_harm-091",
-   "text": "Khud ko chot pahunchane ka dil karta he",
+   "id": "RU-0186",
+   "skeleton_id": "self_harm-092",
+   "text": "pata hai khud ko chot pahunchane ka dil karta hai",
    "label": 1,
    "label_text": "crisis",
    "category": "self_harm",
    "severity_tier": "T2",
-   "script_style": "spelling",
+   "script_style": "code_switch",
    "author": "ai_assisted_v1",
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0179",
-   "skeleton_id": "self_harm-089",
+   "id": "RU-0181",
+   "skeleton_id": "self_harm-090",
    "text": "Zakham bharte nahi ke main dobara kaat deta hoon",
    "label": 1,
    "label_text": "crisis",
@@ -2250,61 +2274,13 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0180",
-   "skeleton_id": "self_harm-089",
-   "text": "Zakham bharte naahi ke mani dobara kaat deta hoon",
+   "id": "RU-0182",
+   "skeleton_id": "self_harm-090",
+   "text": "Zakham bharte nai ke mein dobara kaat deta hu",
    "label": 1,
    "label_text": "crisis",
    "category": "self_harm",
    "severity_tier": "T2",
-   "script_style": "typo_heavy",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0249",
-   "skeleton_id": "subtle_slang-124",
-   "text": "Main bore ho gaya hoon zindagi se",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "subtle_slang",
-   "severity_tier": "T3",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0250",
-   "skeleton_id": "subtle_slang-124",
-   "text": "Main bore ho gaya hoon zindagi se, seriously",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "subtle_slang",
-   "severity_tier": "T3",
-   "script_style": "code_switch",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0237",
-   "skeleton_id": "subtle_slang-118",
-   "text": "Dil karta hai neend mein hi na jaagun",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "subtle_slang",
-   "severity_tier": "T3",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0238",
-   "skeleton_id": "subtle_slang-118",
-   "text": "Dil krta hai neend mein hi na jaagun",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "subtle_slang",
-   "severity_tier": "T3",
    "script_style": "slang",
    "author": "ai_assisted_v1",
    "reviewer_status": "unlabeled"
@@ -2312,7 +2288,7 @@
   {
    "id": "RU-0251",
    "skeleton_id": "subtle_slang-125",
-   "text": "Marr jaoon ga to shayad sab samajh jayenge",
+   "text": "Main bore ho gaya hoon zindagi se",
    "label": 1,
    "label_text": "crisis",
    "category": "subtle_slang",
@@ -2324,7 +2300,7 @@
   {
    "id": "RU-0252",
    "skeleton_id": "subtle_slang-125",
-   "text": "Maarr jaoon ga to shayad sab sammajh jayenge",
+   "text": "Maiin bore ho gaya hoon zindaig se",
    "label": 1,
    "label_text": "crisis",
    "category": "subtle_slang",
@@ -2334,9 +2310,81 @@
    "reviewer_status": "unlabeled"
   },
   {
+   "id": "RU-0239",
+   "skeleton_id": "subtle_slang-119",
+   "text": "Dil karta hai neend mein hi na jaagun",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "subtle_slang",
+   "severity_tier": "T3",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0240",
+   "skeleton_id": "subtle_slang-119",
+   "text": "Dil karta he neend mein hi na jaagun",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "subtle_slang",
+   "severity_tier": "T3",
+   "script_style": "spelling",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0253",
+   "skeleton_id": "subtle_slang-126",
+   "text": "Marr jaoon ga to shayad sab samajh jayenge",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "subtle_slang",
+   "severity_tier": "T3",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0254",
+   "skeleton_id": "subtle_slang-126",
+   "text": "Marr jaoon ga to shayad sab samajh jayenge, for real",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "subtle_slang",
+   "severity_tier": "T3",
+   "script_style": "code_switch",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0237",
+   "skeleton_id": "subtle_slang-118",
+   "text": "Sab acha lagta hai bas marr jaoon",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "subtle_slang",
+   "severity_tier": "T3",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0238",
+   "skeleton_id": "subtle_slang-118",
+   "text": "Sab acha lagta he bas marr jaoon",
+   "label": 1,
+   "label_text": "crisis",
+   "category": "subtle_slang",
+   "severity_tier": "T3",
+   "script_style": "spelling",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
    "id": "RU-0235",
    "skeleton_id": "subtle_slang-117",
-   "text": "Sab acha lagta hai bas marr jaoon",
+   "text": "Yaar jee nahi karta ab jeene ka",
    "label": 1,
    "label_text": "crisis",
    "category": "subtle_slang",
@@ -2348,7 +2396,7 @@
   {
    "id": "RU-0236",
    "skeleton_id": "subtle_slang-117",
-   "text": "Sab accha lagtta hai bas marr jaoon",
+   "text": "Yara jee nahi kaarta ab jeene ka",
    "label": 1,
    "label_text": "crisis",
    "category": "subtle_slang",
@@ -2358,32 +2406,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0233",
-   "skeleton_id": "subtle_slang-116",
-   "text": "Yaar jee nahi karta ab jeene ka",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "subtle_slang",
-   "severity_tier": "T3",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0234",
-   "skeleton_id": "subtle_slang-116",
-   "text": "I am done. Yaar jee nahi karta ab jeene ka",
-   "label": 1,
-   "label_text": "crisis",
-   "category": "subtle_slang",
-   "severity_tier": "T3",
-   "script_style": "code_switch",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0464",
-   "skeleton_id": "third_party-197",
+   "id": "RU-0466",
+   "skeleton_id": "third_party-198",
    "text": "Ek dost ki madad karni hai, wo theek nahi",
    "label": 0,
    "label_text": "benign",
@@ -2394,20 +2418,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0465",
-   "skeleton_id": "third_party-197",
-   "text": "Ek dots ki madad karnni hai, wo theek nahi",
-   "label": 0,
-   "label_text": "benign",
-   "category": "third_party",
-   "severity_tier": "NEG",
-   "script_style": "typo_heavy",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0466",
-   "skeleton_id": "third_party-197",
+   "id": "RU-0467",
+   "skeleton_id": "third_party-198",
    "text": "Ek dost ki madad karni hai, wo theek nai",
    "label": 0,
    "label_text": "benign",
@@ -2418,21 +2430,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0458",
-   "skeleton_id": "third_party-195",
-   "text": "Us ka bhai self harm karta hai, mashwara chahiye",
-   "label": 0,
-   "label_text": "benign",
-   "category": "third_party",
-   "severity_tier": "NEG",
-   "script_style": "pure_roman",
-   "author": "ai_assisted_v1",
-   "reviewer_status": "unlabeled"
-  },
-  {
-   "id": "RU-0459",
-   "skeleton_id": "third_party-195",
-   "text": "Us ka bhai self harm karta he, mashwara chahiye",
+   "id": "RU-0468",
+   "skeleton_id": "third_party-198",
+   "text": "Ek dost ki madad karni he, wo theek nahi",
    "label": 0,
    "label_text": "benign",
    "category": "third_party",
@@ -2443,8 +2443,20 @@
   },
   {
    "id": "RU-0460",
-   "skeleton_id": "third_party-195",
-   "text": "I am done. us ka bhai self harm karta hai, mashwara chahiye",
+   "skeleton_id": "third_party-196",
+   "text": "Us ka bhai self harm karta hai, mashwara chahiye",
+   "label": 0,
+   "label_text": "benign",
+   "category": "third_party",
+   "severity_tier": "NEG",
+   "script_style": "pure_roman",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0461",
+   "skeleton_id": "third_party-196",
+   "text": "Us ka bhai self harm karta hai, mashwara chahiye, seriously",
    "label": 0,
    "label_text": "benign",
    "category": "third_party",
@@ -2454,8 +2466,20 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0443",
-   "skeleton_id": "third_party-190",
+   "id": "RU-0462",
+   "skeleton_id": "third_party-196",
+   "text": "Us ka bhai self hram katra hai, mashwara chahiye",
+   "label": 0,
+   "label_text": "benign",
+   "category": "third_party",
+   "severity_tier": "NEG",
+   "script_style": "typo_heavy",
+   "author": "ai_assisted_v1",
+   "reviewer_status": "unlabeled"
+  },
+  {
+   "id": "RU-0445",
+   "skeleton_id": "third_party-191",
    "text": "Bhai ne kaha us ka dost khudkushi karne laga hai",
    "label": 0,
    "label_text": "benign",
@@ -2466,8 +2490,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0444",
-   "skeleton_id": "third_party-190",
+   "id": "RU-0446",
+   "skeleton_id": "third_party-191",
    "text": "Bhai ne kaha us ka dost khudkushi karne laga he",
    "label": 0,
    "label_text": "benign",
@@ -2478,9 +2502,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0445",
-   "skeleton_id": "third_party-190",
-   "text": "yaar bhai ne kaha us ka dost khudkushi karne laga hai",
+   "id": "RU-0447",
+   "skeleton_id": "third_party-191",
+   "text": "pata hai bhai ne kaha us ka dost khudkushi karne laga hai",
    "label": 0,
    "label_text": "benign",
    "category": "third_party",
@@ -2490,8 +2514,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0455",
-   "skeleton_id": "third_party-194",
+   "id": "RU-0457",
+   "skeleton_id": "third_party-195",
    "text": "Mera dost pareshan hai, kya karoon?",
    "label": 0,
    "label_text": "benign",
@@ -2502,8 +2526,8 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0456",
-   "skeleton_id": "third_party-194",
+   "id": "RU-0458",
+   "skeleton_id": "third_party-195",
    "text": "Mera dost pareshan he, kya karoon?",
    "label": 0,
    "label_text": "benign",
@@ -2514,9 +2538,9 @@
    "reviewer_status": "unlabeled"
   },
   {
-   "id": "RU-0457",
-   "skeleton_id": "third_party-194",
-   "text": "Mera dost pareshan hai, kya karoon?, seriously",
+   "id": "RU-0459",
+   "skeleton_id": "third_party-195",
+   "text": "pata hai mera dost pareshan hai, kya karoon?",
    "label": 0,
    "label_text": "benign",
    "category": "third_party",

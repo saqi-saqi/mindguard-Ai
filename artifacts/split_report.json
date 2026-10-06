@@ -1,8 +1,8 @@
 {
  "seed": 42,
  "dev_cases": 310,
- "test_cases": 210,
- "test_sha256": "42a92357d4979e340a3c6c28d98bf032f39c9907132b4e32af6ba14e7a18d616",
+ "test_cases": 212,
+ "test_sha256": "baac5f33a5ccefc4183c466d7144c3e5557c1971bb706cbe35c426735ebd3541",
  "per_category": {
   "academic_media_fiction": {
    "skeletons_total": 12,
@@ -21,11 +21,11 @@
    "gate_ok": null
   },
   "burden_goodbye": {
-   "skeletons_total": 20,
-   "skeletons_dev": 12,
-   "skeletons_test": 8,
-   "cases_dev": 24,
-   "cases_test": 16,
+   "skeletons_total": 22,
+   "skeletons_dev": 13,
+   "skeletons_test": 9,
+   "cases_dev": 26,
+   "cases_test": 18,
    "gate_ok": true
   },
   "explicit_intent": {
@@ -45,10 +45,10 @@
    "gate_ok": null
   },
   "imminent_intent": {
-   "skeletons_total": 20,
-   "skeletons_dev": 12,
+   "skeletons_total": 19,
+   "skeletons_dev": 11,
    "skeletons_test": 8,
-   "cases_dev": 24,
+   "cases_dev": 22,
    "cases_test": 16,
    "gate_ok": true
   },
