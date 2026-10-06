@@ -58,11 +58,27 @@ const renderFormattedText = (text: string) => {
 function AnalysisBadges({ msg }: { msg: ChatMessage }) {
   const [showDetails, setShowDetails] = useState(false);
 
-  if (msg.risk_level === "HIGH_CRISIS") {
+  if (
+    msg.risk_level === "HIGH_CRISIS" ||
+    msg.risk_level === "HARM_TO_OTHERS_RISK" ||
+    msg.risk_level === "COMBINED_HIGH_CRISIS" ||
+    msg.risk_level === "SELF_HARM_RISK"
+  ) {
     return (
       <div className="flex items-center gap-2 pt-2 px-1">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-900 shadow-2xs">
-          🚨 Crisis Protocol Active
+          🚨 Emergency Safety Protocol Active
+        </span>
+        <time className="text-xs text-slate-500">{msg.timestamp}</time>
+      </div>
+    );
+  }
+
+  if (msg.risk_level === "THIRD_PARTY_REPORT") {
+    return (
+      <div className="flex items-center gap-2 pt-2 px-1">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900 shadow-2xs">
+          🛡️ Third-Party Safety Guidance
         </span>
         <time className="text-xs text-slate-500">{msg.timestamp}</time>
       </div>
@@ -125,6 +141,7 @@ interface ChatInterfaceProps {
   onOpenCrisisModal: (resources?: CrisisResources | null, mode?: "manual" | "detected") => void;
   onRecordMood: (log: MoodLog) => void;
   onWipePersonalData?: () => void;
+  isCrisisModalOpen?: boolean;
 }
 
 export default function ChatInterface({
@@ -133,16 +150,14 @@ export default function ChatInterface({
   initialMessages = [],
   onOpenCrisisModal,
   onRecordMood,
-  onWipePersonalData
+  onWipePersonalData,
+  isCrisisModalOpen = false
 }: ChatInterfaceProps) {
   const defaultWelcome: ChatMessage = {
     id: "welcome",
     sender: "bot",
     text: "Hello! I am MindGuard, your automated AI mental health companion. I am here to offer empathetic listening, grounding techniques, and supportive exercises. How are you feeling today?",
     timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    intent: "GREETING OR CASUAL CHAT",
-    emotion: "NEUTRAL",
-    sentiment: "POSITIVE",
   };
 
   const [messages, setMessages] = useState<ChatMessage[]>([defaultWelcome]);
@@ -261,10 +276,22 @@ export default function ChatInterface({
         throw new Error("Invalid or empty response received from server.");
       }
       const data = resData.data || resData;
-      const isCrisisAlert = data.risk_level === "HIGH_CRISIS" || data.requires_immediate_action;
-      const replyText = data.reply || (isCrisisAlert ? "I want to make sure you are safe right now. Please connect with emergency services immediately." : "");
+      const isThirdParty = data.risk_level === "THIRD_PARTY_REPORT";
+      const isCrisisAlert =
+        !isThirdParty &&
+        (data.risk_level === "HIGH_CRISIS" ||
+          data.risk_level === "HARM_TO_OTHERS_RISK" ||
+          data.risk_level === "COMBINED_HIGH_CRISIS" ||
+          data.risk_level === "SELF_HARM_RISK" ||
+          data.requires_immediate_action);
 
-      if (resData.success !== false && (replyText || isCrisisAlert)) {
+      const replyText =
+        data.reply ||
+        (isCrisisAlert
+          ? "Immediate safety support needed — move away from the person and any weapon or harmful object, and contact emergency services now."
+          : "");
+
+      if (resData.success !== false && (replyText || isCrisisAlert || isThirdParty)) {
         if (data.session_id) setActiveSessionId(data.session_id);
         const botMsg: ChatMessage = {
           id: (Date.now() + 1).toString(),
@@ -282,11 +309,11 @@ export default function ChatInterface({
         setMessages((prev) => [...prev, botMsg]);
         setLiveAnnouncement(`New message from MindGuard: ${replyText}`);
 
-        if (data.risk_level === "HIGH_CRISIS" || data.risk_level === "ELEVATED_DISTRESS") {
+        if (isCrisisAlert || data.risk_level === "ELEVATED_DISTRESS") {
           setDismissedEmergencyBanner(false);
         }
 
-        if (data.risk_level === "HIGH_CRISIS") {
+        if (isCrisisAlert) {
           onOpenCrisisModal(data.emergency_resources, "detected");
         }
       } else {
@@ -511,21 +538,62 @@ export default function ChatInterface({
               </div>
 
               <div className="min-w-0 flex-1">
-                <div
-                  className={`rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-2xs ${
-                    msg.sender === "user"
-                      ? "rounded-tr-xs bg-indigo-600 text-white"
-                      : msg.risk_level === "HIGH_CRISIS"
-                        ? "rounded-tl-xs border border-rose-200 bg-rose-50 text-rose-900 font-medium"
-                        : msg.isError
-                          ? "rounded-tl-xs border border-amber-200 bg-amber-50 text-amber-900"
-                          : "rounded-tl-xs border border-slate-200/90 bg-white text-slate-800"
-                  }`}
-                >
-                  <div className="whitespace-pre-wrap break-words leading-relaxed font-normal">
-                    {renderFormattedText(msg.text)}
+                {msg.risk_level === "THIRD_PARTY_REPORT" ? (
+                  <div
+                    role="region"
+                    aria-label="Third-Party Crisis Guidance"
+                    className="rounded-2xl rounded-tl-xs border-2 border-amber-300 bg-amber-50/95 p-4 text-sm text-slate-900 shadow-sm"
+                  >
+                    <div className="flex items-center gap-2 font-bold text-amber-900 mb-2">
+                      <ShieldAlert className="size-4 text-amber-700" />
+                      <span>Third-Party Safety & Intervention Guidance</span>
+                    </div>
+                    <div className="whitespace-pre-wrap break-words leading-relaxed font-normal text-slate-800 mb-3">
+                      {renderFormattedText(msg.text)}
+                    </div>
+                    <div className="rounded-xl border border-amber-200 bg-white p-3 text-xs text-slate-800">
+                      <p className="font-bold text-amber-950 mb-2">
+                        Pakistan Emergency Numbers to Share or Call for Immediate Help:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <a href="tel:15" className="inline-flex items-center gap-1 rounded-lg bg-rose-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-800">
+                          📞 Call 15 (Police Emergency)
+                        </a>
+                        <a href="tel:1122" className="inline-flex items-center gap-1 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-700">
+                          📞 Call 1122 (Pakistan Rescue)
+                        </a>
+                        <a href="tel:115" className="inline-flex items-center gap-1 rounded-lg bg-rose-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-800">
+                          📞 Call 115 (Edhi Ambulance)
+                        </a>
+                        <a href="tel:03117786264" className="inline-flex items-center gap-1 rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-800">
+                          📞 Call 0311-7786264 (Umang Helpline)
+                        </a>
+                      </div>
+                      <p className="mt-2 text-[11px] text-slate-600 italic">
+                        Please encourage the person at risk to connect with these numbers directly, or contact emergency authorities or someone who can intervene to help keep everyone safe.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div
+                    className={`rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-2xs ${
+                      msg.sender === "user"
+                        ? "rounded-tr-xs bg-indigo-600 text-white"
+                        : msg.risk_level === "HIGH_CRISIS" ||
+                          msg.risk_level === "HARM_TO_OTHERS_RISK" ||
+                          msg.risk_level === "COMBINED_HIGH_CRISIS" ||
+                          msg.risk_level === "SELF_HARM_RISK"
+                          ? "rounded-tl-xs border-2 border-rose-300 bg-rose-50 text-rose-950 font-medium"
+                          : msg.isError
+                            ? "rounded-tl-xs border border-amber-200 bg-amber-50 text-amber-900"
+                            : "rounded-tl-xs border border-slate-200/90 bg-white text-slate-800"
+                    }`}
+                  >
+                    <div className="whitespace-pre-wrap break-words leading-relaxed font-normal">
+                      {renderFormattedText(msg.text)}
+                    </div>
+                  </div>
+                )}
 
                 {/* Grounding Exercise Card */}
                 {msg.grounding_exercise && (
@@ -553,7 +621,7 @@ export default function ChatInterface({
                   </div>
                 )}
 
-                {msg.sender === "bot" && (msg.intent || msg.sentiment) && (
+                {msg.sender === "bot" && msg.id !== "welcome" && (msg.intent || msg.sentiment || msg.risk_level) && (
                   <AnalysisBadges msg={msg} />
                 )}
                 {msg.sender === "bot" && !msg.intent && !msg.sentiment && (
@@ -659,7 +727,7 @@ export default function ChatInterface({
                 key={i}
                 type="button"
                 onClick={() => void handleSendMessage(pill)}
-                disabled={isLoading}
+                disabled={isLoading || isCrisisModalOpen}
                 className="rounded-full border border-slate-200/90 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700 transition-all hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:opacity-50 cursor-pointer shadow-2xs"
               >
                 {pill}
@@ -686,14 +754,18 @@ export default function ChatInterface({
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyDown}
               rows={1}
-              placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
-              className="max-h-28 min-h-[38px] flex-1 resize-none bg-transparent px-2 py-1.5 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none font-sans leading-relaxed"
-              disabled={isLoading}
+              placeholder={
+                isCrisisModalOpen
+                  ? "Emergency safety protocol active — please review resources above..."
+                  : "Type your message... (Enter to send, Shift+Enter for new line)"
+              }
+              className="max-h-28 min-h-[38px] flex-1 resize-none bg-transparent px-2 py-1.5 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none font-sans leading-relaxed disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
+              disabled={isLoading || isCrisisModalOpen}
             />
 
             <button
               type="submit"
-              disabled={!inputText.trim() || isLoading}
+              disabled={!inputText.trim() || isLoading || isCrisisModalOpen}
               aria-label="Send message"
               className="grid size-9 shrink-0 place-items-center rounded-xl bg-indigo-600 text-white shadow-xs transition-all hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 cursor-pointer"
             >

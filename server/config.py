@@ -30,6 +30,7 @@ USE_MONGOMOCK = os.environ.get("USE_MONGOMOCK", "false").lower() in ("true", "1"
 # Flask & Security Configuration
 FLASK_SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", "dev_secret_key_mindguard_2026")
 FLASK_DEBUG = os.environ.get("FLASK_DEBUG", "False").lower() in ("true", "1")
+FLASK_USE_RELOADER = os.environ.get("FLASK_USE_RELOADER", "false").lower() in ("true", "1", "yes")
 FLASK_PORT = int(os.environ.get("FLASK_PORT", "5000"))
 FLASK_HOST = os.environ.get("FLASK_HOST", "127.0.0.1")
 CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", os.environ.get("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")).split(",")

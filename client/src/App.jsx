@@ -205,6 +205,7 @@ export default function App() {
             onOpenCrisisModal={handleOpenCrisisModal}
             onRecordMood={handleRecordMood}
             onWipePersonalData={handleWipePersonalData}
+            isCrisisModalOpen={isCrisisModalOpen}
           />
         )}
         {activeTab === 'analytics' && (

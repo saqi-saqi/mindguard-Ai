@@ -183,6 +183,12 @@ _OLLAMA_SESSION.trust_env = False
 # Per-model circuit breaker: tracks when each model's quota resets
 _MODEL_QUOTA_EXCEEDED_UNTIL: dict = {}
 
+# Module-level connectivity circuit breaker for connection / configuration failures.
+# Unlike quota errors (which are per-model), connection and auth failures affect the
+# entire Gemini endpoint, so a single shared flag is appropriate.
+# Duration: 60 s — same as the per-model quota window — after which Gemini is retried.
+_GEMINI_CONNECTIVITY_BROKEN_UNTIL: float = 0.0
+
 # Ordered fallback list — confirmed working models, sorted by speed:
 # gemini-3.1-flash-lite: ~0.83s fastest
 # gemini-3.5-flash-lite: ~0.88s
@@ -216,17 +222,32 @@ def _get_gemini_client(key: str, timeout_seconds: float = 10.0):
         return genai.Client(api_key=key.strip())
 
 
+class _GeminiConnectivityError(Exception):
+    """
+    Internal sentinel raised by _call_gemini when a connection, permission, or
+    configuration error indicates the Gemini endpoint is broadly unavailable.
+    The model-loop caller catches this to break immediately and fall back to
+    Ollama / offline KB — instead of retrying every candidate model.
+    """
+
+
 def _call_gemini(client, model_name: str, system_prompt: str, user_prompt: str, timeout: float = 10.0) -> Optional[str]:
     """
     Calls a single Gemini model via the new google.genai SDK.
     Returns the response text or None on failure.
+
+    Raises _GeminiConnectivityError if the error indicates the Gemini endpoint
+    is unreachable / misconfigured — the caller should break its model loop and
+    activate the module-level connectivity circuit breaker.
     """
     from google import genai
     from google.genai import types
 
+    global _GEMINI_CONNECTIVITY_BROKEN_UNTIL
+
     now = time.time()
     if now < _MODEL_QUOTA_EXCEEDED_UNTIL.get(model_name, 0):
-        return None  # Still in circuit-breaker window
+        return None  # Still in per-model quota circuit-breaker window
 
     try:
         response = client.models.generate_content(
@@ -245,6 +266,21 @@ def _call_gemini(client, model_name: str, system_prompt: str, user_prompt: str, 
         if any(k in err for k in ["quota", "429", "resource_exhausted"]):
             logger.warning("Gemini quota exhausted for %s. Circuit breaker active for 60s.", model_name)
             _MODEL_QUOTA_EXCEEDED_UNTIL[model_name] = time.time() + 60.0
+        elif any(k in err for k in [
+            "connection", "connectionerror", "gaierror", "timeout",
+            "network", "ssl", "certificate", "api_key", "invalid_argument",
+            "permission_denied", "unauthenticated", "transport",
+        ]):
+            # Connection / configuration failure — affects ALL models, not just this one.
+            # Activate the module-level connectivity circuit breaker for 60 s so that
+            # subsequent requests skip Gemini entirely and fall through to Ollama / offline KB.
+            logger.warning(
+                "Gemini connectivity/config error for %s: %s. "
+                "Module-level circuit breaker active for 60s.",
+                model_name, e,
+            )
+            _GEMINI_CONNECTIVITY_BROKEN_UNTIL = time.time() + 60.0
+            raise _GeminiConnectivityError(str(e)) from e
         else:
             logger.warning("Gemini model %s call failed: %s", model_name, e)
     return None
@@ -296,9 +332,12 @@ def generate_llm_response(user_text: str, intent: str, emotion: str, sentiment: 
     Priority:
       1. Instant keyword KB (<1ms) for greetings/bot info
       2. Gemini Cloud API via new google.genai SDK
+         (skipped entirely if module-level connectivity circuit breaker is active)
       3. Local Ollama fallback with a strict short timeout
       4. Emotion-aware offline fallback
     """
+    global _GEMINI_CONNECTIVITY_BROKEN_UNTIL
+
     # 1. Instant keyword-specific KB for greetings / bot info
     specific_reply = _get_keyword_specific_response(user_text)
     if specific_reply:
@@ -307,30 +346,45 @@ def generate_llm_response(user_text: str, intent: str, emotion: str, sentiment: 
     # 2. Try Gemini Cloud API (new google.genai SDK)
     key = api_key or os.environ.get("GEMINI_API_KEY", "") or GEMINI_API_KEY
     if key and key.strip():
-        try:
-            client = _get_gemini_client(key)
-            sanitized = sanitize_prompt_content(user_text)
-            prompt = (
-                f"<user_message>{sanitized}</user_message>\n"
-                f"Context - Detected Intent: {intent}, Emotion: {emotion}, Sentiment: {sentiment}\n\n"
-                "Respond empathetically adhering strictly to safety guidelines:"
+        # Task 4: Skip Gemini entirely if the connectivity circuit breaker is active.
+        # A connection / config failure on any model sets this for 60 s, preventing
+        # repeated sequential timeouts across all candidate models.
+        if time.time() < _GEMINI_CONNECTIVITY_BROKEN_UNTIL:
+            logger.info(
+                "Gemini connectivity circuit breaker active (%.0fs remaining). "
+                "Skipping Gemini and falling back to Ollama/offline KB.",
+                _GEMINI_CONNECTIVITY_BROKEN_UNTIL - time.time(),
             )
-            for model_name in GEMINI_CANDIDATE_MODELS:
-                if time.time() < _MODEL_QUOTA_EXCEEDED_UNTIL.get(model_name, 0):
-                    if all(time.time() < _MODEL_QUOTA_EXCEEDED_UNTIL.get(m, 0) for m in GEMINI_CANDIDATE_MODELS):
+        else:
+            try:
+                client = _get_gemini_client(key)
+                sanitized = sanitize_prompt_content(user_text)
+                prompt = (
+                    f"<user_message>{sanitized}</user_message>\n"
+                    f"Context - Detected Intent: {intent}, Emotion: {emotion}, Sentiment: {sentiment}\n\n"
+                    "Respond empathetically adhering strictly to safety guidelines:"
+                )
+                for model_name in GEMINI_CANDIDATE_MODELS:
+                    if time.time() < _MODEL_QUOTA_EXCEEDED_UNTIL.get(model_name, 0):
+                        if all(time.time() < _MODEL_QUOTA_EXCEEDED_UNTIL.get(m, 0) for m in GEMINI_CANDIDATE_MODELS):
+                            break
+                        continue
+                    t0 = time.time()
+                    try:
+                        reply = _call_gemini(client, model_name, SYSTEM_PROMPT, prompt, timeout=1.5)
+                    except _GeminiConnectivityError:
+                        # Connectivity breaker just activated — break the model loop immediately.
+                        # The breaker is already set inside _call_gemini.
                         break
-                    continue
-                t0 = time.time()
-                reply = _call_gemini(client, model_name, SYSTEM_PROMPT, prompt, timeout=1.5)
-                if reply:
-                    logger.info("Gemini (%s) responded in %.2fs", model_name, time.time() - t0)
-                    return reply
-                if time.time() < _MODEL_QUOTA_EXCEEDED_UNTIL.get(model_name, 0):
-                    if all(time.time() < _MODEL_QUOTA_EXCEEDED_UNTIL.get(m, 0) for m in GEMINI_CANDIDATE_MODELS):
-                        break
-                    continue
-        except Exception as e:
-            logger.warning("Gemini SDK setup failed; using a local fallback. Error: %s", e)
+                    if reply:
+                        logger.info("Gemini (%s) responded in %.2fs", model_name, time.time() - t0)
+                        return reply
+                    if time.time() < _MODEL_QUOTA_EXCEEDED_UNTIL.get(model_name, 0):
+                        if all(time.time() < _MODEL_QUOTA_EXCEEDED_UNTIL.get(m, 0) for m in GEMINI_CANDIDATE_MODELS):
+                            break
+                        continue
+            except Exception as e:
+                logger.warning("Gemini SDK setup failed; using a local fallback. Error: %s", e)
 
     # 3. Fallback to local Ollama CPU model
     local_reply = query_local_ollama(user_text, intent, emotion, sentiment)

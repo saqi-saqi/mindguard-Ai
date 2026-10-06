@@ -381,7 +381,6 @@ export default function CrisisModal({ isOpen, onClose, resources, trustedContact
       aria-describedby="crisis-modal-desc"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
-          onSafetyStatus?.("safe_for_now");
           onClose();
         }
       }}
@@ -396,7 +395,6 @@ export default function CrisisModal({ isOpen, onClose, resources, trustedContact
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            onSafetyStatus?.("safe_for_now");
             onClose();
           }}
           aria-label="Close emergency modal and return to conversation"
@@ -428,42 +426,63 @@ export default function CrisisModal({ isOpen, onClose, resources, trustedContact
           </div>
         )}
 
-        {/* Safety Notice Section */}
+        {/* Safety Notice Section - Always Visible Mandatory Warning & Explicit Disclosure */}
         <div
           id="crisis-modal-desc"
-          className="relative mb-3 shrink-0 space-y-1 rounded-xl border border-rose-500/30 bg-slate-950/80 p-3 text-xs leading-relaxed text-slate-200"
+          className="relative mb-3 shrink-0 space-y-2 rounded-2xl border-2 border-rose-500/60 bg-rose-950/70 p-3.5 text-xs leading-relaxed text-slate-100 shadow-lg"
         >
-          <p className="break-words font-normal text-[11px] sm:text-xs">
-            {mode === "detected"
-              ? "MindGuard noticed language indicating severe distress. Please connect directly with live crisis support right away."
-              : "If you may harm yourself or are in immediate physical danger, connect directly with one of these emergency options now."}
-          </p>
-          <p className="flex items-start gap-1.5 border-t border-rose-500/20 pt-1.5 text-[10px] sm:text-[11px] font-semibold text-rose-200">
-            <AlertTriangle className="mt-0.5 size-3 shrink-0 text-amber-400" />
-            <span>
-              MindGuard is an automated AI tool and never contacts emergency services or personal contacts automatically.
+          <div className="flex items-start gap-2 text-rose-200 font-semibold text-xs sm:text-sm">
+            <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-400" />
+            <span className="leading-snug">
+              Immediate safety support needed — move away from the person and any weapon or harmful object, and contact emergency services now.
             </span>
+          </div>
+          <p className="border-t border-rose-500/30 pt-2 text-[11px] font-normal text-slate-200">
+            This app cannot contact emergency services automatically — please call one of the numbers above or go to your nearest hospital emergency department.
+          </p>
+          <p className="text-[11px] font-medium text-rose-300">
+            Or go to the emergency department of your nearest hospital.
           </p>
         </div>
 
         {/* PRIMARY ACUTE TRIAGE: MAXIMUM 3 CORE ACTIONS (Hick's Law Optimization) */}
         <div className="relative min-h-0 flex-1 overflow-y-auto space-y-2.5 pr-1 pb-2">
-          {/* ACTION 1: IMMEDIATE EMERGENCY RESCUE */}
+          {/* ACTION 1: IMMEDIATE EMERGENCY RESCUE & DISPATCH */}
           <div className="rounded-2xl border-2 border-rose-500 bg-rose-950/60 p-3 shadow-lg">
             <div className="flex items-center justify-between gap-2 mb-2">
               <h3 className="text-xs font-bold uppercase tracking-wider text-rose-300 flex items-center gap-1.5">
-                <ShieldAlert className="size-3.5 text-rose-400" /> 1. Emergency Dispatch
+                <ShieldAlert className="size-3.5 text-rose-400" /> 1. Emergency Dispatch (Pakistan)
               </h3>
               <span className="text-[9px] font-bold uppercase bg-rose-600 text-white px-2 py-0.5 rounded-full">
                 Immediate Response
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={(e) => handleQuickCall(e, "15", "Pakistan Police Emergency")}
+                  className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-rose-700 px-2.5 py-2 text-xs font-bold text-white shadow-md transition-colors hover:bg-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 cursor-pointer"
+                >
+                  <PhoneCall className="size-4 shrink-0" />
+                  <span>Call 15 (Police Emergency)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickCopy("15", "Pakistan Police Emergency")}
+                  title="Copy 15"
+                  aria-label="Copy 15 emergency number"
+                  className="grid size-11 shrink-0 place-items-center rounded-xl border border-rose-400/40 bg-rose-900/60 text-rose-200 hover:bg-rose-800 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 cursor-pointer"
+                >
+                  <Copy className="size-4" />
+                </button>
+              </div>
+
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={(e) => handleQuickCall(e, "1122", "Pakistan Rescue 1122")}
-                  className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-rose-600 px-3 py-2 text-xs font-bold text-white shadow-md transition-colors hover:bg-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 cursor-pointer"
+                  className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-rose-600 px-2.5 py-2 text-xs font-bold text-white shadow-md transition-colors hover:bg-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 cursor-pointer"
                 >
                   <PhoneCall className="size-4 shrink-0" />
                   <span>Call 1122 (Pakistan Rescue)</span>
@@ -482,17 +501,17 @@ export default function CrisisModal({ isOpen, onClose, resources, trustedContact
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  onClick={(e) => handleQuickCall(e, "15", "Pakistan Police Emergency")}
-                  className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-rose-700 px-3 py-2 text-xs font-bold text-white shadow-md transition-colors hover:bg-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 cursor-pointer"
+                  onClick={(e) => handleQuickCall(e, "115", "Edhi Ambulance")}
+                  className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-rose-700 px-2.5 py-2 text-xs font-bold text-white shadow-md transition-colors hover:bg-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 cursor-pointer"
                 >
                   <PhoneCall className="size-4 shrink-0" />
-                  <span>Call 15 (Police Emergency)</span>
+                  <span>Call 115 (Edhi Ambulance)</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleQuickCopy("15", "Pakistan Police Emergency")}
-                  title="Copy 15"
-                  aria-label="Copy 15 emergency number"
+                  onClick={() => handleQuickCopy("115", "Edhi Ambulance")}
+                  title="Copy 115"
+                  aria-label="Copy 115 emergency number"
                   className="grid size-11 shrink-0 place-items-center rounded-xl border border-rose-400/40 bg-rose-900/60 text-rose-200 hover:bg-rose-800 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 cursor-pointer"
                 >
                   <Copy className="size-4" />

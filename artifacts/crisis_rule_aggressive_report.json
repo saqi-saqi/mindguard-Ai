@@ -1,69 +1,72 @@
 {
-  "suite": "MindGuard aggressive deterministic crisis-rule release gate",
-  "total_cases": 222,
-  "passed": 222,
+  "total": 238,
+  "passed": 238,
   "failed": 0,
   "accuracy": 1.0,
-  "category_breakdown": {
-    "academic": {
-      "total": 12,
-      "passed": 12
-    },
-    "contradiction": {
-      "total": 8,
-      "passed": 8
-    },
+  "per_category": {
     "explicit_intent": {
-      "total": 36,
-      "passed": 36
+      "n": 36,
+      "pass": 36
     },
     "implicit_distress": {
-      "total": 20,
-      "passed": 20
+      "n": 20,
+      "pass": 20
     },
     "means_or_attempt": {
-      "total": 28,
-      "passed": 28
-    },
-    "media": {
-      "total": 8,
-      "passed": 8
-    },
-    "metaphor": {
-      "total": 16,
-      "passed": 16
-    },
-    "negation": {
-      "total": 12,
-      "passed": 12
-    },
-    "normal_distress": {
-      "total": 12,
-      "passed": 12
-    },
-    "obfuscation": {
-      "total": 6,
-      "passed": 6
-    },
-    "recovery": {
-      "total": 8,
-      "passed": 8
-    },
-    "roman_urdu": {
-      "total": 16,
-      "passed": 16
+      "n": 28,
+      "pass": 28
     },
     "self_harm": {
-      "total": 20,
-      "passed": 20
+      "n": 20,
+      "pass": 20
     },
     "slang": {
-      "total": 16,
-      "passed": 16
+      "n": 16,
+      "pass": 16
+    },
+    "roman_urdu": {
+      "n": 16,
+      "pass": 16
+    },
+    "contradiction": {
+      "n": 8,
+      "pass": 8
+    },
+    "negation": {
+      "n": 12,
+      "pass": 12
+    },
+    "distress_support_request": {
+      "n": 16,
+      "pass": 16
+    },
+    "recovery": {
+      "n": 8,
+      "pass": 8
+    },
+    "academic": {
+      "n": 12,
+      "pass": 12
+    },
+    "media": {
+      "n": 8,
+      "pass": 8
     },
     "third_party": {
-      "total": 4,
-      "passed": 4
+      "n": 4,
+      "pass": 4
+    },
+    "metaphor": {
+      "n": 16,
+      "pass": 16
+    },
+    "normal_distress": {
+      "n": 12,
+      "pass": 12
+    },
+    "obfuscation": {
+      "n": 6,
+      "pass": 6
     }
   },
   "failures": []

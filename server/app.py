@@ -30,7 +30,7 @@ if BASE_DIR not in sys.path:
 
 from config import (
     CORS_ORIGINS, RATE_LIMIT_PER_MINUTE, MAX_MESSAGE_LENGTH,
-    GEMINI_API_KEY, FLASK_ENV
+    GEMINI_API_KEY, FLASK_ENV, FLASK_USE_RELOADER, FLASK_DEBUG
 )
 from database import (
     init_db, get_db, serialize_doc,
@@ -63,9 +63,12 @@ from services.llm_service import (
 )
 from services.response_kb import INTENT_RESPONSES
 from services.crisis_resources import (
-    get_resources_for_region, check_resource_status, CRISIS_RESOURCES
+    get_resources_for_region, check_resource_status, CRISIS_RESOURCES, SAFETY_DISCLAIMER
 )
 from services.intent_rules import match_fast_path_intent
+from services.safety_classifier import (
+    classify_safety_risk, SafetyRiskCategory
+)
 
 
 class PrivacyRedactionFilter(logging.Filter):
@@ -109,9 +112,11 @@ try:
 except Exception as e:
     logger.error(f"Database initialization error on startup: {e}")
 
-# Pre-warm ML pipelines in a background thread to avoid blocking server boot
+# Pre-warm ML pipelines in a background thread to avoid blocking server boot.
+# Avoid duplicate pre-warming in Werkzeug reloader monitor parent process if reloader is active.
 import threading
-threading.Thread(target=load_ml_pipelines, daemon=True).start()
+if os.environ.get("WERKZEUG_RUN_MAIN") in (None, "true"):
+    threading.Thread(target=load_ml_pipelines, daemon=True).start()
 
 # ---------------------------------------------------------------------------
 # Rate Limiting & Security In-Memory Storage
@@ -662,6 +667,112 @@ def chat():
         is_session_crisis_active = session_risk.get("risk_state") == "crisis_active"
 
         # -------------------------------------------------------------------
+        # Step 0.5: Pre-LLM Safety & Threat Classification (Highest Priority)
+        # -------------------------------------------------------------------
+        safety_eval = classify_safety_risk(
+            user_message,
+            context_turns=recent_context,
+            api_key=user_api_key
+        )
+
+        if safety_eval.category in (
+            SafetyRiskCategory.COMBINED_HIGH_CRISIS,
+            SafetyRiskCategory.HARM_TO_OTHERS_RISK,
+            SafetyRiskCategory.SELF_HARM_RISK,
+        ):
+            duration_ms = round((time.time() - start_req_time) * 1000, 2)
+            # Preserve "HIGH_CRISIS" for pure self-harm to maintain existing API contracts
+            risk_label = "HIGH_CRISIS" if safety_eval.category == SafetyRiskCategory.SELF_HARM_RISK else safety_eval.category.value
+            logger.warning(
+                f"[{req_id}] CRITICAL SAFETY RISK DETECTED: {safety_eval.category.value}. "
+                f"Bypassing all LLM, Ollama, and RAG generative paths. Duration={duration_ms}ms"
+            )
+
+            if session_id:
+                set_session_risk_state(session_id, user_id, "crisis_active", risk_label)
+
+            if user_id and retention_enabled:
+                save_chat_message(
+                    user_id=user_id,
+                    sender="assistant",
+                    text=safety_eval.safety_message,
+                    risk_level=risk_label,
+                    intent=f"SAFETY PROTOCOL - {risk_label}",
+                    emotion="ACUTE_RISK",
+                    sentiment="NEGATIVE",
+                    session_id=session_id,
+                    expires_at=expires_at
+                )
+            save_audit_event(
+                "critical_safety_escalation",
+                user_id,
+                {"source": "safety_classifier", "request_id": req_id, "risk_category": risk_label}
+            )
+
+            return jsonify({
+                "success": True,
+                "status": "success",
+                "risk_level": risk_label,
+                "requires_immediate_action": True,
+                "data": {
+                    "status": "success",
+                    "risk_level": risk_label,
+                    "classification": risk_label,
+                    "reply": safety_eval.safety_message,
+                    "disclaimer": SAFETY_DISCLAIMER,
+                    "intent": f"SAFETY PROTOCOL - {risk_label}",
+                    "emotion": "ACUTE_RISK",
+                    "sentiment": "NEGATIVE",
+                    "emergency_resources": regional_resources,
+                    "requires_immediate_action": True,
+                    "session_id": session_id,
+                    "latency_ms": duration_ms,
+                    "inference_latency_ms": duration_ms
+                },
+                "error": None
+            }), 200
+
+        if safety_eval.category == SafetyRiskCategory.THIRD_PARTY_REPORT:
+            duration_ms = round((time.time() - start_req_time) * 1000, 2)
+            logger.info(f"[{req_id}] THIRD-PARTY REPORT DETECTED. Returning guidance panel. Duration={duration_ms}ms")
+
+            if user_id and retention_enabled:
+                save_chat_message(
+                    user_id=user_id,
+                    sender="assistant",
+                    text=safety_eval.safety_message,
+                    risk_level="THIRD_PARTY_REPORT",
+                    intent="THIRD PARTY SAFETY REPORT",
+                    emotion="CONCERN",
+                    sentiment="NEUTRAL",
+                    session_id=session_id,
+                    expires_at=expires_at
+                )
+            save_audit_event("third_party_report_guidance", user_id, {"source": "safety_classifier", "request_id": req_id})
+
+            return jsonify({
+                "success": True,
+                "status": "success",
+                "risk_level": "THIRD_PARTY_REPORT",
+                "requires_immediate_action": False,
+                "data": {
+                    "status": "success",
+                    "risk_level": "THIRD_PARTY_REPORT",
+                    "classification": "THIRD_PARTY_REPORT",
+                    "reply": safety_eval.safety_message,
+                    "disclaimer": SAFETY_DISCLAIMER,
+                    "intent": "THIRD PARTY SAFETY REPORT",
+                    "emotion": "CONCERN",
+                    "sentiment": "NEUTRAL",
+                    "emergency_resources": regional_resources,
+                    "requires_immediate_action": False,
+                    "session_id": session_id,
+                    "latency_ms": duration_ms,
+                    "inference_latency_ms": duration_ms
+                },
+                "error": None
+            }), 200
+
         # -------------------------------------------------------------------
         # Step 1: Tier 1 - Deterministic Rules & Pipeline Preprocessing
         # -------------------------------------------------------------------
@@ -1106,7 +1217,9 @@ def safety_feedback():
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     app._start_time = time.time()
-    port = int(os.environ.get("FLASK_PORT", 5000))
+    port = int(os.environ.get("FLASK_PORT", os.environ.get("PORT", 5000)))
     host = os.environ.get("FLASK_HOST", "127.0.0.1")
-    logger.info(f"MindGuard Backend Server starting on http://{host}:{port}")
-    app.run(host=host, port=port, debug=FLASK_ENV == "development")
+    debug_mode = FLASK_DEBUG or (FLASK_ENV == "development")
+    use_reloader = FLASK_USE_RELOADER
+    logger.info(f"MindGuard Backend Server starting on http://{host}:{port} (debug={debug_mode}, reloader={use_reloader})")
+    app.run(host=host, port=port, debug=debug_mode, use_reloader=use_reloader)

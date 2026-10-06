@@ -44,6 +44,9 @@ BENCHMARKS = {
 REPORT_PATH = PROJECT_ROOT / "artifacts" / "model_evaluation_report.json"
 MAX_LENGTH = 128
 BATCH_SIZE = 64
+# Full test split (14k) is impractical on CPU; evaluate a stratified sample instead.
+TEST_SUBSAMPLE_N = 2000
+RANDOM_SEED = 42
 
 
 @torch.no_grad()
@@ -98,8 +101,14 @@ def main():
     # ------------------------------------------------------------------
     # 1. Held-out test split
     # ------------------------------------------------------------------
-    print(f"\n[1] Held-out test split: {TEST_CSV.name}")
+    print(f"\n[1] Held-out test split: {TEST_CSV.name} (stratified subsample of {TEST_SUBSAMPLE_N})")
     df = pd.read_csv(TEST_CSV)
+    per_class = TEST_SUBSAMPLE_N // 2
+    parts = [
+        df[df["label"] == lbl].sample(n=min(per_class, (df["label"] == lbl).sum()), random_state=RANDOM_SEED)
+        for lbl in sorted(df["label"].unique())
+    ]
+    df = pd.concat(parts).sample(frac=1, random_state=RANDOM_SEED).reset_index(drop=True)
     texts = df["text"].astype(str).tolist()
     labels = df["label"].astype(int).tolist()
 

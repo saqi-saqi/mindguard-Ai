@@ -363,7 +363,19 @@ _LETHAL_MEANS_AND_PREPARATION = [
     r"\brunning\s+(?:the\s+)?car\s+in\s+(?:the\s+)?garage\b",
     r"\bdrank\s+(?:the\s+)?(?:pesticide|rat\s+poison|antifreeze)\b",
     r"\bgoing\s+to\s+swallow\s+all\s+(?:these\s+)?(?:sleeping\s+)?pills\b",
+    # --- Task 1 Fix: First-person high-quantity medication ingestion ---
+    # Covers "I took a whole bottle of pills", "I swallowed a whole bottle of tablets",
+    # "I took all my medication", "I ingested all my pills", and similar.
+    # Anchored to first-person subject + explicit quantity marker (whole/entire/all) to
+    # prevent false-positives on ordinary statements like "I forgot to take my pills".
+    r"\bi\s+(?:took|ingested|consumed|swallowed|downed|popped)\s+"
+    r"(?:a\s+(?:whole|full|entire)\s+bottle\s+of\s+(?:pills|tablets|capsules|medication|meds|painkillers|sleeping\s+pills|antidepressants|ibuprofen|tylenol|advil|aspirin|opioids?)"
+    r"|(?:the\s+)?(?:whole|full|entire)\s+bottle\s+of\s+(?:pills|tablets|capsules|medication|meds|painkillers|sleeping\s+pills|antidepressants|ibuprofen|tylenol|advil|aspirin|opioids?)"
+    r"|all\s+(?:my|the|of\s+my|of\s+the)\s+(?:pills|tablets|capsules|medication|meds|painkillers|sleeping\s+pills|antidepressants|prescription))",
+    r"\bi\s+(?:took|ingested|consumed)\s+all\s+(?:my|of\s+my|the)\s+"
+    r"(?:medication|meds|pills|tablets|capsules|antidepressants|painkillers|prescription(?:\s+pills?)?)",
 ]
+
 
 # 5. SUBTLE SLANG & INFORMAL PHRASING ----------------------------------------
 _SUBTLE_SLANG_AND_INFORMAL = [
@@ -876,7 +888,19 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
             if part_has_crisis and idx > 0:
                 return None  # Subsequent clause has un-negated crisis
             if part_has_crisis and idx == 0:
-                allow_idiom_bypass = False
+                # Task 2 Fix: The FIRST clause expresses genuine (un-negated) crisis intent.
+                # Before returning None, check if the first clause ITSELF would be bypassed
+                # by its own context (e.g. past historical reflection, negation, academic frame).
+                # If the first clause is contextually safe on its own, don't block idiom bypass.
+                # This preserves:
+                #   "I used to self-harm years ago, but I have been in recovery" → safe
+                #   "I want to die, but this exam is killing me" → crisis (first clause not bypassable)
+                first_clause_bypass = _contextual_bypass_reason(part)
+                if first_clause_bypass is None:
+                    # First clause has genuine, un-bypassed crisis intent.
+                    # Prevent idiom bypass for the whole message.
+                    return None
+                # else: first clause is itself bypassable (past history etc.); continue normal flow
 
     # (2) Specific compound distress pattern that is active distress:
     if re.search(r"\bi\s+feel\s+like\s+everything\s+is\s+falling\s+apart\s+and\s+i\s+can'?t\s+stop\s+it\b", t):

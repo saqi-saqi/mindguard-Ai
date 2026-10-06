@@ -21,6 +21,51 @@ DEFAULT_REVIEW_INTERVAL_DAYS = 180
 CRISIS_RESOURCES: Dict[str, List[Dict[str, Any]]] = {
     "pakistan": [
         {
+            "organization": "Police Emergency Pakistan",
+            "contact_method": "Phone",
+            "contact_info": "15",
+            "website": "https://punjabpolice.gov.pk",
+            "availability": "24/7",
+            "description": "Immediate national emergency police response for acute threats, violence, and danger.",
+            "country_or_region": "Pakistan",
+            "target_audience": "General & Emergency",
+            "source": "Government of Pakistan Official Emergency Services",
+            "verification_date": "2026-07-01",
+            "review_status": "VERIFIED",
+            "review_interval_days": 180,
+            "status": "active"
+        },
+        {
+            "organization": "Pakistan Rescue Emergency Service",
+            "contact_method": "Phone",
+            "contact_info": "1122",
+            "website": "https://rescue.gov.pk",
+            "availability": "24/7",
+            "description": "Emergency ambulance, rescue, and trauma dispatch across Pakistan.",
+            "country_or_region": "Pakistan",
+            "target_audience": "General & Emergency",
+            "source": "Punjab Emergency Service Department (Rescue 1122)",
+            "verification_date": "2026-07-01",
+            "review_status": "VERIFIED",
+            "review_interval_days": 180,
+            "status": "active"
+        },
+        {
+            "organization": "Edhi Foundation Ambulance Network",
+            "contact_method": "Phone",
+            "contact_info": "115",
+            "website": "https://edhi.org",
+            "availability": "24/7",
+            "description": "Nationwide emergency ambulance and relief fleet operating 24/7.",
+            "country_or_region": "Pakistan",
+            "target_audience": "General & Emergency",
+            "source": "Edhi Foundation Official Emergency Directory (https://edhi.org)",
+            "verification_date": "2026-07-01",
+            "review_status": "VERIFIED",
+            "review_interval_days": 180,
+            "status": "active"
+        },
+        {
             "organization": "Umang Pakistan Helpline",
             "contact_method": "Phone",
             "contact_info": "0311-7786264",
@@ -99,11 +144,10 @@ CRISIS_RESOURCES: Dict[str, List[Dict[str, Any]]] = {
 }
 
 SAFETY_DISCLAIMER = (
-    "MindGuard is an automated AI conversational tool and is NOT an emergency service, "
-    "hospital, or clinical medical provider. If you or someone you know is in immediate physical danger, "
-    "please contact Rescue 1122 or go immediately to the nearest hospital emergency department. "
-    "or go immediately to the nearest hospital emergency room. "
-    "Please reach out to a trusted family member, friend, or healthcare provider who can stay with you."
+    "MindGuard is an automated AI tool and is NOT an emergency service, hospital, or clinical provider. "
+    "If you or someone else is in immediate physical danger, call Police Emergency (15), Rescue (1122), "
+    "or Edhi Ambulance (115), or go to the emergency department of your nearest hospital. "
+    "This app cannot contact emergency services automatically — please call one of the numbers above or go to your nearest hospital emergency department."
 )
 
 

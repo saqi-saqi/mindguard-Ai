@@ -1,0 +1,2541 @@
+{
+  "model": "E:\\FYP\\current\\artifacts\\huggingface_crisis_roberta",
+  "device": "cpu",
+  "datasets": {
+    "test_split": {
+      "n": 2000,
+      "threshold": 0.5,
+      "tp": 991,
+      "fp": 5,
+      "tn": 995,
+      "fn": 9,
+      "accuracy": 0.993,
+      "precision": 0.995,
+      "recall": 0.991,
+      "f1": 0.993,
+      "fnr": 0.009,
+      "fpr": 0.005,
+      "roc_auc": 0.9995,
+      "latency_ms_per_sample": 69.25,
+      "threshold_sweep": {
+        "0.3": {
+          "n": 2000,
+          "threshold": 0.3,
+          "tp": 993,
+          "fp": 6,
+          "tn": 994,
+          "fn": 7,
+          "accuracy": 0.9935,
+          "precision": 0.994,
+          "recall": 0.993,
+          "f1": 0.9935,
+          "fnr": 0.007,
+          "fpr": 0.006,
+          "roc_auc": 0.9995
+        },
+        "0.4": {
+          "n": 2000,
+          "threshold": 0.4,
+          "tp": 993,
+          "fp": 5,
+          "tn": 995,
+          "fn": 7,
+          "accuracy": 0.994,
+          "precision": 0.995,
+          "recall": 0.993,
+          "f1": 0.994,
+          "fnr": 0.007,
+          "fpr": 0.005,
+          "roc_auc": 0.9995
+        },
+        "0.5": {
+          "n": 2000,
+          "threshold": 0.5,
+          "tp": 991,
+          "fp": 5,
+          "tn": 995,
+          "fn": 9,
+          "accuracy": 0.993,
+          "precision": 0.995,
+          "recall": 0.991,
+          "f1": 0.993,
+          "fnr": 0.009,
+          "fpr": 0.005,
+          "roc_auc": 0.9995
+        },
+        "0.6": {
+          "n": 2000,
+          "threshold": 0.6,
+          "tp": 991,
+          "fp": 5,
+          "tn": 995,
+          "fn": 9,
+          "accuracy": 0.993,
+          "precision": 0.995,
+          "recall": 0.991,
+          "f1": 0.993,
+          "fnr": 0.009,
+          "fpr": 0.005,
+          "roc_auc": 0.9995
+        },
+        "0.7": {
+          "n": 2000,
+          "threshold": 0.7,
+          "tp": 991,
+          "fp": 5,
+          "tn": 995,
+          "fn": 9,
+          "accuracy": 0.993,
+          "precision": 0.995,
+          "recall": 0.991,
+          "f1": 0.993,
+          "fnr": 0.009,
+          "fpr": 0.005,
+          "roc_auc": 0.9995
+        }
+      }
+    },
+    "english_crisis_benchmark_300": {
+      "n": 300,
+      "threshold": 0.5,
+      "tp": 34,
+      "fp": 13,
+      "tn": 167,
+      "fn": 86,
+      "accuracy": 0.67,
+      "precision": 0.7234,
+      "recall": 0.2833,
+      "f1": 0.4072,
+      "fnr": 0.7167,
+      "fpr": 0.0722,
+      "roc_auc": 0.6815,
+      "per_category": {
+        "explicit_crisis": {
+          "n": 20,
+          "tp": 12,
+          "fp": 0,
+          "tn": 0,
+          "fn": 8
+        },
+        "means_and_ingestion": {
+          "n": 18,
+          "tp": 10,
+          "fp": 0,
+          "tn": 0,
+          "fn": 8
+        },
+        "self_harm": {
+          "n": 18,
+          "tp": 1,
+          "fp": 0,
+          "tn": 0,
+          "fn": 17
+        },
+        "slang_and_gen_z": {
+          "n": 15,
+          "tp": 1,
+          "fp": 0,
+          "tn": 1,
+          "fn": 13
+        },
+        "obfuscation": {
+          "n": 14,
+          "tp": 3,
+          "fp": 0,
+          "tn": 1,
+          "fn": 10
+        },
+        "contrast_clause_invariants": {
+          "n": 17,
+          "tp": 5,
+          "fp": 1,
+          "tn": 2,
+          "fn": 9
+        },
+        "indirect_crisis": {
+          "n": 13,
+          "tp": 0,
+          "fp": 0,
+          "tn": 0,
+          "fn": 13
+        },
+        "multi_sentence_context": {
+          "n": 12,
+          "tp": 2,
+          "fp": 0,
+          "tn": 2,
+          "fn": 8
+        },
+        "negation_false_alarm": {
+          "n": 16,
+          "tp": 0,
+          "fp": 4,
+          "tn": 12,
+          "fn": 0
+        },
+        "idiom_hyperbole": {
+          "n": 15,
+          "tp": 0,
+          "fp": 0,
+          "tn": 15,
+          "fn": 0
+        },
+        "benign_medication": {
+          "n": 13,
+          "tp": 0,
+          "fp": 0,
+          "tn": 13,
+          "fn": 0
+        },
+        "past_recovery": {
+          "n": 13,
+          "tp": 0,
+          "fp": 5,
+          "tn": 8,
+          "fn": 0
+        },
+        "academic_third_party": {
+          "n": 14,
+          "tp": 0,
+          "fp": 0,
+          "tn": 14,
+          "fn": 0
+        },
+        "third_party_crisis": {
+          "n": 13,
+          "tp": 0,
+          "fp": 3,
+          "tn": 10,
+          "fn": 0
+        },
+        "borderline_ml_distress": {
+          "n": 14,
+          "tp": 0,
+          "fp": 0,
+          "tn": 14,
+          "fn": 0
+        },
+        "meditation_or_coping_request": {
+          "n": 13,
+          "tp": 0,
+          "fp": 0,
+          "tn": 13,
+          "fn": 0
+        },
+        "physical_daily_need": {
+          "n": 12,
+          "tp": 0,
+          "fp": 0,
+          "tn": 12,
+          "fn": 0
+        },
+        "greeting_or_casual_chat": {
+          "n": 10,
+          "tp": 0,
+          "fp": 0,
+          "tn": 10,
+          "fn": 0
+        },
+        "bot_information_request": {
+          "n": 12,
+          "tp": 0,
+          "fp": 0,
+          "tn": 12,
+          "fn": 0
+        },
+        "sarcasm_and_dark_humor": {
+          "n": 10,
+          "tp": 0,
+          "fp": 0,
+          "tn": 10,
+          "fn": 0
+        },
+        "fictional_context": {
+          "n": 12,
+          "tp": 0,
+          "fp": 0,
+          "tn": 12,
+          "fn": 0
+        },
+        "anxiety_distress": {
+          "n": 3,
+          "tp": 0,
+          "fp": 0,
+          "tn": 3,
+          "fn": 0
+        },
+        "sleep_fatigue": {
+          "n": 2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 2,
+          "fn": 0
+        },
+        "grief_or_sadness": {
+          "n": 1,
+          "tp": 0,
+          "fp": 0,
+          "tn": 1,
+          "fn": 0
+        }
+      },
+      "false_negatives": [
+        {
+          "text": "I wish I could just die and make all of this stop.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.4999
+        },
+        {
+          "text": "I am exhausted from work, but honestly I plan to end my life after dinner.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.4873
+        },
+        {
+          "text": "I have pills saved up because I plan to take them all tonight.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.4668
+        },
+        {
+          "text": "I am done with life. I am going to die by suicide.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.4565
+        },
+        {
+          "text": "I have been looking for a lethal dose because I want this to be my last night.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.4248
+        },
+        {
+          "text": "I do not want to live with my parents anymore, but I want to die tonight.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.382
+        },
+        {
+          "text": "I am seriously considering suicide right now.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.3772
+        },
+        {
+          "text": "I already swallowed a bunch of pills because I wanted to die.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.3545
+        },
+        {
+          "text": "I have the pills ready and I am waiting until everyone is asleep.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.3364
+        },
+        {
+          "text": "I am thinking about s*icide again, and this time I mean it.",
+          "category": "obfuscation",
+          "p_crisis": 0.2538
+        },
+        {
+          "text": "I told everyone I was fine. I was lying. I am planning to end my life after midnight.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.2386
+        },
+        {
+          "text": "I want to k!ll myself tonight.",
+          "category": "obfuscation",
+          "p_crisis": 0.2173
+        },
+        {
+          "text": "I am hurting myself because I do not know what else to do.",
+          "category": "self_harm",
+          "p_crisis": 0.205
+        },
+        {
+          "text": "I mixed the medicines together because I intend to take them all at once.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.13
+        },
+        {
+          "text": "I am going to take my own life when I leave work.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.1186
+        },
+        {
+          "text": "I am scared of death, but I think I am going to choose it anyway.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.1065
+        },
+        {
+          "text": "I am grateful for my friends, but I still intend to take my life.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0973
+        },
+        {
+          "text": "I want to keep my job, but I also want to disappear permanently.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0968
+        },
+        {
+          "text": "I finally know how I am going to make everything stop.",
+          "category": "indirect_crisis",
+          "p_crisis": 0.0937
+        },
+        {
+          "text": "I am calm right now, but that is because I have made my suicide plan.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0928
+        },
+        {
+          "text": "I will k1ll myself once everyone leaves.",
+          "category": "obfuscation",
+          "p_crisis": 0.0875
+        },
+        {
+          "text": "I have chosen a place where nobody will find me.",
+          "category": "indirect_crisis",
+          "p_crisis": 0.0798
+        },
+        {
+          "text": "My life feels unbearable and I want it to be over permanently.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.0789
+        },
+        {
+          "text": "I want to be dead before morning.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.0732
+        },
+        {
+          "text": "I punched myself repeatedly and I cannot make myself stop.",
+          "category": "self_harm",
+          "p_crisis": 0.0727
+        },
+        {
+          "text": "I keep hurting myself because it is the only thing that quiets my thoughts.",
+          "category": "self_harm",
+          "p_crisis": 0.0703
+        },
+        {
+          "text": "I am holding a blade and I keep thinking about hurting myself with it.",
+          "category": "self_harm",
+          "p_crisis": 0.0679
+        },
+        {
+          "text": "I do not think anyone will hear from me after tonight.",
+          "category": "indirect_crisis",
+          "p_crisis": 0.065
+        },
+        {
+          "text": "I have been thinking about killing myself all day and I am ready to act.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.0592
+        },
+        {
+          "text": "I just want to di3 and disappear.",
+          "category": "obfuscation",
+          "p_crisis": 0.0565
+        },
+        {
+          "text": "I cannot stop cutting myself even though I know I am bleeding.",
+          "category": "self_harm",
+          "p_crisis": 0.0332
+        },
+        {
+          "text": "I burned myself again and I have not put the lighter down.",
+          "category": "self_harm",
+          "p_crisis": 0.0305
+        },
+        {
+          "text": "This is my final logout.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0264
+        },
+        {
+          "text": "I am scared of what I might do. The blade is right beside me.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0244
+        },
+        {
+          "text": "I injured myself again tonight and I am scared I will keep going.",
+          "category": "self_harm",
+          "p_crisis": 0.0238
+        },
+        {
+          "text": "I want to disappear forever and never wake up again.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.0227
+        },
+        {
+          "text": "I want to hurt myself until the pain in my head goes away.",
+          "category": "self_harm",
+          "p_crisis": 0.0198
+        },
+        {
+          "text": "I deleted my scheduled appointments. I do not think I will be here long enough for them.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0157
+        },
+        {
+          "text": "I w4nt to d!e and I have a plan.",
+          "category": "obfuscation",
+          "p_crisis": 0.0156
+        },
+        {
+          "text": "I do not want to hurt anyone else, but I am going to hurt myself.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0148
+        },
+        {
+          "text": "I laughed with my friends earlier, yet I am thinking about ending my life tonight.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0146
+        },
+        {
+          "text": "My friends think I am doing better. I am not. I have been planning my death for days.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.014
+        },
+        {
+          "text": "I cannot sleep. I cannot stop thinking. I keep picturing myself dead and I want that to happen.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0117
+        },
+        {
+          "text": "I am ready to peace out for good tonight.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0092
+        },
+        {
+          "text": "I have picked a date when I will not have to deal with any of this anymore.",
+          "category": "indirect_crisis",
+          "p_crisis": 0.0092
+        },
+        {
+          "text": "I slammed my head into the wall on purpose and I want to do it again.",
+          "category": "self_harm",
+          "p_crisis": 0.009
+        },
+        {
+          "text": "I am making myself bleed because I cannot handle how I feel.",
+          "category": "self_harm",
+          "p_crisis": 0.0088
+        },
+        {
+          "text": "I want tomorrow to be peaceful, but I do not plan to be alive for it.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0074
+        },
+        {
+          "text": "I want this to be my last birthday.",
+          "category": "indirect_crisis",
+          "p_crisis": 0.0068
+        },
+        {
+          "text": "I am making sure nobody has to clean up my life after tonight.",
+          "category": "indirect_crisis",
+          "p_crisis": 0.0057
+        },
+        {
+          "text": "I am not joking when I say I am going to unalive myself tonight.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0055
+        },
+        {
+          "text": "I have already decided what my final message will say.",
+          "category": "indirect_crisis",
+          "p_crisis": 0.0052
+        },
+        {
+          "text": "su1c1de is all I can think about right now.",
+          "category": "obfuscation",
+          "p_crisis": 0.0051
+        },
+        {
+          "text": "Please tell my family I loved them if something happens to me tonight.",
+          "category": "indirect_crisis",
+          "p_crisis": 0.0043
+        },
+        {
+          "text": "I k*ll my self if that is what it takes to make this stop.",
+          "category": "obfuscation",
+          "p_crisis": 0.0032
+        },
+        {
+          "text": "I have been burning myself and I am thinking about making the injuries worse.",
+          "category": "self_harm",
+          "p_crisis": 0.0029
+        },
+        {
+          "text": "I burned my arm on purpose because I needed to feel something.",
+          "category": "self_harm",
+          "p_crisis": 0.0028
+        },
+        {
+          "text": "No cap, I am about to unalive myself.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0017
+        },
+        {
+          "text": "I am writing goodbye messages to everyone I love.",
+          "category": "indirect_crisis",
+          "p_crisis": 0.0015
+        },
+        {
+          "text": "I have been saying goodbye to people without telling them why.",
+          "category": "indirect_crisis",
+          "p_crisis": 0.0014
+        },
+        {
+          "text": "I found a way to get a lot of sleeping tablets, and tonight is the night.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0012
+        },
+        {
+          "text": "I am about to kms for real this time.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.001
+        },
+        {
+          "text": "I have fresh cuts on my arm and I am about to make more.",
+          "category": "self_harm",
+          "p_crisis": 0.0009
+        },
+        {
+          "text": "I am s-u-i-c-i-d-a-l tonight.",
+          "category": "obfuscation",
+          "p_crisis": 0.0009
+        },
+        {
+          "text": "I need to make sure someone knows where my important documents are before I go.",
+          "category": "indirect_crisis",
+          "p_crisis": 0.0009
+        },
+        {
+          "text": "I have been unusually calm all day. I finished my goodbye letters this afternoon.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0009
+        },
+        {
+          "text": "I was joking about dying yesterday. Today I am not joking. I actually intend to do it.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0009
+        },
+        {
+          "text": "I have started giving away things that matter to me because I will not need them soon.",
+          "category": "indirect_crisis",
+          "p_crisis": 0.0006
+        },
+        {
+          "text": "Kys? Yeah, that is what I am thinking of doing to myself.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0005
+        },
+        {
+          "text": "I am one bad hour away from hitting the forever logout.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0005
+        },
+        {
+          "text": "k.y.s. is not just a joke for me anymore; I want to do it.",
+          "category": "obfuscation",
+          "p_crisis": 0.0004
+        },
+        {
+          "text": "I am about to uninstall myself from this server.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0004
+        },
+        {
+          "text": "I drank something poisonous on purpose and now I am waiting to see what happens.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0003
+        },
+        {
+          "text": "I think I am finna tap out permanently.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0003
+        },
+        {
+          "text": "I am done with this run. I am deleting my whole character tonight.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0003
+        },
+        {
+          "text": "The bleach is next to me and I am thinking about drinking it.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "I am using a razor on my skin right now.",
+          "category": "self_harm",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "k i l l  m y s e l f \u2014 that is the plan.",
+          "category": "obfuscation",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "My dog will be better off with my sister because I will not be around.",
+          "category": "indirect_crisis",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "I cleaned my room and gave away my favorite things. I do not expect to need them again.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "I keep scratching and breaking my skin until it bleeds.",
+          "category": "self_harm",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "I am squeezing my arm until it bruises because I deserve pain.",
+          "category": "self_harm",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "I have been hitting my legs over and over for the last hour.",
+          "category": "self_harm",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "I want to reset the sim and never come back.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "I am about to hit the permanent offline button.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "I am done grinding. I am going to delete the character tonight.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0001
+        }
+      ]
+    },
+    "english_crisis_benchmark_new_300": {
+      "n": 300,
+      "threshold": 0.5,
+      "tp": 5,
+      "fp": 41,
+      "tn": 170,
+      "fn": 84,
+      "accuracy": 0.5833,
+      "precision": 0.1087,
+      "recall": 0.0562,
+      "f1": 0.0741,
+      "fnr": 0.9438,
+      "fpr": 0.1943,
+      "roc_auc": 0.52,
+      "per_category": {
+        "multi_sentence_context": {
+          "n": 38,
+          "tp": 3,
+          "fp": 0,
+          "tn": 0,
+          "fn": 35
+        },
+        "negation_false_alarm": {
+          "n": 38,
+          "tp": 0,
+          "fp": 17,
+          "tn": 21,
+          "fn": 0
+        },
+        "academic_third_party": {
+          "n": 38,
+          "tp": 0,
+          "fp": 7,
+          "tn": 18,
+          "fn": 13
+        },
+        "fictional_context": {
+          "n": 38,
+          "tp": 0,
+          "fp": 0,
+          "tn": 38,
+          "fn": 0
+        },
+        "past_recovery": {
+          "n": 37,
+          "tp": 0,
+          "fp": 16,
+          "tn": 21,
+          "fn": 0
+        },
+        "contrast_clause_invariants": {
+          "n": 37,
+          "tp": 2,
+          "fp": 0,
+          "tn": 0,
+          "fn": 35
+        },
+        "third_party_crisis": {
+          "n": 37,
+          "tp": 0,
+          "fp": 1,
+          "tn": 36,
+          "fn": 0
+        },
+        "sarcasm_and_dark_humor": {
+          "n": 37,
+          "tp": 0,
+          "fp": 0,
+          "tn": 36,
+          "fn": 1
+        }
+      },
+      "false_negatives": [
+        {
+          "text": "I thought I was getting better. The meds were working. But I've been saving them up instead of taking them, to take at once.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.427
+        },
+        {
+          "text": "Everyone thinks I'm doing better because I got a promotion, but honestly, I've been buying pills to end it all.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.3563
+        },
+        {
+          "text": "Everyone thinks I'm the strong one. But the truth is, I've been hoarding pills to make the pain stop forever.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.3286
+        },
+        {
+          "text": "I tell everyone I'm managing, but I've been secretly waiting for my family to fall asleep so I can take the pills.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.3189
+        },
+        {
+          "text": "I had a great day at work. But on the drive home, I realized everyone would be better off if I wasn't here.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.3015
+        },
+        {
+          "text": "I just want the noise to stop. I'm going to take all my pills tonight so I can finally have some peace.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.2447
+        },
+        {
+          "text": "I just want the noise to stop. I'm going to take all my pills tonight so I can finally have some peace.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.2447
+        },
+        {
+          "text": "I just want the noise to stop. I'm going to take all my pills tonight so I can finally have some peace.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.2447
+        },
+        {
+          "text": "I just want the noise to stop. I'm going to take all my pills tonight so I can finally have some peace.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.2447
+        },
+        {
+          "text": "I just want the noise to stop. I'm going to take all my pills tonight so I can finally have some peace.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.2447
+        },
+        {
+          "text": "Everyone thinks I'm doing better, but I'm actually just getting better at hiding the fact that I want to die.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.2222
+        },
+        {
+          "text": "I thought about seeing a therapist. But what's the point? I've already picked out the bridge I'm going to jump from.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.1366
+        },
+        {
+          "text": "I am writing a paper on suicide. I have been thinking about killing myself lately and wanted to understand why.",
+          "category": "academic_third_party",
+          "p_crisis": 0.092
+        },
+        {
+          "text": "I am writing a paper on suicide. I have been thinking about killing myself lately and wanted to understand why.",
+          "category": "academic_third_party",
+          "p_crisis": 0.092
+        },
+        {
+          "text": "I am writing a paper on suicide. I have been thinking about killing myself lately and wanted to understand why.",
+          "category": "academic_third_party",
+          "p_crisis": 0.092
+        },
+        {
+          "text": "I am writing a paper on suicide. I have been thinking about killing myself lately and wanted to understand why.",
+          "category": "academic_third_party",
+          "p_crisis": 0.092
+        },
+        {
+          "text": "I am writing a paper on suicide. I have been thinking about killing myself lately and wanted to understand why.",
+          "category": "academic_third_party",
+          "p_crisis": 0.092
+        },
+        {
+          "text": "I just lost my job. I don't see a way out. I've loaded the gun and I'm sitting in the dark.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0785
+        },
+        {
+          "text": "I'm writing a paper about suicide. I have been thinking about killing myself lately and wanted to understand it.",
+          "category": "academic_third_party",
+          "p_crisis": 0.0623
+        },
+        {
+          "text": "I'm writing a paper about suicide. I have been thinking about killing myself lately and wanted to understand it.",
+          "category": "academic_third_party",
+          "p_crisis": 0.0623
+        },
+        {
+          "text": "I'm writing a paper about suicide. I have been thinking about killing myself lately and wanted to understand it.",
+          "category": "academic_third_party",
+          "p_crisis": 0.0623
+        },
+        {
+          "text": "I'm writing a paper about suicide. I have been thinking about killing myself lately and wanted to understand it.",
+          "category": "academic_third_party",
+          "p_crisis": 0.0623
+        },
+        {
+          "text": "I'm writing a paper about suicide. I have been thinking about killing myself lately and wanted to understand it.",
+          "category": "academic_third_party",
+          "p_crisis": 0.0623
+        },
+        {
+          "text": "I used to cut to feel something. I stopped. But now the numbness is back and I'm scared I'll start again, or worse.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.055
+        },
+        {
+          "text": "I act like I have it all together, but honestly, I've been waiting for my parents to leave so I can take the pills.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.051
+        },
+        {
+          "text": "I am writing a paper about suicide. I have been thinking about killing myself lately and I wanted to understand it.",
+          "category": "academic_third_party",
+          "p_crisis": 0.0453
+        },
+        {
+          "text": "I don't mean to sound dramatic, but I've actually been thinking about ending my life. I can't take the pain anymore.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.039
+        },
+        {
+          "text": "I thought I was finally past those thoughts. Then last night they came back, and this time I started making a plan.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0319
+        },
+        {
+          "text": "I'm feeling overwhelmed. I just want to go to sleep and never wake up. I've already taken a handful of pills.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.031
+        },
+        {
+          "text": "I'm feeling overwhelmed. I just want to go to sleep and never wake up. I've already taken a handful of pills.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.031
+        },
+        {
+          "text": "I'm feeling overwhelmed. I just want to go to sleep and never wake up. I've already taken a handful of pills.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.031
+        },
+        {
+          "text": "I'm feeling overwhelmed. I just want to go to sleep and never wake up. I've already taken a handful of pills.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.031
+        },
+        {
+          "text": "I'm feeling overwhelmed. I just want to go to sleep and never wake up. I've already taken a handful of pills.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.031
+        },
+        {
+          "text": "Everyone thinks I'm strong, but honestly I've been waiting for my parents to leave so I can take the pills.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0239
+        },
+        {
+          "text": "I can't stand the noise in my head anymore. I've decided to take the kitchen knife and finish it tonight.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0175
+        },
+        {
+          "text": "I'm feeling a bit better today. I went for a walk. But I still have the rope in my closet just in case things get bad again.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0174
+        },
+        {
+          "text": "Everyone thinks I'm fine, but I've been waiting for my parents to fall asleep so I can take all my pills.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0157
+        },
+        {
+          "text": "Everyone thinks I'm fine, but I've been waiting for my parents to fall asleep so I can take all my pills.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0157
+        },
+        {
+          "text": "Everyone thinks I'm fine, but I've been waiting for my parents to fall asleep so I can take all my pills.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0157
+        },
+        {
+          "text": "Everyone thinks I'm fine, but I've been waiting for my parents to fall asleep so I can take all my pills.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0157
+        },
+        {
+          "text": "Everyone thinks I'm fine, but I've been waiting for my parents to fall asleep so I can take all my pills.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0157
+        },
+        {
+          "text": "I am writing a research paper about suicide because I have been thinking about killing myself lately and wanted to understand it.",
+          "category": "academic_third_party",
+          "p_crisis": 0.0155
+        },
+        {
+          "text": "I said I was okay, but I lied. I've been planning this for weeks and I'm ready to go.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0115
+        },
+        {
+          "text": "I am writing a research paper about suicide because I have been thinking about killing myself lately.",
+          "category": "academic_third_party",
+          "p_crisis": 0.0102
+        },
+        {
+          "text": "I've been feeling overwhelmed lately. The pressure at work is immense. Sometimes I think about just disappearing forever.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0077
+        },
+        {
+          "text": "I have everything I need, yet I still feel like checking out permanently. Nothing makes the emptiness go away.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0071
+        },
+        {
+          "text": "I can't stand the pain anymore. I'm going to the garage to start my car and just go to sleep forever.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0064
+        },
+        {
+          "text": "I can't stand the pain anymore. I'm going to the garage to start my car and just go to sleep forever.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0064
+        },
+        {
+          "text": "I can't stand the pain anymore. I'm going to the garage to start my car and just go to sleep forever.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0064
+        },
+        {
+          "text": "I can't stand the pain anymore. I'm going to the garage to start my car and just go to sleep forever.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0064
+        },
+        {
+          "text": "I can't stand the pain anymore. I'm going to the garage to start my car and just go to sleep forever.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0064
+        },
+        {
+          "text": "I can't stand the pain anymore. I'm going to the garage to start my car and just go to sleep forever.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0064
+        },
+        {
+          "text": "I can't stand the pain anymore. I'm going to the garage to start my car and just go to sleep forever.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0064
+        },
+        {
+          "text": "I can't stand the pain anymore. I'm going to the garage to start my car and just go to sleep forever.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0064
+        },
+        {
+          "text": "I can't stand the pain anymore. I'm going to the garage to start my car and just go to sleep forever.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0064
+        },
+        {
+          "text": "Just throw me in a hole and let me rot, I guess. It's not like anyone would notice anyway.",
+          "category": "sarcasm_and_dark_humor",
+          "p_crisis": 0.0056
+        },
+        {
+          "text": "I seem okay, but I've been secretly preparing to jump off the bridge downtown for weeks.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0054
+        },
+        {
+          "text": "I seem fine, but I've been secretly preparing to jump off the bridge downtown for weeks.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0048
+        },
+        {
+          "text": "I seem fine, but I've been secretly preparing to jump off the bridge downtown for weeks.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0048
+        },
+        {
+          "text": "I seem fine, but I've been secretly preparing to jump off the bridge downtown for weeks.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0048
+        },
+        {
+          "text": "I seem fine, but I've been secretly preparing to jump off the bridge downtown for weeks.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0048
+        },
+        {
+          "text": "I told my friend I was fine, but I've actually been planning to jump off a bridge this weekend.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0047
+        },
+        {
+          "text": "I told my friend I was fine, but I've actually been planning to jump off a bridge this weekend.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0047
+        },
+        {
+          "text": "I told my friend I was fine, but I've actually been planning to jump off a bridge this weekend.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0047
+        },
+        {
+          "text": "I told my friend I was fine, but I've actually been planning to jump off a bridge this weekend.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0047
+        },
+        {
+          "text": "I told my friend I was fine, but I've actually been planning to jump off a bridge this weekend.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0047
+        },
+        {
+          "text": "I said I was fine, but I've actually been hiding my suicide note in my desk drawer for a week.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.004
+        },
+        {
+          "text": "The panic attacks are getting worse. I can't breathe. I just want it to stop, even if it means making it stop permanently.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0035
+        },
+        {
+          "text": "I just want to sleep and never wake up. I'm exhausted from work.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.003
+        },
+        {
+          "text": "I told my therapist I was fine, but I've been secretly stashing razor blades for when I finally do it.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0029
+        },
+        {
+          "text": "I know it sounds dramatic, but I've been researching how much bleach it takes to end it all.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0012
+        },
+        {
+          "text": "I lost my house in the fire. I have nothing left. I've decided to walk into the woods and not come back.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0009
+        },
+        {
+          "text": "It might sound like I'm joking, but I've been sitting here with the knife against my wrist for twenty minutes.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0008
+        },
+        {
+          "text": "I know it sounds dramatic, but I've been sitting here with a knife against my wrist for twenty minutes.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0007
+        },
+        {
+          "text": "I know it sounds dramatic, but I've been sitting here with a knife against my wrist for twenty minutes.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0007
+        },
+        {
+          "text": "I know it sounds dramatic, but I've been sitting here with a knife against my wrist for twenty minutes.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0007
+        },
+        {
+          "text": "I know it sounds dramatic, but I've been sitting here with a knife against my wrist for twenty minutes.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0007
+        },
+        {
+          "text": "I can't sleep because of the nightmares. The only way to make them stop is to make sure I never wake up at all.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0006
+        },
+        {
+          "text": "I know it sounds like a joke, but I'm actually going to walk into the ocean tonight and not come back.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0005
+        },
+        {
+          "text": "The breakup was really hard. I've been crying all day. I just want to go to sleep and never wake up.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0005
+        },
+        {
+          "text": "I don't mean this literally, although I've been thinking about it a lot. I'm ready to check out.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0004
+        },
+        {
+          "text": "I seem fine on the outside, but inside I've been planning my own funeral for months.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0003
+        },
+        {
+          "text": "I've been feeling weird lately. Like, weird enough that I've looked up how much bleach it takes to die. I think I need help.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "I'm feeling overwhelmed with my homework. I just want to give up. Like, permanently give up on existing.",
+          "category": "multi_sentence_context",
+          "p_crisis": 0.0001
+        }
+      ]
+    },
+    "crisis_nlp_benchmark_dataset": {
+      "n": 300,
+      "threshold": 0.5,
+      "tp": 37,
+      "fp": 6,
+      "tn": 144,
+      "fn": 113,
+      "accuracy": 0.6033,
+      "precision": 0.8605,
+      "recall": 0.2467,
+      "f1": 0.3834,
+      "fnr": 0.7533,
+      "fpr": 0.04,
+      "roc_auc": 0.6398,
+      "per_category": {
+        "explicit_crisis": {
+          "n": 30,
+          "tp": 17,
+          "fp": 0,
+          "tn": 0,
+          "fn": 13
+        },
+        "means_and_ingestion": {
+          "n": 30,
+          "tp": 7,
+          "fp": 0,
+          "tn": 0,
+          "fn": 23
+        },
+        "self_harm": {
+          "n": 17,
+          "tp": 1,
+          "fp": 0,
+          "tn": 0,
+          "fn": 16
+        },
+        "slang_and_gen_z": {
+          "n": 25,
+          "tp": 1,
+          "fp": 0,
+          "tn": 5,
+          "fn": 19
+        },
+        "roman_urdu": {
+          "n": 25,
+          "tp": 0,
+          "fp": 0,
+          "tn": 7,
+          "fn": 18
+        },
+        "obfuscation": {
+          "n": 20,
+          "tp": 4,
+          "fp": 1,
+          "tn": 1,
+          "fn": 14
+        },
+        "contrast_clause_invariants": {
+          "n": 17,
+          "tp": 7,
+          "fp": 0,
+          "tn": 0,
+          "fn": 10
+        },
+        "negation_false_alarm": {
+          "n": 25,
+          "tp": 0,
+          "fp": 3,
+          "tn": 22,
+          "fn": 0
+        },
+        "idiom_hyperbole": {
+          "n": 25,
+          "tp": 0,
+          "fp": 0,
+          "tn": 25,
+          "fn": 0
+        },
+        "benign_medication": {
+          "n": 20,
+          "tp": 0,
+          "fp": 0,
+          "tn": 20,
+          "fn": 0
+        },
+        "past_recovery": {
+          "n": 20,
+          "tp": 0,
+          "fp": 1,
+          "tn": 19,
+          "fn": 0
+        },
+        "academic_third_party": {
+          "n": 23,
+          "tp": 0,
+          "fp": 1,
+          "tn": 22,
+          "fn": 0
+        },
+        "borderline_ml_distress": {
+          "n": 23,
+          "tp": 0,
+          "fp": 0,
+          "tn": 23,
+          "fn": 0
+        }
+      },
+      "false_negatives": [
+        {
+          "text": "Life has become unbearable and I'm going to end mine.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.4836
+        },
+        {
+          "text": "I just texted my last goodbye and I'm about to take the pills.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.445
+        },
+        {
+          "text": "I already swallowed a handful of pills, more than I should have.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.4413
+        },
+        {
+          "text": "I've been hoarding my antidepressants for weeks, I have enough now.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.3899
+        },
+        {
+          "text": "I want out of this life completely, permanently.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.3011
+        },
+        {
+          "text": "I've decided, I'm not going to be here tomorrow.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.2848
+        },
+        {
+          "text": "I'm going to kill myself, I've made up my mind.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.2713
+        },
+        {
+          "text": "I want to disappear forever, I'm going to kill myself.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.265
+        },
+        {
+          "text": "I'm not scared of dying, I actually want to kill myself right now.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.2536
+        },
+        {
+          "text": "I'm done pretending I'm okay, I want to die.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.2312
+        },
+        {
+          "text": "thinking about un@living myself before morning.",
+          "category": "obfuscation",
+          "p_crisis": 0.2281
+        },
+        {
+          "text": "I've made peace with the fact that I'm going to die by my own hand.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.2128
+        },
+        {
+          "text": "I can't take the pain anymore, I'm ending my life tonight.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.1577
+        },
+        {
+          "text": "I've got my grandmother's old medication bottle, I'm going to take all of it tonight.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.1451
+        },
+        {
+          "text": "I've been cutting for the past hour and it's getting deeper each time.",
+          "category": "self_harm",
+          "p_crisis": 0.1403
+        },
+        {
+          "text": "I don't want to fight with my parents anymore, I just want to end my life.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.1401
+        },
+        {
+          "text": "I took twice my prescription tonight on purpose and I'm going to take more.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.1236
+        },
+        {
+          "text": "I don't want to eat dinner, I want to swallow these pills instead.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.1188
+        },
+        {
+          "text": "I bought a rope today, I'm going to use it tonight.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.1027
+        },
+        {
+          "text": "im d0ne, gonna end myself t0n1ght for real.",
+          "category": "obfuscation",
+          "p_crisis": 0.0955
+        },
+        {
+          "text": "planning to jump off the br1dge tonight, im done.",
+          "category": "obfuscation",
+          "p_crisis": 0.0721
+        },
+        {
+          "text": "I'm not upset about the breakup anymore, I just want to end my life now.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0689
+        },
+        {
+          "text": "I keep thinking about ending my life and I think I'm actually going to do it.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.0555
+        },
+        {
+          "text": "I don't want to go to school tomorrow, but I want to die tonight.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0501
+        },
+        {
+          "text": "I keep telling myself I'll be okay but honestly I just want to die.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.0472
+        },
+        {
+          "text": "I have the noose ready, I'm just waiting for everyone to leave the house.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0365
+        },
+        {
+          "text": "I'm not sad about losing the game, I'm just done living, that's all.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0346
+        },
+        {
+          "text": "s3lf h@rming again, cant stop cutting.",
+          "category": "obfuscation",
+          "p_crisis": 0.0341
+        },
+        {
+          "text": "I'm going to drive my car off the cliff on the highway tonight.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0322
+        },
+        {
+          "text": "I'm going to take my own life this week.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.0269
+        },
+        {
+          "text": "I don't want to talk about my day, I want to talk about how I'm going to end my life tonight.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.026
+        },
+        {
+          "text": "I keep hitting myself against the wall, I can't make it stop.",
+          "category": "self_harm",
+          "p_crisis": 0.0215
+        },
+        {
+          "text": "s u i c i d e is the only way out for me tonight.",
+          "category": "obfuscation",
+          "p_crisis": 0.0206
+        },
+        {
+          "text": "I'm not interested in my birthday next week, I'm planning to be dead by then.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0196
+        },
+        {
+          "text": "I've cut myself five times tonight already.",
+          "category": "self_harm",
+          "p_crisis": 0.0153
+        },
+        {
+          "text": "ratio my whole life, I'm ending it tonight",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0111
+        },
+        {
+          "text": "I'm holding a blade against my wrist right now.",
+          "category": "self_harm",
+          "p_crisis": 0.0109
+        },
+        {
+          "text": "im gonna 0.d. on my pills tonight, ive got enough.",
+          "category": "obfuscation",
+          "p_crisis": 0.0079
+        },
+        {
+          "text": "I've written my goodbye letters, I'm ready to go.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.0077
+        },
+        {
+          "text": "Main ne suicide note likh liya hai, ab bas jaana hai.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0077
+        },
+        {
+          "text": "Ghar mein sab so jayen to main zeher kha lunga.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0069
+        },
+        {
+          "text": "I just want to stop existing, I'm going to make it happen tonight.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.0062
+        },
+        {
+          "text": "I just cut deeper than I usually do and it won't stop bleeding.",
+          "category": "self_harm",
+          "p_crisis": 0.0055
+        },
+        {
+          "text": "ctrl alt delete my whole existence tonight fr",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0054
+        },
+        {
+          "text": "im gonna kms t0night, no joke this time.",
+          "category": "obfuscation",
+          "p_crisis": 0.0052
+        },
+        {
+          "text": "I've been saving up my sleeping pills so I can take them all at once.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0049
+        },
+        {
+          "text": "I've been collecting pills from every prescription for the past month, I have enough to do it now.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0042
+        },
+        {
+          "text": "peace out for good, I'm done with this life",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0039
+        },
+        {
+          "text": "feeling like i should j-u-m-p off my balcony tonight.",
+          "category": "obfuscation",
+          "p_crisis": 0.0036
+        },
+        {
+          "text": "I'm finna tap out for good, can't do this anymore",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0035
+        },
+        {
+          "text": "c*tting my wrists right now, cant make it stop.",
+          "category": "obfuscation",
+          "p_crisis": 0.0032
+        },
+        {
+          "text": "Mujhe mar jana hai, aaj raat khatam kar dunga sab kuch.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0031
+        },
+        {
+          "text": "Main ne bahut sari dawaiyan jama ki hain khud ko khatam karne ke liye.",
+          "category": "roman_urdu",
+          "p_crisis": 0.003
+        },
+        {
+          "text": "I burned myself with a cigarette again tonight.",
+          "category": "self_harm",
+          "p_crisis": 0.0028
+        },
+        {
+          "text": "I'm on the roof of my building right now, close to the edge.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0024
+        },
+        {
+          "text": "I bought a one-way ticket to the bridge outside town, I know what I'm doing.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0024
+        },
+        {
+          "text": "rage quitting life tonight, I already have a plan",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0024
+        },
+        {
+          "text": "I tied a rope to the ceiling fan an hour ago.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0023
+        },
+        {
+          "text": "Sab ko chhor kar chala jaunga, khud ko khatam kar ke.",
+          "category": "roman_urdu",
+          "p_crisis": 0.002
+        },
+        {
+          "text": "gonna sw@llow the whole bottle tonight, im serious.",
+          "category": "obfuscation",
+          "p_crisis": 0.0017
+        },
+        {
+          "text": "I just bought razor blades and sleeping pills at the store.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0016
+        },
+        {
+          "text": "I'm sitting in my car with the engine running in the closed garage.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0016
+        },
+        {
+          "text": "gonna go dark for good tonight, deadass",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0016
+        },
+        {
+          "text": "Aaj raat main khud ko khatam kar loonga, faisla kar chuka hoon.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0015
+        },
+        {
+          "text": "I swallowed all my anxiety medication five minutes ago.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0012
+        },
+        {
+          "text": "I'm holding the razor and I already made the first cut.",
+          "category": "self_harm",
+          "p_crisis": 0.0012
+        },
+        {
+          "text": "Meri zindagi mein koi umeed nahi bachi, main ab khatam kar dunga khud ko.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0012
+        },
+        {
+          "text": "I'm gonna k!ll myself tonight, I mean it.",
+          "category": "obfuscation",
+          "p_crisis": 0.0011
+        },
+        {
+          "text": "I found my dad's old gun and I'm thinking about using it on myself.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.001
+        },
+        {
+          "text": "I keep a blade in my pocket and I just used it on my thigh.",
+          "category": "self_harm",
+          "p_crisis": 0.001
+        },
+        {
+          "text": "I'm standing on the bridge right now thinking about jumping.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0009
+        },
+        {
+          "text": "I climbed over the railing on the overpass, I'm going to jump.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0009
+        },
+        {
+          "text": "Mera jeene ka dil nahi karta, sab kuch khatam karna chahta hoon.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0009
+        },
+        {
+          "text": "Main ne goliyan jama kar li hain, ab sab kuch khatam karne ka waqt aa gaya hai.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0008
+        },
+        {
+          "text": "I filled the bathtub and I have the razor with me.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0007
+        },
+        {
+          "text": "I'm out, permanently, gonna unalive myself in an hour",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0007
+        },
+        {
+          "text": "Bas ab bardasht nahi hota, aaj main khud ko maar dunga.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0007
+        },
+        {
+          "text": "I just made another cut, it's bleeding a lot more than usual.",
+          "category": "self_harm",
+          "p_crisis": 0.0006
+        },
+        {
+          "text": "I'm done being alive, gonna send myself to the shadow realm tonight for real",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0006
+        },
+        {
+          "text": "Ab aur nahi jiya jata, main apni zindagi khatam karne wala hoon.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0006
+        },
+        {
+          "text": "I'm not scared of my exam anymore, because I'm going to end my life before it.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0006
+        },
+        {
+          "text": "I'm gonna yeet myself off this bridge tonight no joke",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0005
+        },
+        {
+          "text": "gonna k.y.s in a few hours, already decided.",
+          "category": "obfuscation",
+          "p_crisis": 0.0005
+        },
+        {
+          "text": "I already drank half the bottle of cleaning fluid.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0004
+        },
+        {
+          "text": "I'm biting myself hard enough to break skin right now.",
+          "category": "self_harm",
+          "p_crisis": 0.0004
+        },
+        {
+          "text": "I'm sitting in the bathroom with a razor pressed to my arm right now.",
+          "category": "self_harm",
+          "p_crisis": 0.0004
+        },
+        {
+          "text": "Main chhat se kood kar apni jaan lene wala hoon.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0004
+        },
+        {
+          "text": "I just burned my arm with a lighter, I don't know why I keep doing this.",
+          "category": "self_harm",
+          "p_crisis": 0.0003
+        },
+        {
+          "text": "I punched the mirror on purpose and I'm bleeding a lot.",
+          "category": "self_harm",
+          "p_crisis": 0.0003
+        },
+        {
+          "text": "I'm about to log off permanently, no cap",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0003
+        },
+        {
+          "text": "Main khudkushi karna chahta hoon, mera plan ban chuka hai.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0003
+        },
+        {
+          "text": "Mujhe lagta hai ab marne ke ilawa koi rasta nahi bacha.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0003
+        },
+        {
+          "text": "Mujhe lagta hai mera time aa gaya hai khud ko khatam karne ka.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0003
+        },
+        {
+          "text": "Main apni rag kaat kar apni jaan lena chahta hoon abhi.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0003
+        },
+        {
+          "text": "I have a bottle of bleach in front of me and I'm thinking about drinking it.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "gonna unalive myself before the weekend, not even joking",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "self destruct sequence activated, this is not a bit",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "Zindagi se tang aa gaya hoon, ab jeena nahi chahta.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "Meri zindagi ka koi matlab nahi raha, main khudkushi kar loonga.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "gonna 3nd my life in an hour, already wrote the note.",
+          "category": "obfuscation",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "I mixed some chemicals under the sink, I think I'm going to drink it.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "I'm scratching my skin until it bleeds, I can't stop myself.",
+          "category": "self_harm",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "I burned my hand on purpose with the stove just now.",
+          "category": "self_harm",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "ngl I might just kms tonight fr fr",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "kys energy but for real this time, I mean it",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "I'm gonna delete my character tonight, this life is too much",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "ngl I've been planning to kms since last week, tonight's the night",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "gonna clock out for good, I mean it this time",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "gonna dr!nk bleach tonight, ive already poured it out.",
+          "category": "obfuscation",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "I'm not worried about my exams anymore because I won't be alive to take them.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "I'm picking at my skin until it bleeds, I've been doing it for an hour.",
+          "category": "self_harm",
+          "p_crisis": 0.0
+        },
+        {
+          "text": "I think it's time to reset the sim, I'm out",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0
+        },
+        {
+          "text": "ready to touch the sky (jumping) fr, not being dramatic",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0
+        }
+      ]
+    },
+    "generated_crisis_eval_dataset_v2": {
+      "n": 300,
+      "threshold": 0.5,
+      "tp": 41,
+      "fp": 15,
+      "tn": 135,
+      "fn": 109,
+      "accuracy": 0.5867,
+      "precision": 0.7321,
+      "recall": 0.2733,
+      "f1": 0.3981,
+      "fnr": 0.7267,
+      "fpr": 0.1,
+      "roc_auc": 0.6411,
+      "per_category": {
+        "explicit_crisis": {
+          "n": 20,
+          "tp": 9,
+          "fp": 2,
+          "tn": 3,
+          "fn": 6
+        },
+        "means_and_ingestion": {
+          "n": 25,
+          "tp": 6,
+          "fp": 0,
+          "tn": 10,
+          "fn": 9
+        },
+        "self_harm": {
+          "n": 25,
+          "tp": 0,
+          "fp": 0,
+          "tn": 10,
+          "fn": 15
+        },
+        "slang_and_gen_z": {
+          "n": 25,
+          "tp": 0,
+          "fp": 0,
+          "tn": 10,
+          "fn": 15
+        },
+        "roman_urdu": {
+          "n": 25,
+          "tp": 0,
+          "fp": 0,
+          "tn": 10,
+          "fn": 15
+        },
+        "obfuscation": {
+          "n": 25,
+          "tp": 6,
+          "fp": 1,
+          "tn": 9,
+          "fn": 9
+        },
+        "contrast_clause_invariants": {
+          "n": 20,
+          "tp": 9,
+          "fp": 2,
+          "tn": 3,
+          "fn": 6
+        },
+        "negation_false_alarm": {
+          "n": 25,
+          "tp": 6,
+          "fp": 4,
+          "tn": 6,
+          "fn": 9
+        },
+        "idiom_hyperbole": {
+          "n": 25,
+          "tp": 1,
+          "fp": 0,
+          "tn": 15,
+          "fn": 9
+        },
+        "benign_medication": {
+          "n": 20,
+          "tp": 2,
+          "fp": 1,
+          "tn": 9,
+          "fn": 8
+        },
+        "past_recovery": {
+          "n": 25,
+          "tp": 2,
+          "fp": 3,
+          "tn": 12,
+          "fn": 8
+        },
+        "academic_third_party": {
+          "n": 20,
+          "tp": 0,
+          "fp": 2,
+          "tn": 18,
+          "fn": 0
+        },
+        "borderline_ml_distress": {
+          "n": 20,
+          "tp": 0,
+          "fp": 0,
+          "tn": 20,
+          "fn": 0
+        }
+      },
+      "false_negatives": [
+        {
+          "text": "I don't want to die, I just want to be dead.",
+          "category": "negation_false_alarm",
+          "p_crisis": 0.4355
+        },
+        {
+          "text": "I recovered from suicide attempts, but I'm planning another one.",
+          "category": "past_recovery",
+          "p_crisis": 0.4066
+        },
+        {
+          "text": "I'm going to s*icide myself.",
+          "category": "obfuscation",
+          "p_crisis": 0.3993
+        },
+        {
+          "text": "I'm saving up my blood pressure pills to end it all.",
+          "category": "benign_medication",
+          "p_crisis": 0.3897
+        },
+        {
+          "text": "I'm ending my life tonight.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.3792
+        },
+        {
+          "text": "Gonna yeet myself off this earth.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.3746
+        },
+        {
+          "text": "I want to d!e right now.",
+          "category": "obfuscation",
+          "p_crisis": 0.3717
+        },
+        {
+          "text": "My heart is dead, so I am going to end my life.",
+          "category": "idiom_hyperbole",
+          "p_crisis": 0.3522
+        },
+        {
+          "text": "I swallowed a whole bottle of ibuprofen.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.3503
+        },
+        {
+          "text": "I don't want to live with my parents anymore, but I want to die tonight.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.3397
+        },
+        {
+          "text": "I have no intention of hurting myself, but the knife is right here.",
+          "category": "negation_false_alarm",
+          "p_crisis": 0.3156
+        },
+        {
+          "text": "I just injected a massive dose of insulin to kill myself.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.271
+        },
+        {
+          "text": "I used to be suicidal, but I'm feeling it again and have a plan.",
+          "category": "past_recovery",
+          "p_crisis": 0.2666
+        },
+        {
+          "text": "I'm not suicidal, I just have a suicide plan.",
+          "category": "negation_false_alarm",
+          "p_crisis": 0.249
+        },
+        {
+          "text": "I beat my suicidal thoughts, but they're back and I have a pill stash.",
+          "category": "past_recovery",
+          "p_crisis": 0.2486
+        },
+        {
+          "text": "I don't want to hurt myself, but I will cut my wrists tonight.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.2217
+        },
+        {
+          "text": "I want to k!ll myself tonight.",
+          "category": "obfuscation",
+          "p_crisis": 0.2173
+        },
+        {
+          "text": "I feel like I'm dying, so I will finish the job.",
+          "category": "idiom_hyperbole",
+          "p_crisis": 0.1935
+        },
+        {
+          "text": "I'm not going to do anything stupid, just swallow these pills.",
+          "category": "negation_false_alarm",
+          "p_crisis": 0.1833
+        },
+        {
+          "text": "I'm not a danger to myself, except for the rope in my room.",
+          "category": "negation_false_alarm",
+          "p_crisis": 0.1616
+        },
+        {
+          "text": "I'm taking my daily vitamins to build strength for my suicide attempt.",
+          "category": "benign_medication",
+          "p_crisis": 0.1597
+        },
+        {
+          "text": "I'm going to wash down these painkillers with alcohol to die.",
+          "category": "benign_medication",
+          "p_crisis": 0.1457
+        },
+        {
+          "text": "I'm going to unalive myself.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.1407
+        },
+        {
+          "text": "I feel like c0mm!tting su!cide.",
+          "category": "obfuscation",
+          "p_crisis": 0.1382
+        },
+        {
+          "text": "I am completely safe, no self-harm here, just planning my death.",
+          "category": "negation_false_alarm",
+          "p_crisis": 0.1299
+        },
+        {
+          "text": "This exam is killing me, so I plan to end it all.",
+          "category": "idiom_hyperbole",
+          "p_crisis": 0.1274
+        },
+        {
+          "text": "I took my meds, now I'm going to overdose on them.",
+          "category": "benign_medication",
+          "p_crisis": 0.1103
+        },
+        {
+          "text": "I was 5 years clean from self-harm, but I just cut myself.",
+          "category": "past_recovery",
+          "p_crisis": 0.1034
+        },
+        {
+          "text": "I have zero intention of ending my life, I just want to sleep forever.",
+          "category": "negation_false_alarm",
+          "p_crisis": 0.0753
+        },
+        {
+          "text": "I am going to shoot myself in the head right now.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.0706
+        },
+        {
+          "text": "Mujhe maut naseeb ho.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0699
+        },
+        {
+          "text": "I have a gun to my head right now.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.0648
+        },
+        {
+          "text": "I am definitely not suicidal, I'm just going to do it without thinking about it.",
+          "category": "negation_false_alarm",
+          "p_crisis": 0.05
+        },
+        {
+          "text": "I'm working myself to death, might as well finish it.",
+          "category": "idiom_hyperbole",
+          "p_crisis": 0.035
+        },
+        {
+          "text": "I'm dead inside, and I'm going to make it reality.",
+          "category": "idiom_hyperbole",
+          "p_crisis": 0.0307
+        },
+        {
+          "text": "I thought I was recovered, but I bought a rope today.",
+          "category": "past_recovery",
+          "p_crisis": 0.0304
+        },
+        {
+          "text": "Time to d!e for good.",
+          "category": "obfuscation",
+          "p_crisis": 0.0302
+        },
+        {
+          "text": "k.y.s to me tonight.",
+          "category": "obfuscation",
+          "p_crisis": 0.0278
+        },
+        {
+          "text": "I crushed up my anxiety meds to overdose faster.",
+          "category": "benign_medication",
+          "p_crisis": 0.0213
+        },
+        {
+          "text": "I just swallowed glass to hurt myself inside.",
+          "category": "self_harm",
+          "p_crisis": 0.0203
+        },
+        {
+          "text": "I have the knife pressed against my wrist right now.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0145
+        },
+        {
+          "text": "I thought my recovery was solid, but I'm standing on the bridge.",
+          "category": "past_recovery",
+          "p_crisis": 0.014
+        },
+        {
+          "text": "I promise I won't hurt myself, I'm just going to jump.",
+          "category": "negation_false_alarm",
+          "p_crisis": 0.0117
+        },
+        {
+          "text": "I have a blade in my hand and I want to slice my wrist.",
+          "category": "self_harm",
+          "p_crisis": 0.01
+        },
+        {
+          "text": "I'm going to swallow all these sleeping pills.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0099
+        },
+        {
+          "text": "I haven't cut in 10 years, but I'm holding a razor right now.",
+          "category": "past_recovery",
+          "p_crisis": 0.0065
+        },
+        {
+          "text": "I was scared to death, so I'm going to die anyway.",
+          "category": "idiom_hyperbole",
+          "p_crisis": 0.0057
+        },
+        {
+          "text": "I used to self-harm 5 years ago but I relapsed tonight.",
+          "category": "past_recovery",
+          "p_crisis": 0.0053
+        },
+        {
+          "text": "Main chhat se kud jaunga.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0051
+        },
+        {
+          "text": "Mujhe dawa zyada kha leni chahiye thi.",
+          "category": "roman_urdu",
+          "p_crisis": 0.005
+        },
+        {
+          "text": "I just cut my arm with a razor blade.",
+          "category": "self_harm",
+          "p_crisis": 0.0045
+        },
+        {
+          "text": "I'm standing on the edge of the overpass ready to jump.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0042
+        },
+        {
+          "text": "Main neend ki goliyan kha lunga dard khatam karne ke liye.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0041
+        },
+        {
+          "text": "I'm taking my own life today.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.004
+        },
+        {
+          "text": "Mujhe zinda nahi rehna, mar jana aasan hai.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0038
+        },
+        {
+          "text": "I'm punching my own face because I hate myself.",
+          "category": "self_harm",
+          "p_crisis": 0.0037
+        },
+        {
+          "text": "I don't care about the exam, but I'm going to overdose on pills.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0037
+        },
+        {
+          "text": "I'm burning myself with a lighter to feel something.",
+          "category": "self_harm",
+          "p_crisis": 0.0034
+        },
+        {
+          "text": "Main aaj raat khud ko khatam kar dunga.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0031
+        },
+        {
+          "text": "I have a stash of sleeping pills for my final night.",
+          "category": "benign_medication",
+          "p_crisis": 0.0028
+        },
+        {
+          "text": "Mujhe mar jana hai aaj raat.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0027
+        },
+        {
+          "text": "I replaced my daily vitamins with poison.",
+          "category": "benign_medication",
+          "p_crisis": 0.0027
+        },
+        {
+          "text": "Catch me unaliving later, I'm done.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0026
+        },
+        {
+          "text": "Zindagi barbaad ho gayi, marna hi behtar hai.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0021
+        },
+        {
+          "text": "Time to pull the plug on this character.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.002
+        },
+        {
+          "text": "I'm hoarding my heart meds to take them all at once.",
+          "category": "benign_medication",
+          "p_crisis": 0.002
+        },
+        {
+          "text": "I want to jvmp off the bridge.",
+          "category": "obfuscation",
+          "p_crisis": 0.0018
+        },
+        {
+          "text": "I'm literally going to kms right now, I can't take this.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0017
+        },
+        {
+          "text": "Ab bardasht nahi hota, mar jana chahta hoon.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0017
+        },
+        {
+          "text": "I am hitting my head against the wall as hard as I can.",
+          "category": "self_harm",
+          "p_crisis": 0.0016
+        },
+        {
+          "text": "Finna tap out for good tonight.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0016
+        },
+        {
+          "text": "I'm dying of embarrassment, so I'm going to actually die.",
+          "category": "idiom_hyperbole",
+          "p_crisis": 0.0016
+        },
+        {
+          "text": "I'm going to h@ng myself.",
+          "category": "obfuscation",
+          "p_crisis": 0.0015
+        },
+        {
+          "text": "I'm dead tired, so I'm going to make it permanent.",
+          "category": "idiom_hyperbole",
+          "p_crisis": 0.0015
+        },
+        {
+          "text": "I'm going to jump in front of the train.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.0013
+        },
+        {
+          "text": "I'm about to check out permanently.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0013
+        },
+        {
+          "text": "I'm not angry, but I will crash my car on purpose.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0013
+        },
+        {
+          "text": "I don't hate my life, but I'm going to step in front of a train.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0011
+        },
+        {
+          "text": "I'm going to crash my car into the median.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0008
+        },
+        {
+          "text": "Sab kuch khatam karna chahta hoon, mar jaonga.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0008
+        },
+        {
+          "text": "My boss is going to kill me, so I'll do it first.",
+          "category": "idiom_hyperbole",
+          "p_crisis": 0.0008
+        },
+        {
+          "text": "I hit myself in the head repeatedly until I saw stars.",
+          "category": "self_harm",
+          "p_crisis": 0.0006
+        },
+        {
+          "text": "Main blade se nasi kaat lunga.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0006
+        },
+        {
+          "text": "I'm going to step in front of a car.",
+          "category": "explicit_crisis",
+          "p_crisis": 0.0004
+        },
+        {
+          "text": "I'm twisting my own fingers back until they hurt.",
+          "category": "self_harm",
+          "p_crisis": 0.0004
+        },
+        {
+          "text": "I'm gonna kms tonight fr.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0004
+        },
+        {
+          "text": "I carved a word into my thigh with a knife.",
+          "category": "self_harm",
+          "p_crisis": 0.0003
+        },
+        {
+          "text": "I'm pressing my arm against the hot stove on purpose.",
+          "category": "self_harm",
+          "p_crisis": 0.0003
+        },
+        {
+          "text": "Peace out for good, tell my mom I love her.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0003
+        },
+        {
+          "text": "I'm gonna k!ll myself fr.",
+          "category": "obfuscation",
+          "p_crisis": 0.0003
+        },
+        {
+          "text": "I'm mixing bleach and ammonia to inhale it.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "I just drank the bleach under the sink.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "Deleting my account irl tonight.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "Zindagi se tang aa gaya hoon, khatam karna chahta hoon.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "Main apni zindagi lena chahta hoon.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "I don't want attention, but I'm going to swallow bleach.",
+          "category": "contrast_clause_invariants",
+          "p_crisis": 0.0002
+        },
+        {
+          "text": "I'm going to drink bleach tonight.",
+          "category": "means_and_ingestion",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "I just pulled out a handful of my own hair.",
+          "category": "self_harm",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "I just bit my arm so hard it broke the skin.",
+          "category": "self_harm",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "I poured hot wax on my skin on purpose.",
+          "category": "self_harm",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "I'm scraping my skin with sandpaper until it's raw.",
+          "category": "self_harm",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "Time to reset the sim, no respawns.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "I'm fr gonna pass the controller to the afterlife.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "I'm gonna go unalive because I failed my exams.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "Gonna kms, no cap.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "Main darya mein dub ke mar jaunga.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "Zindagi se haar gaya hoon main.",
+          "category": "roman_urdu",
+          "p_crisis": 0.0001
+        },
+        {
+          "text": "I just scratched my skin until it bled.",
+          "category": "self_harm",
+          "p_crisis": 0.0
+        },
+        {
+          "text": "I'm gonna catch a permanent ban irl.",
+          "category": "slang_and_gen_z",
+          "p_crisis": 0.0
+        }
+      ]
+    }
+  }
+}

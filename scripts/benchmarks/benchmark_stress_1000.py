@@ -78,12 +78,48 @@ def run_stress_test(max_dataset_samples: int = 1000):
         
     print(f"\n2. Loading Test Dataset from {dataset_path.name}...")
     df = pd.read_csv(dataset_path)
-    # Take balanced sample up to max_dataset_samples
-    suicide_df = df[df["label"] == "suicide"].head(max_dataset_samples // 2)
-    non_suicide_df = df[df["label"] == "non_suicide"].head(max_dataset_samples // 2)
-    
+
+    # ------------------------------------------------------------------
+    # Schema mapping for crisis_test_utterances.csv
+    # Columns: id, text, category, severity
+    #
+    # severity scale (1-5):
+    #   1 = idiom / non-crisis expression
+    #   2 = low-ambiguity non-crisis
+    #   3 = moderate risk (indirect distress, subtle slang)
+    #   4 = high risk (explicit intent, burden/goodbye, subtle_slang)
+    #   5 = imminent risk (lethal preparation, active escalation)
+    #
+    # Mapping rule (conservative — favours recall):
+    #   expected_crisis = True   iff severity >= 3 AND category != "idiom_non_crisis"
+    #   expected_crisis = False  iff severity <= 2  OR  category == "idiom_non_crisis"
+    #
+    # This mapping is consistent with the PatternCategory severity thresholds in
+    # crisis_rules.py and does not invent or silently exclude any rows.
+    # ------------------------------------------------------------------
+    NON_CRISIS_CATEGORIES = {"idiom_non_crisis"}
+    CRISIS_MIN_SEVERITY = 3
+
+    if "severity" not in df.columns or "category" not in df.columns:
+        print(f"[!] Dataset missing required columns 'severity' or 'category'. "
+              f"Found columns: {list(df.columns)}")
+        sys.exit(1)
+
+    df["expected_crisis"] = (
+        (df["severity"] >= CRISIS_MIN_SEVERITY) &
+        (~df["category"].isin(NON_CRISIS_CATEGORIES))
+    )
+
+    crisis_df = df[df["expected_crisis"] == True].head(max_dataset_samples // 2)
+    non_crisis_df = df[df["expected_crisis"] == False].head(max_dataset_samples // 2)
+
+    if crisis_df.empty:
+        print("[!] No crisis rows found after schema mapping — check dataset or mapping thresholds.")
+        sys.exit(1)
+
+
     combined_samples = []
-    
+
     # Add synthetic edge cases first
     for item in SYNTHETIC_EDGE_CASES:
         combined_samples.append({
@@ -91,23 +127,26 @@ def run_stress_test(max_dataset_samples: int = 1000):
             "expected_crisis": item["expected_crisis"],
             "source": f"synthetic_{item['category']}"
         })
-        
-    # Add dataset samples
-    for _, row in suicide_df.iterrows():
+
+    # Add dataset samples — expected_crisis derived from severity/category schema
+    for _, row in crisis_df.iterrows():
         combined_samples.append({
             "text": str(row["text"]),
             "expected_crisis": True,
-            "source": "dataset_crisis"
+            "source": f"dataset_crisis_sev{row['severity']}_{row['category']}"
         })
-    for _, row in non_suicide_df.iterrows():
+    for _, row in non_crisis_df.iterrows():
         combined_samples.append({
             "text": str(row["text"]),
             "expected_crisis": False,
-            "source": "dataset_non_crisis"
+            "source": f"dataset_non_crisis_sev{row['severity']}_{row['category']}"
         })
-        
+
     total_samples = len(combined_samples)
-    print(f" -> Total Benchmark Samples: {total_samples} (Synthetic: {len(SYNTHETIC_EDGE_CASES)}, Dataset: {len(suicide_df) + len(non_suicide_df)})")
+    print(f" -> Total Benchmark Samples: {total_samples} "
+          f"(Synthetic: {len(SYNTHETIC_EDGE_CASES)}, "
+          f"Dataset crisis: {len(crisis_df)}, Dataset non-crisis: {len(non_crisis_df)})")
+
     
     print("\n3. Running Pipeline Evaluation across all samples...")
     tp, fp, tn, fn = 0, 0, 0, 0

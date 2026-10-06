@@ -239,4 +239,105 @@ describe("ChatInterface Production Quality & Accessibility", () => {
       );
     });
   });
+
+  it("threat to others triggers CrisisModal, styles emergency protocol, and never displays 'Possible emotional tone'", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: {
+          reply: "Immediate safety support needed — move away from the person and any weapon or harmful object, and contact emergency services now.",
+          risk_level: "HARM_TO_OTHERS_RISK",
+          classification: "HARM_TO_OTHERS_RISK",
+          intent: "SAFETY PROTOCOL - HARM_TO_OTHERS_RISK",
+          emotion: "ACUTE_RISK",
+          sentiment: "NEGATIVE",
+          requires_immediate_action: true,
+          emergency_resources: [
+            { organization: "Police", contact_info: "15" },
+            { organization: "Rescue", contact_info: "1122" },
+            { organization: "Edhi", contact_info: "115" },
+            { organization: "Umang", contact_info: "0311-7786264" }
+          ]
+        }
+      })
+    });
+    globalThis.fetch = mockFetch as any;
+    const onOpenCrisisModal = vi.fn();
+
+    render(<ChatInterface {...defaultProps} onOpenCrisisModal={onOpenCrisisModal} />);
+
+    const textarea = screen.getByPlaceholderText(/Type your message/i);
+    const sendButton = screen.getByRole("button", { name: /Send message/i });
+
+    fireEvent.change(textarea, { target: { value: "I'm gonna kill my neighbour" } });
+    fireEvent.click(sendButton);
+
+    await waitFor(() => {
+      // Must open CrisisModal immediately
+      expect(onOpenCrisisModal).toHaveBeenCalledWith(expect.anything(), "detected");
+      // Must render Emergency Safety Protocol badge
+      expect(screen.getByText(/🚨 Emergency Safety Protocol Active/i)).toBeDefined();
+    });
+
+    // CRITICAL: Must NEVER label HARM_TO_OTHERS_RISK or COMBINED_HIGH_CRISIS as "Possible emotional tone"
+    expect(screen.queryByText(/Possible emotional tone/i)).toBeNull();
+  });
+
+  it("third-party report renders distinct panel, does not open CrisisModal, and does not label as distressed", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: {
+          reply: "It sounds like you are carrying concern for someone who may be in danger.",
+          risk_level: "THIRD_PARTY_REPORT",
+          classification: "THIRD_PARTY_REPORT",
+          intent: "THIRD PARTY SAFETY REPORT",
+          emotion: "CONCERN",
+          sentiment: "NEUTRAL",
+          requires_immediate_action: false,
+          emergency_resources: [
+            { organization: "Police", contact_info: "15" }
+          ]
+        }
+      })
+    });
+    globalThis.fetch = mockFetch as any;
+    const onOpenCrisisModal = vi.fn();
+
+    render(<ChatInterface {...defaultProps} onOpenCrisisModal={onOpenCrisisModal} />);
+
+    const textarea = screen.getByPlaceholderText(/Type your message/i);
+    const sendButton = screen.getByRole("button", { name: /Send message/i });
+
+    fireEvent.change(textarea, { target: { value: "my friend keeps talking about killing his ex" } });
+    fireEvent.click(sendButton);
+
+    await waitFor(() => {
+      // Must NOT open CrisisModal (user isn't the one at risk)
+      expect(onOpenCrisisModal).not.toHaveBeenCalled();
+      // Must render distinct third-party panel
+      expect(screen.getByText(/Third-Party Safety & Intervention Guidance/i)).toBeDefined();
+      expect(screen.getByText(/🛡️ Third-Party Safety Guidance/i)).toBeDefined();
+      // Must include direct emergency contact links in the third-party panel
+      expect(screen.getByText(/Call 15 \(Police Emergency\)/i)).toBeDefined();
+      expect(screen.getByText(/Call 1122 \(Pakistan Rescue\)/i)).toBeDefined();
+      expect(screen.getByText(/Call 115 \(Edhi Ambulance\)/i)).toBeDefined();
+    });
+
+    // Must NOT label as mere "Possible emotional tone · Distressed"
+    expect(screen.queryByText(/Possible emotional tone · Distressed/i)).toBeNull();
+  });
+
+  it("disables composer input and submit button while isCrisisModalOpen is true", () => {
+    render(<ChatInterface {...defaultProps} isCrisisModalOpen={true} />);
+
+    const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+    expect(textarea.disabled).toBe(true);
+
+    const sendButton = screen.getByRole("button", { name: /Send message/i }) as HTMLButtonElement;
+    expect(sendButton.disabled).toBe(true);
+  });
 });
+

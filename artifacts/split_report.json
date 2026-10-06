@@ -1,0 +1,128 @@
+{
+ "seed": 42,
+ "dev_cases": 310,
+ "test_cases": 210,
+ "test_sha256": "42a92357d4979e340a3c6c28d98bf032f39c9907132b4e32af6ba14e7a18d616",
+ "per_category": {
+  "academic_media_fiction": {
+   "skeletons_total": 12,
+   "skeletons_dev": 7,
+   "skeletons_test": 5,
+   "cases_dev": 21,
+   "cases_test": 15,
+   "gate_ok": null
+  },
+  "benign_physical": {
+   "skeletons_total": 10,
+   "skeletons_dev": 6,
+   "skeletons_test": 4,
+   "cases_dev": 18,
+   "cases_test": 12,
+   "gate_ok": null
+  },
+  "burden_goodbye": {
+   "skeletons_total": 20,
+   "skeletons_dev": 12,
+   "skeletons_test": 8,
+   "cases_dev": 24,
+   "cases_test": 16,
+   "gate_ok": true
+  },
+  "explicit_intent": {
+   "skeletons_total": 20,
+   "skeletons_dev": 12,
+   "skeletons_test": 8,
+   "cases_dev": 24,
+   "cases_test": 16,
+   "gate_ok": true
+  },
+  "hyperbole": {
+   "skeletons_total": 14,
+   "skeletons_dev": 8,
+   "skeletons_test": 6,
+   "cases_dev": 24,
+   "cases_test": 18,
+   "gate_ok": null
+  },
+  "imminent_intent": {
+   "skeletons_total": 20,
+   "skeletons_dev": 12,
+   "skeletons_test": 8,
+   "cases_dev": 24,
+   "cases_test": 16,
+   "gate_ok": true
+  },
+  "indirect_distress": {
+   "skeletons_total": 16,
+   "skeletons_dev": 10,
+   "skeletons_test": 6,
+   "cases_dev": 20,
+   "cases_test": 12,
+   "gate_ok": null
+  },
+  "means_attempt": {
+   "skeletons_total": 20,
+   "skeletons_dev": 12,
+   "skeletons_test": 8,
+   "cases_dev": 24,
+   "cases_test": 16,
+   "gate_ok": true
+  },
+  "negation": {
+   "skeletons_total": 14,
+   "skeletons_dev": 8,
+   "skeletons_test": 6,
+   "cases_dev": 24,
+   "cases_test": 18,
+   "gate_ok": null
+  },
+  "recovery": {
+   "skeletons_total": 12,
+   "skeletons_dev": 7,
+   "skeletons_test": 5,
+   "cases_dev": 21,
+   "cases_test": 15,
+   "gate_ok": null
+  },
+  "religious_benign": {
+   "skeletons_total": 8,
+   "skeletons_dev": 5,
+   "skeletons_test": 3,
+   "cases_dev": 15,
+   "cases_test": 9,
+   "gate_ok": null
+  },
+  "sarcasm_quoted": {
+   "skeletons_total": 8,
+   "skeletons_dev": 5,
+   "skeletons_test": 3,
+   "cases_dev": 15,
+   "cases_test": 9,
+   "gate_ok": null
+  },
+  "self_harm": {
+   "skeletons_total": 20,
+   "skeletons_dev": 12,
+   "skeletons_test": 8,
+   "cases_dev": 24,
+   "cases_test": 16,
+   "gate_ok": true
+  },
+  "subtle_slang": {
+   "skeletons_total": 12,
+   "skeletons_dev": 7,
+   "skeletons_test": 5,
+   "cases_dev": 14,
+   "cases_test": 10,
+   "gate_ok": null
+  },
+  "third_party": {
+   "skeletons_total": 10,
+   "skeletons_dev": 6,
+   "skeletons_test": 4,
+   "cases_dev": 18,
+   "cases_test": 12,
+   "gate_ok": null
+  }
+ }
+}

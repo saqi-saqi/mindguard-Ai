@@ -306,6 +306,152 @@ class CrisisEngineTestCase(unittest.TestCase):
             with self.subTest(text=text):
                 self.assertFalse(intent_rules.has_distress_signal(text))
 
+    # --- Task 1 Regression: High-risk medication-ingestion detection ---
+
+    def test_whole_bottle_medication_ingestion_crisis(self):
+        """
+        Task 1 Regression: 'I took a whole bottle of pills' and equivalent phrasing must
+        trigger HIGH_CRISIS (lethal_means_and_preparation category, severity 5).
+        These were previously missed because the existing pattern required a numeric
+        or specific-keyword quantifier between verb and substance noun.
+        """
+        crisis_phrases = [
+            "I took a whole bottle of pills",
+            "I swallowed a whole bottle of tablets",
+            "I took all my medication",
+            "I ingested all my pills",
+            "I consumed the entire bottle of medication",
+            "I took the whole bottle of sleeping pills",
+            "I swallowed the entire bottle of painkillers",
+            "I took all of my antidepressants",
+            "I downed a whole bottle of ibuprofen",
+            "I consumed all my meds",
+        ]
+        for phrase in crisis_phrases:
+            with self.subTest(phrase=phrase):
+                res = evaluate_crisis(phrase)
+                self.assertTrue(
+                    res["is_crisis"],
+                    f"Task 1 REGRESSION: Failed to detect medication-ingestion crisis: '{phrase}'"
+                )
+                # Must be rated high/imminent — not just 'moderate'
+                self.assertIn(
+                    res["risk_level"], ("imminent", "high"),
+                    f"Task 1: Risk level too low for '{phrase}': {res['risk_level']}"
+                )
+
+    def test_benign_medication_statements_no_false_positive(self):
+        """
+        Task 1 Regression: Ordinary medication discussions must NOT trigger crisis.
+        Verifies that the new ingestion patterns do not cause false positives.
+        """
+        safe_phrases = [
+            "I took my daily vitamin pills this morning.",
+            "I forgot to take my pills today.",
+            "My doctor changed my pills dosage.",
+            "I need to take my blood pressure medication with water.",
+            "Should I take my pills before or after breakfast?",
+            "I take two pills every morning with breakfast.",
+            "My medication dosage was increased by my doctor.",
+            "I ran out of my prescription pills and need a refill.",
+            "I always take my medication on time.",
+        ]
+        for phrase in safe_phrases:
+            with self.subTest(phrase=phrase):
+                res = evaluate_crisis(phrase)
+                self.assertFalse(
+                    res["is_crisis"],
+                    f"Task 1 FALSE POSITIVE: Benign medication statement flagged as crisis: '{phrase}'"
+                )
+
+    # --- Task 2 Regression: Hyperbole precedence / contrast-clause safety ---
+
+    def test_crisis_in_lead_clause_not_downgraded_by_idiom(self):
+        """
+        Task 2 Regression: When the FIRST clause of a contrast sentence expresses genuine
+        (un-negated) suicidal desire or intent matched by the crisis engine, the message
+        must remain HIGH_CRISIS even if a subsequent clause contains an idiom.
+
+        Root-cause fix: _contextual_bypass_reason() now checks if the first clause
+        itself would be bypassed before blocking the idiom bypass. When the first clause
+        has genuine, un-bypassed crisis intent, it returns None immediately — preventing
+        the idiom match on the full text from overriding it.
+        """
+        crisis_contrast_phrases = [
+            "I want to die, but this exam is killing me",
+            "I want to kill myself, but the traffic is killing me too",
+            "I don't want to live anymore, but my boss is literally killing me",
+            "I am going to kill myself, but first this meeting is killing me",
+        ]
+        for phrase in crisis_contrast_phrases:
+            with self.subTest(phrase=phrase):
+                res = evaluate_crisis(phrase)
+                self.assertTrue(
+                    res["is_crisis"],
+                    f"Task 2 REGRESSION: Crisis in lead clause was incorrectly bypassed by trailing idiom: '{phrase}'"
+                )
+
+    def test_standalone_idiom_remains_safe(self):
+        """
+        Task 2: A standalone idiom with no genuine crisis intent must remain safe.
+        Verifies that the fix does not cause false positives on pure idioms.
+        """
+        safe_idiom_phrases = [
+            "This exam is killing me",
+            "This math homework is literally killing me",
+            "My feet are killing me after the hike",
+            "LOL dying of laughter over here",
+            "I am dead tired after finals",
+            "This traffic is the death of me",
+        ]
+        for phrase in safe_idiom_phrases:
+            with self.subTest(phrase=phrase):
+                res = evaluate_crisis(phrase)
+                self.assertFalse(
+                    res["is_crisis"],
+                    f"Task 2 FALSE POSITIVE: Safe idiom incorrectly flagged as crisis: '{phrase}'"
+                )
+
+    def test_negation_in_followup_clause_remains_safe(self):
+        """
+        Task 2: A sentence where the FIRST clause is an idiom and the SECOND clause is
+        an explicit negation must remain safe. Example: 'This exam is killing me, but I
+        do not want to die.'
+        """
+        safe_negation_followup = [
+            "This exam is killing me, but I do not want to die",
+            "My boss is killing me, but I am definitely not suicidal",
+            "Dying of laughter but I'm fine honestly",
+        ]
+        for phrase in safe_negation_followup:
+            with self.subTest(phrase=phrase):
+                res = evaluate_crisis(phrase)
+                self.assertFalse(
+                    res["is_crisis"],
+                    f"Task 2 FALSE POSITIVE: Negated followup incorrectly flagged as crisis: '{phrase}'"
+                )
+
+    def test_mixed_risk_sentences_correct_precedence(self):
+        """
+        Task 2: Additional mixed-risk sentences to verify correct precedence.
+        Crisis must win when present in the lead clause; safety must win when absent.
+        """
+        cases = [
+            # (phrase, expected_is_crisis)
+            ("I want to die, but my cat is the death of me honestly", True),
+            ("My job is killing me, but I don't want to die", False),
+            ("I don't want to die; I want to live and feel better", False),
+        ]
+        for phrase, expected in cases:
+            with self.subTest(phrase=phrase):
+                res = evaluate_crisis(phrase)
+                self.assertEqual(
+                    res["is_crisis"], expected,
+                    f"Task 2 precedence failure for '{phrase}': "
+                    f"expected={expected}, got={res['is_crisis']}"
+                )
+
+
     # --- 4. CONTRAST-CLAUSE INVARIANTS & COMPOUND DISTRESS ---
 
     def test_critical_safety_invariants(self):

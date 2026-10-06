@@ -1,7 +1,10 @@
 import csv
 import json
+import os
 import sys
 from pathlib import Path
+
+os.environ.setdefault("FLASK_ENV", "testing")
 
 # Fix Windows console UTF-8 output
 if hasattr(sys.stdout, 'reconfigure'):
@@ -101,7 +104,7 @@ def run_evaluation(csv_file_path: Path):
 
 
 def run_aggressive_suite():
-    """Runs the full aggressive crisis rules test suite from test_crisis_engine.py."""
+    """Runs the full aggressive crisis rules test suite from test_safety_and_crisis_engine.py."""
     tests_dir = Path(__file__).resolve().parent.parent / "tests" / "backend"
     if str(tests_dir) not in sys.path:
         sys.path.insert(0, str(tests_dir))
@@ -149,6 +152,70 @@ def main():
         print("    [WARN] Regression fixture file not found.")
 
     fixture_gate_pass = (fixture_passed == fixture_total) and (fixture_total > 0)
+
+    # 1b. Evaluate V2 Paraphrase-Family Fixture (tuning vs held-out gap)
+    print("\n[1b] Evaluating V2 Paraphrase-Family Fixture (tests/fixtures/crisis_regression_cases_v2.json)")
+    fixture_v2_json = root_dir / "tests" / "fixtures" / "crisis_regression_cases_v2.json"
+    v2_tuning_passed = v2_tuning_total = 0
+    v2_held_passed = v2_held_total = 0
+    v2_tuning_failures = []
+    v2_held_failures = []
+
+    if fixture_v2_json.exists():
+        with open(fixture_v2_json, 'r', encoding='utf-8') as f:
+            v2_data = json.load(f)
+
+        def _run_v2_set(cases):
+            passed = total = 0
+            failures = []
+            from services.safety_classifier import classify_safety_risk
+            for c in cases:
+                total += 1
+                try:
+                    s_res = classify_safety_risk(c["text"])
+                    got_crisis = s_res.is_crisis
+                except Exception:
+                    res = evaluate_deterministic_crisis(c["text"])
+                    got_crisis = res["is_crisis"]
+                if got_crisis == c["expected_is_crisis"]:
+                    passed += 1
+                else:
+                    failures.append({
+                        "id": c.get("id", "?"),
+                        "text": c["text"][:70],
+                        "expected": c["expected_is_crisis"],
+                        "got": got_crisis,
+                        "category": c.get("category", "?"),
+                    })
+            return passed, total, failures
+
+        tuning_cases = v2_data.get("tuning_set", {}).get("cases", [])
+        held_cases = v2_data.get("held_out_set", {}).get("cases", [])
+
+        v2_tuning_passed, v2_tuning_total, v2_tuning_failures = _run_v2_set(tuning_cases)
+        v2_held_passed, v2_held_total, v2_held_failures = _run_v2_set(held_cases)
+
+        t_acc = v2_tuning_passed / v2_tuning_total if v2_tuning_total else 0.0
+        h_acc = v2_held_passed / v2_held_total if v2_held_total else 0.0
+        gap = t_acc - h_acc
+
+        print(f"    [TUNING]   {v2_tuning_passed}/{v2_tuning_total} = {t_acc*100:.1f}%")
+        print(f"    [HELD-OUT] {v2_held_passed}/{v2_held_total} = {h_acc*100:.1f}%")
+        print(f"    [GAP]      {gap*100:.1f}pp  {'<-- OVERFITTING SIGNAL (>15pp)' if gap > 0.15 else '(OK)'}")
+
+        if v2_tuning_failures:
+            print(f"    [TUNING FALSE NEGATIVES/POSITIVES] ({len(v2_tuning_failures)} failures):")
+            for fx in v2_tuning_failures[:5]:
+                print(f"      - [{fx['category']}] '{fx['text']}' expected={fx['expected']} got={fx['got']}")
+
+        if v2_held_failures:
+            print(f"    [HELD-OUT FALSE NEGATIVES/POSITIVES] ({len(v2_held_failures)} failures):")
+            for fx in v2_held_failures[:5]:
+                print(f"      - [{fx['category']}] '{fx['text']}' expected={fx['expected']} got={fx['got']}")
+
+        print("    NOTE: These metrics do NOT claim clinical readiness.")
+    else:
+        print("    [SKIP] crisis_regression_cases_v2.json not found.")
 
     # 2. Evaluate Aggressive Crisis Rule Suite
     print("\n[2] Evaluating Aggressive Crisis Rule Suite")
