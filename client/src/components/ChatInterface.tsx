@@ -13,9 +13,12 @@ import {
   ChevronUp,
   X,
   ShieldAlert,
-  RotateCcw
+  RotateCcw,
+  Plus
 } from "lucide-react";
 import type { ChatMessage, CrisisResources, MoodLog, MindUser } from "./types";
+import BreathingExercise from "./BreathingExercise";
+
 
 const API_BASE_URL = "/api/chat";
 const MAX_INPUT_LENGTH = 2000;
@@ -138,9 +141,12 @@ interface ChatInterfaceProps {
   user?: MindUser | null;
   token?: string;
   initialMessages?: ChatMessage[];
+  activeSessionId?: string | null;
   onOpenCrisisModal: (resources?: CrisisResources | null, mode?: "manual" | "detected") => void;
   onRecordMood: (log: MoodLog) => void;
   onWipePersonalData?: () => void;
+  onNewChat?: () => void;
+  onSessionCreated?: (sessionId: string) => void;
   isCrisisModalOpen?: boolean;
 }
 
@@ -148,28 +154,39 @@ export default function ChatInterface({
   user,
   token,
   initialMessages = [],
+  activeSessionId: propActiveSessionId = null,
   onOpenCrisisModal,
   onRecordMood,
   onWipePersonalData,
+  onNewChat,
+  onSessionCreated,
   isCrisisModalOpen = false
 }: ChatInterfaceProps) {
+  const userGreetingName = user?.name ? ` ${user.name.trim().split(" ")[0]}` : "";
   const defaultWelcome: ChatMessage = {
     id: "welcome",
     sender: "bot",
-    text: "Hello! I am MindGuard, your automated AI mental health companion. I am here to offer empathetic listening, grounding techniques, and supportive exercises. How are you feeling today?",
+    text: `Hello${userGreetingName}! I am MindGuard, your automated AI mental health companion. I am here to offer empathetic listening, grounding techniques, and supportive exercises. How are you feeling today?`,
     timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
   };
 
-  const [messages, setMessages] = useState<ChatMessage[]>([defaultWelcome]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    if (initialMessages && initialMessages.length > 0) {
+      return initialMessages;
+    }
+    return [defaultWelcome];
+  });
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [lastFailedText, setLastFailedText] = useState<string | null>(null);
   const [liveAnnouncement, setLiveAnnouncement] = useState("");
-  const [activeBreathing, setActiveBreathing] = useState(false);
-  const [breathingCount, setBreathingCount] = useState(4);
-  const [breathingPhase, setBreathingPhase] = useState<"Inhale" | "Hold" | "Exhale">("Inhale");
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  // ID of the bot message whose inline breathing card is open (null = closed)
+  const [breathingCardMessageId, setBreathingCardMessageId] = useState<string | null>(null);
+  // A standalone breathing card shown from the header button (no message anchor)
+  const [showStandaloneBreathing, setShowStandaloneBreathing] = useState(false);
+
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(propActiveSessionId || null);
   const [dismissedEmergencyBanner, setDismissedEmergencyBanner] = useState(false);
 
   const hasElevatedRisk = messages.some(
@@ -180,11 +197,16 @@ export default function ChatInterface({
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  // Sync initial historical messages from DB when authenticated
+  // Sync activeSessionId from parent props
+  useEffect(() => {
+    setActiveSessionId(propActiveSessionId || null);
+  }, [propActiveSessionId]);
+
+  // Sync initial historical messages from DB when switching sessions
   useEffect(() => {
     if (clearedRef.current) return;
     if (initialMessages && initialMessages.length > 0) {
-      setMessages([defaultWelcome, ...initialMessages]);
+      setMessages(initialMessages);
     }
   }, [initialMessages]);
 
@@ -206,32 +228,20 @@ export default function ChatInterface({
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
   }, [inputText]);
 
-  // Guided 4-7-8 Breathing Timer with reduced-motion awareness
-  useEffect(() => {
-    let timer: ReturnType<typeof setInterval> | undefined;
-    if (activeBreathing) {
-      timer = setInterval(() => {
-        setBreathingCount((prev) => {
-          if (prev <= 1) {
-            if (breathingPhase === "Inhale") {
-              setBreathingPhase("Hold");
-              return 7;
-            } else if (breathingPhase === "Hold") {
-              setBreathingPhase("Exhale");
-              return 8;
-            } else {
-              setBreathingPhase("Inhale");
-              return 4;
-            }
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [activeBreathing, breathingPhase]);
+  // Returns true if the bot reply text suggests a breathing or relaxation exercise
+  const detectsBreathingExercise = (text: string): boolean => {
+    const t = text.toLowerCase();
+    return (
+      /\b(breath|breathing|breathe)\b/.test(t) ||
+      /\b(4[\s-]?7[\s-]?8|box breathing|478)\b/.test(t) ||
+      /\b(inhale|exhale|relax(ation)?|grounding|calm(ing)?)\b/.test(t) ||
+      /\b(deep breath|slow breath|mindful breath|belly breath)\b/.test(t) ||
+      /\b(guided breathing|breathing exercise|breathing technique)\b/.test(t)
+    );
+  };
 
   const handleSendMessage = async (textToSend?: string) => {
+
     const query = (textToSend || inputText).trim();
     if (!query || isLoading) return;
 
@@ -292,7 +302,10 @@ export default function ChatInterface({
           : "");
 
       if (resData.success !== false && (replyText || isCrisisAlert || isThirdParty)) {
-        if (data.session_id) setActiveSessionId(data.session_id);
+        if (data.session_id) {
+          setActiveSessionId(data.session_id);
+          onSessionCreated?.(data.session_id);
+        }
         const botMsg: ChatMessage = {
           id: (Date.now() + 1).toString(),
           sender: "bot",
@@ -316,6 +329,7 @@ export default function ChatInterface({
         if (isCrisisAlert) {
           onOpenCrisisModal(data.emergency_resources, "detected");
         }
+
       } else {
         const errObj = resData.error || {};
         throw new Error(errObj.message || data.message || "Unable to process request.");
@@ -352,6 +366,13 @@ export default function ChatInterface({
     if (lastFailedText) {
       void handleSendMessage(lastFailedText);
     }
+  };
+
+  const handleNewChat = () => {
+    setActiveSessionId(null);
+    setMessages([defaultWelcome]);
+    setDismissedEmergencyBanner(false);
+    onNewChat?.();
   };
 
   const handleClearHistory = () => {
@@ -422,6 +443,7 @@ export default function ChatInterface({
         </div>
 
         <div className="flex items-center gap-2">
+
           {user && (
             <button
               type="button"
@@ -449,56 +471,35 @@ export default function ChatInterface({
             <span className={hasElevatedRisk ? "font-bold" : "font-medium"}>Get urgent help</span>
           </button>
 
-          {/* Guided 4-7-8 Breathing Toggle */}
+          {/* Inline Breathing Exercise Toggle */}
           <button
             type="button"
-            onClick={() => setActiveBreathing(!activeBreathing)}
-            aria-label={activeBreathing ? "Stop breathing exercise" : "Start 4-7-8 breathing exercise"}
-            aria-pressed={activeBreathing}
+            onClick={() => {
+              const next = !showStandaloneBreathing;
+              setShowStandaloneBreathing(next);
+              if (next) {
+                // Close any per-message card
+                setBreathingCardMessageId(null);
+                setTimeout(() => scrollToBottom(), 120);
+              }
+            }}
+            aria-label={showStandaloneBreathing ? "Close breathing exercise" : "Start guided breathing exercise"}
+            aria-pressed={showStandaloneBreathing}
             className={`flex shrink-0 items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 cursor-pointer ${
-              activeBreathing
+              showStandaloneBreathing || breathingCardMessageId !== null
                 ? "border-indigo-300 bg-indigo-50 text-indigo-900 shadow-xs"
                 : "border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200/80 hover:text-slate-900"
             }`}
           >
             <Wind className="size-3.5 shrink-0 text-indigo-600" />
             <span className="hidden sm:inline">
-              {activeBreathing ? "Stop Breathing" : "4-7-8 Breathing"}
+              {showStandaloneBreathing ? "Close Breathing" : "Breathing Exercise"}
             </span>
-            <span className="sm:hidden">{activeBreathing ? "Stop" : "4-7-8"}</span>
+            <span className="sm:hidden">{showStandaloneBreathing ? "Close" : "Breathe"}</span>
           </button>
+
         </div>
       </header>
-
-      {/* Guided 4-7-8 Breathing Banner */}
-      {activeBreathing && (
-        <div className="fade-in shrink-0 border-b border-indigo-200/90 bg-indigo-50/90 px-4 py-2.5 text-slate-900 sm:px-6">
-          <div className="mx-auto flex w-full max-w-[780px] items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5 min-w-0">
-              <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-indigo-600 font-bold text-white text-base shadow-xs">
-                {breathingCount}
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700">Guided Relaxation</span>
-                  <span className="text-xs font-bold text-indigo-900 font-heading">• {breathingPhase}</span>
-                </div>
-                <p className="truncate text-xs text-slate-600 font-normal">
-                  Inhale for 4s, hold for 7s, exhale slowly for 8s to release nervous tension.
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setActiveBreathing(false)}
-              className="rounded-lg p-1 text-slate-500 hover:bg-indigo-100 hover:text-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 cursor-pointer"
-              aria-label="Close breathing exercise banner"
-            >
-              <X className="size-4" />
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Messages Scroll Area */}
       <div
@@ -506,6 +507,15 @@ export default function ChatInterface({
         aria-label="Conversation history"
       >
         <div className="mx-auto w-full max-w-[780px] space-y-5 px-4 sm:px-6">
+
+          {/* Standalone Breathing Card (launched from header button) */}
+          {showStandaloneBreathing && (
+            <BreathingExercise
+              onClose={() => setShowStandaloneBreathing(false)}
+              autoStart={false}
+            />
+          )}
+
           {/* Welcome Card & Orientation (Compact, Clean, Non-clinical Scope) */}
           {messages.length === 1 && (
             <div className="mx-auto my-2.5 max-w-md rounded-2xl border border-indigo-100 bg-white p-3.5 text-center shadow-2xs fade-in">
@@ -595,30 +605,68 @@ export default function ChatInterface({
                   </div>
                 )}
 
-                {/* Grounding Exercise Card */}
-                {msg.grounding_exercise && (
-                  <div className="mt-2 rounded-xl border border-purple-200/80 bg-purple-50/80 p-3 text-xs text-purple-950 shadow-2xs">
+                {/* Suggested Breathing / Grounding Exercise Card — shown when bot suggests one */}
+                {(msg.grounding_exercise ||
+                  (msg.sender === "bot" &&
+                    msg.id !== "welcome" &&
+                    !msg.isError &&
+                    msg.risk_level !== "HIGH_CRISIS" &&
+                    msg.risk_level !== "HARM_TO_OTHERS_RISK" &&
+                    msg.risk_level !== "COMBINED_HIGH_CRISIS" &&
+                    msg.risk_level !== "SELF_HARM_RISK" &&
+                    msg.risk_level !== "THIRD_PARTY_REPORT" &&
+                    detectsBreathingExercise(msg.text))) && (
+                  <div
+                    onClick={() => {
+                      if (breathingCardMessageId !== msg.id) {
+                        setBreathingCardMessageId(msg.id);
+                        setShowStandaloneBreathing(false);
+                        setTimeout(() => scrollToBottom(), 120);
+                      }
+                    }}
+                    className={`mt-2 rounded-xl border border-purple-200/80 bg-purple-50/80 p-3 text-xs text-purple-950 shadow-2xs transition-colors ${
+                      breathingCardMessageId !== msg.id ? "hover:bg-purple-100/70 cursor-pointer" : ""
+                    }`}
+                  >
                     <div className="mb-1.5 flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 text-xs font-bold text-purple-900 font-heading">
                         <Sparkles className="size-3.5 shrink-0 text-purple-600" />
-                        <span>Suggested Grounding Exercise</span>
+                        <span>Suggested Breathing Exercise</span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveBreathing(true);
-                          scrollToBottom();
-                        }}
-                        className="inline-flex items-center gap-1 rounded-lg bg-purple-200/70 px-2 py-0.5 text-[11px] font-semibold text-purple-900 hover:bg-purple-300/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 cursor-pointer"
-                      >
-                        <Wind className="size-3 text-purple-700" />
-                        <span>Start 4-7-8 Timer</span>
-                      </button>
+                      {breathingCardMessageId !== msg.id && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setBreathingCardMessageId(msg.id);
+                            setShowStandaloneBreathing(false);
+                            setTimeout(() => scrollToBottom(), 120);
+                          }}
+                          className="inline-flex items-center gap-1 rounded-lg bg-purple-200/70 px-2 py-0.5 text-[11px] font-semibold text-purple-900 hover:bg-purple-300/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 cursor-pointer"
+                        >
+                          <Wind className="size-3 text-purple-700" />
+                          <span>Open Exercise</span>
+                        </button>
+                      )}
                     </div>
                     <p className="break-words leading-relaxed font-normal">
-                      {msg.grounding_exercise}
+                      {msg.grounding_exercise ||
+                        "Click here to open the guided breathing exercise box and start a calming rhythm at your own pace."}
                     </p>
                   </div>
+                )}
+
+                {/* Inline Breathing Exercise Card — appears ONLY when user clicks the suggested exercise */}
+                {breathingCardMessageId === msg.id && (
+                  <BreathingExercise
+                    onClose={() => setBreathingCardMessageId(null)}
+                    initialPatternId={
+                      (msg.grounding_exercise || msg.text)?.toLowerCase().includes("box") ? "box"
+                      : (msg.grounding_exercise || msg.text)?.toLowerCase().includes("simple") ? "simple"
+                      : "478"
+                    }
+                    autoStart={false}
+                  />
                 )}
 
                 {msg.sender === "bot" && msg.id !== "welcome" && (msg.intent || msg.sentiment || msg.risk_level) && (
@@ -628,6 +676,7 @@ export default function ChatInterface({
                   <div className="px-1 pt-1 text-xs text-slate-500">{msg.timestamp}</div>
                 )}
                 {msg.sender === "user" && (
+
                   <div className="px-1 pt-1 text-right text-xs text-slate-500">
                     {msg.timestamp}
                   </div>

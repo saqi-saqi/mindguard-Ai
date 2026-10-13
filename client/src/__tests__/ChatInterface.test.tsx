@@ -339,5 +339,51 @@ describe("ChatInterface Production Quality & Accessibility", () => {
     const sendButton = screen.getByRole("button", { name: /Send message/i }) as HTMLButtonElement;
     expect(sendButton.disabled).toBe(true);
   });
+
+  it("only opens the breathing exercise box when user clicks on the suggested breathing exercise, then allows starting it", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: {
+          reply: "Let's try a calming breathing exercise together.",
+          risk_level: "LOW",
+          grounding_exercise: "Take a slow deep breath in for 4 seconds, hold for 7, and exhale for 8."
+        }
+      })
+    });
+    globalThis.fetch = mockFetch as any;
+
+    render(<ChatInterface {...defaultProps} />);
+
+    const textarea = screen.getByPlaceholderText(/Type your message/i);
+    fireEvent.change(textarea, { target: { value: "Can you guide me through a breathing exercise?" } });
+
+    const sendButton = screen.getByRole("button", { name: /Send message/i });
+    fireEvent.click(sendButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Suggested Breathing Exercise/i)).toBeDefined();
+    });
+
+    // Must NOT open the breathing exercise box on its own
+    expect(screen.queryByRole("region", { name: /Breathing exercise/i })).toBeNull();
+
+    // User clicks on "Open Exercise" in the suggested breathing exercise card
+    const openBtn = screen.getByRole("button", { name: /Open Exercise/i });
+    fireEvent.click(openBtn);
+
+    // Now the breathing box appears in Ready state
+    expect(screen.getByRole("region", { name: /Breathing exercise/i })).toBeDefined();
+    expect(screen.getByText("Ready")).toBeDefined();
+
+    // User clicks "Start" inside the breathing box
+    const startBtn = screen.getByRole("button", { name: /^Start$/i });
+    fireEvent.click(startBtn);
+
+    // Status updates to "Exercise Active" so user sees exercise has started
+    expect(screen.getByText("Exercise Active")).toBeDefined();
+  });
 });
+
 

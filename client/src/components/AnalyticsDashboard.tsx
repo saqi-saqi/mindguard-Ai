@@ -526,7 +526,7 @@ export default function AnalyticsDashboard({ moodLogs = [], onClearLogs, token, 
                 onClick={onClearLogs}
                 className="flex items-center gap-1 text-xs font-semibold text-rose-700 hover:text-rose-900 transition-colors cursor-pointer"
               >
-                <Trash2 className="size-3.5" /> Wipe History
+                <Trash2 className="size-3.5" /> Clear Mood History
               </button>
             )}
           </div>

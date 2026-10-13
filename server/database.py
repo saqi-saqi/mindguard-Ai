@@ -141,6 +141,7 @@ def init_db():
         name="idx_user_sessions_timeline"
     )
     db.audit_logs.create_index([("created_at", DESCENDING)], name="idx_audit_created_at")
+    db.user_profiles.create_index([("user_id", ASCENDING)], name="idx_user_profiles_user_id", unique=True)
 
     logger.info("MongoDB collections and compound indexes initialized successfully.")
 
@@ -192,6 +193,101 @@ def get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:
     db = get_db()
     user = db.users.find_one({"id": user_id})
     return serialize_doc(user, redact_password=True)
+
+
+# --- User Profile (context-aware counselor) ---
+
+def get_or_create_user_profile(user_id: str) -> Dict[str, Any]:
+    """Gets or creates a lightweight chat-context profile for the user.
+    Stores preferred_name, session_count, crisis_count, last_topic, and
+    coping_strategies that worked — used to build a context-aware counselor."""
+    db = get_db()
+    profile = db.user_profiles.find_one({"user_id": user_id})
+    if profile:
+        return serialize_doc(profile)
+
+    user = get_user_by_id(user_id)
+    first_name = "there"
+    if user and user.get("name"):
+        first_name = user["name"].strip().split(" ")[0]
+
+    profile_doc = {
+        "user_id": user_id,
+        "preferred_name": first_name,
+        "session_count": 0,
+        "crisis_count": 0,
+        "harm_to_others_count": 0,
+        "last_topic": None,
+        "coping_tried": [],
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat(),
+    }
+    db.user_profiles.insert_one(profile_doc)
+    return serialize_doc(profile_doc)
+
+
+def update_user_profile(user_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
+    """Updates the user profile after a chat session.
+    Call with {"inc_session": True} to increment session_count,
+    {"inc_crisis": True} to increment crisis_count,
+    {"inc_harm_others": True} to increment harm_to_others_count,
+    {"last_topic": "..."} to set the last conversation theme,
+    {"coping_tried": ["breathing", "walking"]} to record strategies used."""
+    db = get_db()
+    update_ops: Dict[str, Any] = {
+        "$set": {"updated_at": datetime.utcnow().isoformat()},
+        "$setOnInsert": {"created_at": datetime.utcnow().isoformat()},
+    }
+    set_fields = {}
+    inc_fields = {}
+    if updates.get("last_topic"):
+        set_fields["last_topic"] = updates["last_topic"]
+    if updates.get("coping_tried"):
+        set_fields["coping_tried"] = updates["coping_tried"][:10]
+    if updates.get("preferred_name"):
+        set_fields["preferred_name"] = updates["preferred_name"]
+    if updates.get("inc_session"):
+        inc_fields["session_count"] = 1
+    if updates.get("inc_crisis"):
+        inc_fields["crisis_count"] = 1
+    if updates.get("inc_harm_others"):
+        inc_fields["harm_to_others_count"] = 1
+    if set_fields:
+        update_ops["$set"] = {**update_ops["$set"], **set_fields}
+    if inc_fields:
+        update_ops["$inc"] = inc_fields
+
+    db.user_profiles.update_one({"user_id": user_id}, update_ops, upsert=True)
+    profile = db.user_profiles.find_one({"user_id": user_id})
+    return serialize_doc(profile)
+
+
+def get_mood_summary_for_chat(user_id: str) -> str:
+    """Builds a compact mood-context string for the LLM prompt.
+    Returns '' if no mood data exists (never sends irrelevant context)."""
+    try:
+        logs = get_mood_logs(user_id, limit=7)
+        if not logs:
+            return ""
+        scores = [log.get("score", 5) for log in logs if isinstance(log.get("score"), (int, float))]
+        if not scores:
+            return ""
+        avg = sum(scores) / len(scores)
+        all_tags = []
+        for log in logs:
+            for tag in (log.get("tags") or []):
+                if tag and tag not in all_tags:
+                    all_tags.append(tag)
+        parts = [f"{len(logs)} recent mood check-ins averaging {avg:.1f} out of 10"]
+        if all_tags:
+            parts.append(f"topics they tagged: {', '.join(all_tags[:5])}")
+        if avg < 4.0:
+            parts.append("they have been struggling recently — be extra warm and gentle")
+        elif avg >= 7.0:
+            parts.append("they have been doing relatively well lately")
+        return "; ".join(parts)
+    except Exception:
+        return ""
 
 
 # --- Mood Logs Operations ---
@@ -526,6 +622,13 @@ def delete_mood_log(log_id: str, user_id: str) -> bool:
     return result.deleted_count > 0
 
 
+def delete_all_mood_logs(user_id: str) -> int:
+    """Deletes all mood logs belonging to a user without affecting chats or sessions."""
+    db = get_db()
+    result = db.mood_logs.delete_many({"user_id": user_id})
+    return result.deleted_count
+
+
 # --- Chat Message Operations ---
 
 def save_chat_message(
@@ -566,13 +669,27 @@ def save_chat_message(
     return serialize_doc(doc)
 
 
-def get_chat_history(user_id: str, limit: int = 100) -> List[Dict[str, Any]]:
-    """Retrieves most recent chat history for an authenticated user, returned in chronological order (ASC)."""
+def get_chat_history(user_id: str, session_id: Optional[str] = None, limit: int = 100) -> List[Dict[str, Any]]:
+    """Retrieves most recent chat history for an authenticated user, optionally scoped to a session, returned in chronological order (ASC)."""
     db = get_db()
-    cursor = db.chat_messages.find({"user_id": user_id}).sort("created_at", DESCENDING).limit(limit)
+    query: Dict[str, Any] = {"user_id": user_id}
+    if session_id:
+        query["session_id"] = session_id
+    cursor = db.chat_messages.find(query).sort("created_at", DESCENDING).limit(limit)
     messages = [serialize_doc(doc) for doc in cursor]
     messages.reverse()
     return messages
+
+
+def delete_chat_session(session_id: str, user_id: str) -> bool:
+    """Deletes a chat session and all messages within that session for a user."""
+    db = get_db()
+    db.chat_messages.delete_many({"user_id": user_id, "session_id": session_id})
+    res = db.chat_sessions.delete_one({"id": session_id, "user_id": user_id})
+    # Synchronize session count in user_profiles
+    remaining = db.chat_sessions.count_documents({"user_id": user_id})
+    db.user_profiles.update_one({"user_id": user_id}, {"$set": {"session_count": remaining}})
+    return res.deleted_count > 0
 
 
 # --- Data Retention, Privacy & Export Operations ---
@@ -606,6 +723,10 @@ def delete_user_data(user_id: str) -> Dict[str, int]:
     res_mood = db.mood_logs.delete_many({"user_id": user_id})
     res_session = db.chat_sessions.delete_many({"user_id": user_id})
     res_audit = db.audit_logs.delete_many({"actor_id": user_id})
+    db.user_profiles.update_one(
+        {"user_id": user_id},
+        {"$set": {"session_count": 0, "crisis_count": 0, "last_topic": None, "coping_tried": []}}
+    )
 
     return {
         "deleted_messages": res_msg.deleted_count,

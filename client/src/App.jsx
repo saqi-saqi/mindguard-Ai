@@ -7,38 +7,22 @@ import CrisisModal from './components/CrisisModal';
 import SettingsPanel from './components/SettingsPanel';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('chat');
+  const [activeTab, setActiveTab] = useState('auth');
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('mg_token') || '');
+  const [token, setToken] = useState('');
   const [isCrisisModalOpen, setIsCrisisModalOpen] = useState(false);
   const [crisisResources, setCrisisResources] = useState(null);
   const [crisisMode, setCrisisMode] = useState('manual');
   const [safetyStatus, setSafetyStatus] = useState('');
   const [moodLogs, setMoodLogs] = useState([]);
+  const [sessions, setSessions] = useState([]);
+  const [activeSessionId, setActiveSessionId] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
+  const [chatKey, setChatKey] = useState(0);
 
-  // 1. Restore User Session on Initial Page Load
+  // Clear previous session storage on clean startup so app always asks for login
   useEffect(() => {
-    const savedToken = localStorage.getItem('mg_token');
-    if (savedToken) {
-      fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${savedToken}` }
-      })
-        .then(async (res) => (res.ok ? res.json().catch(() => null) : null))
-        .then((resData) => {
-          if (resData && resData.success !== false && resData.data?.user) {
-            setUser(resData.data.user);
-            setToken(savedToken);
-          } else {
-            localStorage.removeItem('mg_token');
-            setToken('');
-            setUser(null);
-          }
-        })
-        .catch((err) => {
-          console.error('Failed to restore session:', err);
-        });
-    }
+    localStorage.removeItem('mg_token');
   }, []);
 
   useEffect(() => {
@@ -53,14 +37,27 @@ export default function App() {
       .catch((err) => console.error('Failed to fetch settings:', err));
   }, [token]);
 
-  // 2. Fetch User Persistent Mood Logs & Chat History on Authentication
-  //    Depend on user?.id (not user object) to avoid re-fetching when settings
-  //    load and recreate the user object reference.
+  // 2. Fetch User Persistent Mood Logs & Chat Sessions on Authentication
   const userId = user?.id ?? null;
+
+  const fetchSessions = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch('/api/chat/sessions', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const resData = await res.json().catch(() => null);
+      if (res.ok && resData?.success !== false && resData?.data?.sessions) {
+        setSessions(resData.data.sessions);
+      }
+    } catch (err) {
+      console.error('Failed to fetch chat sessions:', err);
+    }
+  };
+
   useEffect(() => {
     if (!userId || !token) return;
 
-    // Cancel in-flight requests if this effect re-runs (React StrictMode guard)
     const controller = new AbortController();
     const { signal } = controller;
 
@@ -76,17 +73,18 @@ export default function App() {
       })
       .catch((err) => { if (err.name !== 'AbortError') console.error('Failed to fetch mood logs:', err); });
 
-    fetch('/api/chat/history', {
+    // Fetch user sessions list for the sidebar
+    fetch('/api/chat/sessions', {
       headers: { Authorization: `Bearer ${token}` },
       signal
     })
       .then(async (res) => (res.ok ? res.json().catch(() => null) : null))
       .then((resData) => {
-        if (resData && resData.success !== false && resData.data?.messages) {
-          setChatHistory(resData.data.messages);
+        if (resData && resData.success !== false && resData.data?.sessions) {
+          setSessions(resData.data.sessions);
         }
       })
-      .catch((err) => { if (err.name !== 'AbortError') console.error('Failed to fetch chat history:', err); });
+      .catch((err) => { if (err.name !== 'AbortError') console.error('Failed to fetch sessions:', err); });
 
     return () => controller.abort();
   }, [userId, token]);
@@ -95,6 +93,9 @@ export default function App() {
     setUser(userData);
     setToken(userToken);
     localStorage.setItem('mg_token', userToken);
+    setActiveSessionId(null);
+    setChatHistory([]);
+    setChatKey((prev) => prev + 1);
     setActiveTab('chat');
   };
 
@@ -103,8 +104,63 @@ export default function App() {
     setToken('');
     localStorage.removeItem('mg_token');
     setMoodLogs([]);
+    setSessions([]);
+    setActiveSessionId(null);
     setChatHistory([]);
+    setChatKey((prev) => prev + 1);
+    setActiveTab('auth');
+  };
+
+  const handleSelectSession = async (sessionId) => {
+    setActiveSessionId(sessionId);
     setActiveTab('chat');
+    if (!token) return;
+    try {
+      const res = await fetch(`/api/chat/history?session_id=${sessionId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const resData = await res.json().catch(() => null);
+      if (res.ok && resData?.success !== false && resData?.data?.messages) {
+        setChatHistory(resData.data.messages);
+      } else {
+        setChatHistory([]);
+      }
+      setChatKey((prev) => prev + 1);
+    } catch (err) {
+      console.error('Failed to load session messages:', err);
+      setChatHistory([]);
+      setChatKey((prev) => prev + 1);
+    }
+  };
+
+  const handleNewChat = () => {
+    setActiveSessionId(null);
+    setChatHistory([]);
+    setChatKey((prev) => prev + 1);
+    setActiveTab('chat');
+  };
+
+  const handleDeleteSession = async (sessionId) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`/api/chat/sessions/${sessionId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+        if (activeSessionId === sessionId) {
+          handleNewChat();
+        }
+      }
+    } catch (err) {
+      console.error('Failed to delete session:', err);
+    }
+  };
+
+  const handleSessionCreated = (newSessionId) => {
+    setActiveSessionId(newSessionId);
+    fetchSessions();
   };
 
   const handleOpenCrisisModal = (resources, mode = 'manual') => {
@@ -123,7 +179,6 @@ export default function App() {
         body: JSON.stringify({ outcome, source: 'crisis_modal' })
       });
     } catch (err) {
-      // Optional telemetry must never prevent access to urgent resources.
       console.warn('Could not record optional safety feedback:', err);
     }
     if (outcome === 'safe_for_now') {
@@ -141,6 +196,36 @@ export default function App() {
 
   const handleAccountDeleted = () => handleLogout();
 
+  const handleClearMoodLogs = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to clear your mood history?\n\n" +
+      "This will remove your recorded mood check-ins and notes, while keeping your chat conversations intact."
+    );
+    if (!confirmed) return;
+
+    if (!token) {
+      setMoodLogs([]);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/moods', {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.success !== false) {
+        setMoodLogs([]);
+      } else {
+        const errMsg = data?.error?.message || "Failed to clear mood logs.";
+        alert(`Error clearing mood logs: ${errMsg}`);
+      }
+    } catch (err) {
+      console.error('Failed to clear mood logs:', err);
+      alert("Network error clearing mood logs.");
+    }
+  };
+
   const handleWipePersonalData = async () => {
     const confirmed = window.confirm(
       "Are you sure you want to delete your chat and mood history?\n\n" +
@@ -154,6 +239,8 @@ export default function App() {
 
     if (!token) {
       setMoodLogs([]);
+      setSessions([]);
+      setActiveSessionId(null);
       setChatHistory([]);
       return;
     }
@@ -166,6 +253,8 @@ export default function App() {
       const data = await res.json().catch(() => null);
       if (res.ok && data?.success !== false) {
         setMoodLogs([]);
+        setSessions([]);
+        setActiveSessionId(null);
         setChatHistory([]);
         alert("Your chat and mood history have been permanently deleted.");
       } else {
@@ -187,6 +276,11 @@ export default function App() {
         user={user}
         onLogout={handleLogout}
         onOpenCrisisModal={() => handleOpenCrisisModal(null, 'manual')}
+        sessions={sessions}
+        activeSessionId={activeSessionId}
+        onSelectSession={handleSelectSession}
+        onNewChat={handleNewChat}
+        onDeleteSession={handleDeleteSession}
       />
 
       {/* Main Dashboard Area */}
@@ -197,32 +291,37 @@ export default function App() {
             <button type="button" onClick={() => setSafetyStatus('')} className="ml-3 font-bold underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600">Dismiss</button>
           </div>
         )}
-        {activeTab === 'chat' && (
+        <div className={`flex-1 flex flex-col min-h-0 ${activeTab === 'chat' ? '' : 'hidden'}`}>
           <ChatInterface
+            key={`chat-instance-${chatKey}`}
             user={user}
             token={token}
             initialMessages={chatHistory}
+            activeSessionId={activeSessionId}
             onOpenCrisisModal={handleOpenCrisisModal}
             onRecordMood={handleRecordMood}
             onWipePersonalData={handleWipePersonalData}
+            onSessionCreated={handleSessionCreated}
             isCrisisModalOpen={isCrisisModalOpen}
           />
-        )}
+        </div>
         {activeTab === 'analytics' && (
           <AnalyticsDashboard
             moodLogs={moodLogs}
-            onClearLogs={handleWipePersonalData}
+            onClearLogs={handleClearMoodLogs}
             token={token}
             onMoodCreated={handleRecordMood}
             onStartChat={() => setActiveTab('chat')}
           />
         )}
-        {activeTab === 'settings' && user && (
+        {activeTab === 'settings' && (
           <SettingsPanel
             user={user}
             token={token}
             onUpdated={handleSettingsUpdated}
             onAccountDeleted={handleAccountDeleted}
+            onBackToChat={() => setActiveTab('chat')}
+            onSignIn={() => setActiveTab('auth')}
           />
         )}
         {activeTab === 'auth' && (

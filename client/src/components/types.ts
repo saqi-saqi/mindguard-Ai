@@ -52,6 +52,14 @@ export interface ChatMessage {
   isError?: boolean;
 }
 
+export interface ChatSession {
+  id: string;
+  title: string;
+  created_at?: string;
+  last_message_at?: string;
+  risk_state?: string;
+}
+
 export interface Helpline {
   name?: string;
   organization?: string;

@@ -1,12 +1,14 @@
-import { useState } from "react";
-import { Shield, Database, Phone, Download, Trash2, AlertOctagon, CheckCircle2, Eye, EyeOff, Lock, AlertCircle, Info, Building2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Shield, Database, Phone, Download, Trash2, AlertOctagon, CheckCircle2, Eye, EyeOff, Lock, AlertCircle, Info, Building2, ArrowLeft } from "lucide-react";
 import type { MindUser, SafetyProfile, TrustedContact, UserSettings } from "./types";
 
 interface Props {
-  user: MindUser;
-  token: string;
-  onUpdated: (settings: UserSettings, trustedContact?: TrustedContact, safetyProfile?: SafetyProfile) => void;
-  onAccountDeleted: () => void;
+  user: MindUser | null;
+  token?: string;
+  onUpdated?: (settings: UserSettings, trustedContact?: TrustedContact, safetyProfile?: SafetyProfile) => void;
+  onAccountDeleted?: () => void;
+  onBackToChat?: () => void;
+  onSignIn?: () => void;
 }
 
 const defaults: UserSettings = {
@@ -23,14 +25,14 @@ const safetyProfileDefaults: SafetyProfile = {
   emergency_actions_consent: false,
 };
 
-export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted }: Props) {
-  const [settings, setSettings] = useState<UserSettings>(user.settings || defaults);
+export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted, onBackToChat, onSignIn }: Props) {
+  const [settings, setSettings] = useState<UserSettings>(user?.settings || defaults);
   const [contact, setContact] = useState<TrustedContact>(
-    user.trusted_contact || { name: "", phone: "", relationship: "Friend or family" }
+    user?.trusted_contact || { name: "", phone: "", relationship: "Friend or family" }
   );
   const [safetyProfile, setSafetyProfile] = useState<SafetyProfile>({
     ...safetyProfileDefaults,
-    ...(user.safety_profile || {})
+    ...(user?.safety_profile || {})
   });
   const [maskPhone, setMaskPhone] = useState(true);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
@@ -38,6 +40,12 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    if (user?.settings) setSettings(user.settings);
+    if (user?.trusted_contact) setContact(user.trusted_contact);
+    if (user?.safety_profile) setSafetyProfile({ ...safetyProfileDefaults, ...user.safety_profile });
+  }, [user]);
 
   const maskPhoneNumber = (num: string) => {
     if (!num) return "";
@@ -54,6 +62,10 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
   };
 
   const save = async () => {
+    if (!token) {
+      showNotification("Please sign in to save personal settings.", "error");
+      return;
+    }
     setIsSaving(true);
     setMessage(null);
     try {
@@ -73,7 +85,7 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
         throw new Error(result?.error?.message || "Could not save settings.");
       }
 
-      let trustedContact = user.trusted_contact;
+      let trustedContact = user?.trusted_contact;
       const contactResponse = await fetch("/api/user/trusted-contact", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -101,7 +113,7 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
         throw new Error(profileResult?.error?.message || "Could not save safety profile.");
       }
 
-      onUpdated(result.data.settings, trustedContact, profileResult.data?.safety_profile);
+      onUpdated?.(result.data.settings, trustedContact, profileResult.data?.safety_profile);
       showNotification("Settings and privacy preferences updated successfully.", "success");
     } catch (err) {
       showNotification((err as Error).message, "error");
@@ -111,6 +123,10 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
   };
 
   const downloadExport = async () => {
+    if (!token) {
+      showNotification("Please sign in to export personal data.", "error");
+      return;
+    }
     setMessage(null);
     try {
       const response = await fetch("/api/user/export", {
@@ -171,15 +187,60 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
   return (
     <section className="min-h-0 flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-8 font-sans" aria-label="Privacy and settings">
       <div className="mx-auto max-w-2xl space-y-6">
-        {/* Header */}
-        <div className="border-b border-slate-200/90 pb-4">
-          <h1 className="text-xl font-bold text-slate-900 font-heading sm:text-2xl">
-            Privacy &amp; Settings
-          </h1>
-          <p className="mt-0.5 text-xs text-slate-600 sm:text-sm font-normal">
-            Manage your consent choices, automated retention rules, emergency contacts, and data sovereignty.
-          </p>
+        {/* Header with Back to Chat Action */}
+        <div className="border-b border-slate-200/90 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 font-heading sm:text-2xl">
+              Privacy &amp; Settings
+            </h1>
+            <p className="mt-0.5 text-xs text-slate-600 sm:text-sm font-normal">
+              Manage your consent choices, automated retention rules, emergency contacts, and data sovereignty.
+            </p>
+          </div>
+          {onBackToChat && (
+            <button
+              type="button"
+              onClick={onBackToChat}
+              className="inline-flex items-center gap-2 self-start sm:self-auto rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-100 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+            >
+              <ArrowLeft className="size-4 text-slate-600" />
+              <span>Back to Chat</span>
+            </button>
+          )}
         </div>
+
+        {/* Guest Mode Notice if unauthenticated */}
+        {!user && (
+          <div className="rounded-2xl border border-indigo-100 bg-white p-5 shadow-2xs space-y-3">
+            <div className="flex items-center gap-2 font-bold text-indigo-950 font-heading">
+              <Shield className="size-4 text-indigo-600 shrink-0" />
+              <span>Guest Mode Privacy</span>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed font-normal">
+              You are currently using MindGuard in anonymous guest mode. Your messages are processed in real time and are not linked to a persistent cloud account. To configure customized retention schedules, hospital preferences, or trusted contacts, please sign in.
+            </p>
+            <div className="flex flex-wrap items-center gap-2.5 pt-1">
+              {onSignIn && (
+                <button
+                  type="button"
+                  onClick={onSignIn}
+                  className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-indigo-500 cursor-pointer"
+                >
+                  Sign In or Register
+                </button>
+              )}
+              {onBackToChat && (
+                <button
+                  type="button"
+                  onClick={onBackToChat}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                >
+                  <ArrowLeft className="size-3.5" /> Return to Chat
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {message && (
           <div
@@ -291,19 +352,19 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div>
               <label htmlFor="safety-city" className="block text-xs font-semibold text-slate-700">City or District (optional)</label>
-              <input id="safety-city" className={inputClass} placeholder="e.g. Lahore" value={safetyProfile.city_or_district} onChange={(e) => setSafetyProfile({ ...safetyProfile, city_or_district: e.target.value })} />
+              <input id="safety-city" className={inputClass} placeholder="e.g. Lahore" value={safetyProfile.city_or_district || ""} onChange={(e) => setSafetyProfile({ ...safetyProfile, city_or_district: e.target.value })} />
             </div>
             <div>
               <label htmlFor="hospital-name" className="block text-xs font-semibold text-slate-700">Preferred Hospital (optional)</label>
-              <input id="hospital-name" className={inputClass} placeholder="e.g. Services Hospital" value={safetyProfile.preferred_hospital_name} onChange={(e) => setSafetyProfile({ ...safetyProfile, preferred_hospital_name: e.target.value })} />
+              <input id="hospital-name" className={inputClass} placeholder="e.g. Services Hospital" value={safetyProfile.preferred_hospital_name || ""} onChange={(e) => setSafetyProfile({ ...safetyProfile, preferred_hospital_name: e.target.value })} />
             </div>
             <div>
               <label htmlFor="hospital-phone" className="block text-xs font-semibold text-slate-700">Hospital Phone (optional)</label>
-              <input id="hospital-phone" className={inputClass} placeholder="e.g. 042-99203402" value={safetyProfile.preferred_hospital_phone} onChange={(e) => setSafetyProfile({ ...safetyProfile, preferred_hospital_phone: e.target.value })} />
+              <input id="hospital-phone" className={inputClass} placeholder="e.g. 042-99203402" value={safetyProfile.preferred_hospital_phone || ""} onChange={(e) => setSafetyProfile({ ...safetyProfile, preferred_hospital_phone: e.target.value })} />
             </div>
           </div>
           <label className="flex items-start gap-3 text-xs text-slate-800 cursor-pointer">
-            <input type="checkbox" checked={safetyProfile.emergency_actions_consent} onChange={(e) => setSafetyProfile({ ...safetyProfile, emergency_actions_consent: e.target.checked })} className="mt-0.5 size-4 accent-indigo-600 rounded cursor-pointer" />
+            <input type="checkbox" checked={Boolean(safetyProfile.emergency_actions_consent)} onChange={(e) => setSafetyProfile({ ...safetyProfile, emergency_actions_consent: e.target.checked })} className="mt-0.5 size-4 accent-indigo-600 rounded cursor-pointer" />
             <span><strong className="font-semibold text-slate-900">Show my saved emergency actions during a crisis</strong><br /><span className="text-slate-600 font-normal">This only enables call and SMS buttons that you press yourself. It does not grant MindGuard permission to dispatch services or send messages for you.</span></span>
           </label>
         </div>
@@ -328,7 +389,7 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
                 id="contact-name"
                 className={inputClass}
                 placeholder="e.g. Sara Ahmed"
-                value={contact.name}
+                value={contact.name || ""}
                 onChange={(e) => setContact({ ...contact, name: e.target.value })}
               />
             </div>
@@ -352,7 +413,7 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
                 className={inputClass}
                 placeholder="e.g. +92 300 1234567"
                 type={maskPhone && contact.phone ? "password" : "text"}
-                value={contact.phone}
+                value={contact.phone || ""}
                 onChange={(e) => setContact({ ...contact, phone: e.target.value })}
               />
               {contact.phone && maskPhone && (

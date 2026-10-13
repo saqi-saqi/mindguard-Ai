@@ -41,10 +41,11 @@ from database import (
     set_session_risk_state, get_session_risk_state, clear_session_crisis_state,
     set_user_cooling_window, is_user_in_cooling_window, clear_user_cooling_window,
     generate_clearance_token, verify_clearance_token,
-    save_audit_event, delete_mood_log,
-    save_chat_message, get_chat_history,
+    save_audit_event, delete_mood_log, delete_all_mood_logs,
+    save_chat_message, get_chat_history, delete_chat_session,
     export_user_data, delete_user_data, delete_user_account,
-    update_trusted_contact, update_safety_profile, cleanup_old_records
+    update_trusted_contact, update_safety_profile, cleanup_old_records,
+    get_or_create_user_profile, update_user_profile, get_mood_summary_for_chat
 )
 from auth import (
     hash_password, verify_password, generate_token, decode_token,
@@ -467,13 +468,45 @@ def wipe_user_data_endpoint():
     return jsonify({"success": True, "data": {"stats": counts}, "error": None}), 200
 
 
+@app.route("/api/user/profile-summary", methods=["GET"])
+@jwt_required
+def profile_summary_endpoint():
+    """Returns the user's counseling profile: name, mood trend, crisis count,
+    session count. Used by the client for a personalized welcome."""
+    user_id = g.current_user["id"]
+    profile = get_or_create_user_profile(user_id)
+    mood_summary = get_mood_summary_for_chat(user_id)
+    actual_sessions = get_db().chat_sessions.count_documents({"user_id": user_id})
+    if profile.get("session_count") != actual_sessions:
+        get_db().user_profiles.update_one({"user_id": user_id}, {"$set": {"session_count": actual_sessions}})
+        profile["session_count"] = actual_sessions
+
+    return jsonify({
+        "success": True,
+        "data": {
+            "name": profile.get("preferred_name", "there"),
+            "session_count": actual_sessions,
+            "crisis_count": profile.get("crisis_count", 0),
+            "last_topic": profile.get("last_topic"),
+            "mood_summary": mood_summary,
+            "coping_tried": profile.get("coping_tried", []),
+        },
+        "error": None
+    }), 200
+
+
 # ---------------------------------------------------------------------------
 # Mood Tracking & Analytics Endpoints
 # ---------------------------------------------------------------------------
-@app.route("/api/moods", methods=["POST", "GET"])
+@app.route("/api/moods", methods=["POST", "GET", "DELETE"])
 @jwt_required
 def moods_endpoint():
     user_id = g.current_user["id"]
+
+    if request.method == "DELETE":
+        deleted_count = delete_all_mood_logs(user_id)
+        save_audit_event("mood_logs_cleared", user_id, {"deleted_count": deleted_count})
+        return jsonify({"success": True, "data": {"deleted_count": deleted_count}, "error": None}), 200
 
     if request.method == "GET":
         limit = min(int(request.args.get("limit", 100)), 500)
@@ -545,9 +578,20 @@ def chat_sessions_endpoint():
 @jwt_required
 def get_chat_history_endpoint():
     user_id = g.current_user["id"]
+    session_id = request.args.get("session_id")
     limit = min(int(request.args.get("limit", 100)), 500)
-    messages = get_chat_history(user_id, limit=limit)
+    messages = get_chat_history(user_id, session_id=session_id, limit=limit)
     return jsonify({"success": True, "data": {"messages": messages, "chat_messages": messages}, "error": None}), 200
+
+
+@app.route("/api/chat/sessions/<session_id>", methods=["DELETE"])
+@jwt_required
+def delete_session_endpoint(session_id):
+    user_id = g.current_user["id"]
+    deleted = delete_chat_session(session_id, user_id)
+    if deleted:
+        return jsonify({"success": True, "data": {"deleted": True}, "error": None}), 200
+    return jsonify({"success": False, "data": None, "error": {"code": "NOT_FOUND", "message": "Session not found."}}), 404
 
 
 @app.route("/api/chat/summarize", methods=["POST"])
@@ -631,21 +675,50 @@ def chat():
             if retention_enabled:
                 expires_at = (datetime.utcnow() + timedelta(days=retention_days)).isoformat()
 
+    # --- Context-aware counselor context (built AFTER session creation) ---
+    user_context = ""
+    is_new_session = False
+
     regional_resources = get_resources_for_region(user_locale)
 
     try:
+        is_new_session = not session_id
         if not session_id:
             if user_id:
                 session_id = create_chat_session(user_id, user_message[:60])["id"]
             else:
                 session_id = f"ses-{uuid.uuid4().hex[:12]}"
 
+        # Build user_context only now that we know if this is a new session
+        if user_id:
+            try:
+                profile = get_or_create_user_profile(user_id)
+                mood_summary = get_mood_summary_for_chat(user_id)
+                context_parts = []
+                if profile.get("preferred_name"):
+                    context_parts.append(f"The person's name is {profile['preferred_name']}.")
+                actual_sessions = get_db().chat_sessions.count_documents({"user_id": user_id})
+                if is_new_session and actual_sessions > 1:
+                    context_parts.append("They are a returning user. Welcome them back warmly without mentioning any session numbers or counts.")
+                if profile.get("crisis_count", 0) > 0 and is_new_session:
+                    context_parts.append(
+                        f"They have reached out during {profile['crisis_count']} previous crisis moment(s) "
+                        "and came back — acknowledge their courage if natural."
+                    )
+                if is_new_session and profile.get("last_topic"):
+                    context_parts.append(f"Last session they talked about: {profile['last_topic']}.")
+                if mood_summary:
+                    context_parts.append(f"Mood context: {mood_summary}.")
+                user_context = " ".join(context_parts)
+            except Exception:
+                user_context = ""
+
         logger.info(f"[{req_id}] Processing message length={len(user_message)} chars (user_id={user_id})")
 
         # Capture prior user-only context BEFORE persisting current turn
         recent_context = []
         if user_id and retention_enabled:
-            history_before_current = get_chat_history(user_id, limit=10)
+            history_before_current = get_chat_history(user_id, session_id=session_id, limit=10)
             recent_context = [
                 msg.get("text", "")
                 for msg in history_before_current
@@ -692,6 +765,12 @@ def chat():
 
             if session_id:
                 set_session_risk_state(session_id, user_id, "crisis_active", risk_label)
+
+            if user_id:
+                try:
+                    update_user_profile(user_id, {"inc_crisis": True, "inc_harm_others": safety_eval.category == SafetyRiskCategory.HARM_TO_OTHERS_RISK})
+                except Exception:
+                    pass
 
             if user_id and retention_enabled:
                 save_chat_message(
@@ -822,6 +901,12 @@ def chat():
             duration_ms = round((time.time() - start_req_time) * 1000, 2)
             risk_label = "HIGH_CRISIS" if crisis_eval.get("high_risk", True) else "ELEVATED_DISTRESS"
             logger.warning(f"[{req_id}] CRISIS DETECTED via Tier 1 Pipeline. Risk={risk_label}. Duration={duration_ms}ms")
+
+            if user_id:
+                try:
+                    update_user_profile(user_id, {"inc_crisis": True})
+                except Exception:
+                    pass
 
             if session_id:
                 set_session_risk_state(session_id, user_id, "crisis_active", risk_label)
@@ -1062,11 +1147,25 @@ def chat():
             intent=ml_results["intent"],
             emotion=ml_results["emotion"],
             sentiment=ml_results["sentiment"],
-            api_key=user_api_key
+            api_key=user_api_key,
+            user_context=user_context
         )
 
         duration_ms = round((time.time() - start_req_time) * 1000, 2)
         logger.info(f"[{req_id}] Processed non-crisis chat successfully. Duration={duration_ms}ms")
+
+        # Update user profile: session count only on NEW sessions, topic always
+        if user_id:
+            try:
+                profile_updates = {}
+                if is_new_session:
+                    profile_updates["inc_session"] = True
+                if ml_results.get("intent") and ml_results["intent"] not in ("GREETING OR CASUAL CHAT", "BOT INFORMATION REQUEST"):
+                    profile_updates["last_topic"] = ml_results["intent"].replace(" OR ", " / ").title()
+                if profile_updates:
+                    update_user_profile(user_id, profile_updates)
+            except Exception:
+                pass
 
         if user_id and retention_enabled:
             save_chat_message(
