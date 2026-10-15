@@ -21,7 +21,7 @@ import type { CrisisResources, Helpline, SafetyProfile, TrustedContact } from ".
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  resources?: CrisisResources | null;
+  resources?: CrisisResources | Helpline[] | any;
   trustedContact?: TrustedContact | null;
   safetyProfile?: SafetyProfile | null;
   mode?: "manual" | "detected";
@@ -321,56 +321,116 @@ export default function CrisisModal({ isOpen, onClose, resources, trustedContact
 
   if (!isOpen) return null;
 
-  const defaultHelplines: CrisisResources = resources || {
-    pakistan: [
-      {
-        name: "Umang Pakistan Mental Health Helpline",
-        organization: "Umang Pakistan",
-        contact: "0311-7786264",
-        website: "https://www.umangpakistan.org",
-        description: "Certified clinical psychologists offering 24/7 free emotional crisis counseling.",
-      },
-      {
-        name: "Rozan Emotional Support Line",
-        organization: "Rozan",
-        contact: "0800-22444",
-        website: "https://rozan.org",
-        description: "Toll-free emotional health and trauma counseling support.",
-      },
-      {
-        name: "Child Protection Bureau Helpline (CPWB)",
-        organization: "CPWB Punjab",
-        contact: "1121",
-        website: "https://cpwb.punjab.gov.pk",
-        description: "Government toll-free 24/7 crisis helpline for minors and youth in distress.",
-      },
-      {
-        name: "Madadgaar National Helpline",
-        organization: "Madadgaar",
-        contact: "1098 / 021-35150075",
-        website: "http://madadgaar.org",
-        description: "Pakistan's first national crisis helpline for children, youth, and women.",
-      },
-      {
-        name: "Taskeen Health Initiative",
-        organization: "Taskeen",
-        contact: "0316-8275336",
-        website: "https://taskeen.org",
-        description: "Free mental health support and clinical navigation.",
-      },
-    ],
+  const DEFAULT_PAKISTAN_HELPLINES: Helpline[] = [
+    {
+      name: "Umang Pakistan Mental Health Helpline",
+      organization: "Umang Pakistan",
+      contact: "0311-7786264",
+      contact_info: "0311-7786264",
+      website: "https://www.umangpakistan.org",
+      description: "Certified clinical psychologists offering 24/7 free emotional crisis counseling.",
+    },
+    {
+      name: "Rozan Emotional Support Line",
+      organization: "Rozan",
+      contact: "0800-22444",
+      contact_info: "0800-22444",
+      website: "https://rozan.org",
+      description: "Toll-free emotional health and trauma counseling support.",
+    },
+    {
+      name: "Child Protection Bureau Helpline (CPWB)",
+      organization: "CPWB Punjab",
+      contact: "1121",
+      contact_info: "1121",
+      website: "https://cpwb.punjab.gov.pk",
+      description: "Government toll-free 24/7 crisis helpline for minors and youth in distress.",
+    },
+    {
+      name: "Madadgaar National Helpline",
+      organization: "Madadgaar",
+      contact: "1098 / 021-35150075",
+      contact_info: "1098 / 021-35150075",
+      website: "http://madadgaar.org",
+      description: "Pakistan's first national crisis helpline for children, youth, and women.",
+    },
+    {
+      name: "Taskeen Health Initiative",
+      organization: "Taskeen",
+      contact: "0316-8275336",
+      contact_info: "0316-8275336",
+      website: "https://taskeen.org",
+      description: "Free mental health support and clinical navigation.",
+    },
+  ];
+
+  const normalizeHelplines = (rawResources?: CrisisResources | Helpline[] | any): Helpline[] => {
+    let list: any[] = [];
+    if (Array.isArray(rawResources)) {
+      list = rawResources;
+    } else if (rawResources && typeof rawResources === "object") {
+      if (Array.isArray(rawResources.pakistan)) {
+        list = rawResources.pakistan;
+      } else if (Array.isArray(rawResources.emergency_resources)) {
+        list = rawResources.emergency_resources;
+      } else if (Array.isArray(rawResources.resources)) {
+        list = rawResources.resources;
+      }
+    }
+
+    if (!list || list.length === 0) {
+      return DEFAULT_PAKISTAN_HELPLINES;
+    }
+
+    // Filter out primary emergency dispatch services (15, 1122, 115) because they are handled in Action 1
+    const DISPATCH_NUMBERS = new Set(["15", "1122", "115"]);
+    const mapped: Helpline[] = list
+      .map((item) => ({
+        name: item.name || item.organization || "Emergency Helpline",
+        organization: item.organization || item.name || "Emergency Helpline",
+        contact: item.contact || item.contact_info || "",
+        contact_info: item.contact_info || item.contact || "",
+        website: item.website || "",
+        description: item.description || "",
+        is_emergency_service: item.is_emergency_service,
+        verification_status: item.verification_status,
+        region: item.region || item.country_or_region || "Pakistan",
+      }))
+      .filter((item) => {
+        const cleanDigits = (item.contact || item.contact_info || "").replace(/[^0-9]/g, "");
+        return !DISPATCH_NUMBERS.has(cleanDigits);
+      });
+
+    if (mapped.length === 0) {
+      return DEFAULT_PAKISTAN_HELPLINES;
+    }
+
+    return mapped;
   };
 
-  // Primary mental health line for acute 3-action triage (Umang in PK)
-  const primaryMentalHealthLine = defaultHelplines.pakistan?.[0] || {
-    name: "Umang Pakistan Mental Health Helpline",
-    contact: "0311-7786264",
-    description: "Certified clinical psychologists offering 24/7 free emotional crisis counseling."
-  };
+  const allPakistanLines = normalizeHelplines(resources);
 
-  // Auxiliary resources for progressive disclosure directory
-  const auxiliaryPakistanLines = (defaultHelplines.pakistan || []).slice(1);
-  const totalDirectoryCount = auxiliaryPakistanLines.length;
+  // Identify Umang Pakistan as Primary 24/7 Mental Health Line (Action 3)
+  const umangIdx = allPakistanLines.findIndex((h) =>
+    (h.name || h.organization || "").toLowerCase().includes("umang")
+  );
+
+  const primaryMentalHealthLine: Helpline =
+    umangIdx >= 0 ? allPakistanLines[umangIdx] : allPakistanLines[0] || DEFAULT_PAKISTAN_HELPLINES[0];
+
+  // Additional national helplines are all other mental health & emotional lines
+  const auxiliaryPakistanLines: Helpline[] =
+    umangIdx >= 0
+      ? allPakistanLines.filter((_, idx) => idx !== umangIdx)
+      : allPakistanLines.slice(1);
+
+  // Ensure directory always has complete auxiliary lines even if incoming payload only contained Umang
+  const displayAuxiliaryLines: Helpline[] =
+    auxiliaryPakistanLines.length > 0
+      ? auxiliaryPakistanLines
+      : DEFAULT_PAKISTAN_HELPLINES.slice(1);
+
+  const totalDirectoryCount = displayAuxiliaryLines.length;
 
   return (
     <div
@@ -597,25 +657,25 @@ export default function CrisisModal({ isOpen, onClose, resources, trustedContact
                 onClick={(e) =>
                   handleQuickCall(
                     e,
-                    (primaryMentalHealthLine.contact || "").replace(/[^0-9+]/g, ""),
-                    primaryMentalHealthLine.name || "Umang Pakistan"
+                    (primaryMentalHealthLine.contact || primaryMentalHealthLine.contact_info || "").replace(/[^0-9+]/g, ""),
+                    primaryMentalHealthLine.name || primaryMentalHealthLine.organization || "Umang Pakistan"
                   )
                 }
                 className="flex min-h-[42px] flex-1 items-center justify-center gap-2 rounded-xl bg-rose-600 px-3.5 py-2 text-xs font-bold text-white transition-colors hover:bg-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 cursor-pointer"
               >
                 <PhoneCall className="size-4 shrink-0" />
-                <span>Call {primaryMentalHealthLine.name} ({primaryMentalHealthLine.contact})</span>
+                <span>Call {primaryMentalHealthLine.name || primaryMentalHealthLine.organization} ({primaryMentalHealthLine.contact || primaryMentalHealthLine.contact_info})</span>
               </button>
               <button
                 type="button"
                 onClick={() =>
                   handleQuickCopy(
-                    primaryMentalHealthLine.contact || "",
-                    primaryMentalHealthLine.name || "Umang Pakistan"
+                    primaryMentalHealthLine.contact || primaryMentalHealthLine.contact_info || "",
+                    primaryMentalHealthLine.name || primaryMentalHealthLine.organization || "Umang Pakistan"
                   )
                 }
                 title="Copy phone number"
-                aria-label={`Copy phone number for ${primaryMentalHealthLine.name}`}
+                aria-label={`Copy phone number for ${primaryMentalHealthLine.name || primaryMentalHealthLine.organization}`}
                 className="grid size-10 shrink-0 place-items-center rounded-xl border border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 cursor-pointer"
               >
                 <Copy className="size-4" />
@@ -647,13 +707,13 @@ export default function CrisisModal({ isOpen, onClose, resources, trustedContact
             {showFullDirectory && (
               <div className="mt-3 space-y-3 border-t border-slate-800 pt-3 fade-in">
                 {/* Auxiliary Pakistan Helplines */}
-                {auxiliaryPakistanLines.length > 0 && (
+                {displayAuxiliaryLines.length > 0 && (
                   <div>
                     <h4 className="mb-2 text-[10px] font-bold uppercase tracking-wider text-rose-400">
                       Additional National Helplines (Pakistan)
                     </h4>
                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      {auxiliaryPakistanLines.map((h, i) => (
+                      {displayAuxiliaryLines.map((h, i) => (
                         <HelplineCard key={i} h={h} tone="rose" onNotify={showNotification} />
                       ))}
                     </div>

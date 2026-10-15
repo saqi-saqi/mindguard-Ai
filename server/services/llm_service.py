@@ -22,9 +22,19 @@ except ImportError:
     types = None
 
 try:
-    from config import GEMINI_API_KEY
+    import config
+    GEMINI_API_KEY = getattr(config, "GEMINI_API_KEY", "")
+    GROQ_API_KEY = getattr(config, "GROQ_API_KEY", "")
+    GROQ_MODEL = getattr(config, "GROQ_MODEL", "openai/gpt-oss-20b")
+    GROQ_TIMEOUT_SECONDS = getattr(config, "GROQ_TIMEOUT_SECONDS", 3.5)
+    GROQ_MAX_TOKENS = getattr(config, "GROQ_MAX_TOKENS", 180)
 except ImportError:
+    config = None
     GEMINI_API_KEY = ""
+    GROQ_API_KEY = ""
+    GROQ_MODEL = "openai/gpt-oss-20b"
+    GROQ_TIMEOUT_SECONDS = 3.5
+    GROQ_MAX_TOKENS = 180
 
 logger = logging.getLogger("MindGuard-LLM")
 
@@ -198,6 +208,19 @@ _MODEL_QUOTA_EXCEEDED_UNTIL: dict = {}
 # Duration: 60 s — same as the per-model quota window — after which Gemini is retried.
 _GEMINI_CONNECTIVITY_BROKEN_UNTIL: float = 0.0
 
+
+def is_gemini_circuit_broken() -> bool:
+    """Returns True if the module-level Gemini connectivity circuit breaker is currently active."""
+    global _GEMINI_CONNECTIVITY_BROKEN_UNTIL
+    return time.time() < _GEMINI_CONNECTIVITY_BROKEN_UNTIL
+
+
+def activate_gemini_circuit_breaker(duration_seconds: float = 60.0):
+    """Activates the module-level Gemini connectivity circuit breaker for the given duration."""
+    global _GEMINI_CONNECTIVITY_BROKEN_UNTIL
+    _GEMINI_CONNECTIVITY_BROKEN_UNTIL = time.time() + duration_seconds
+
+
 # Ordered fallback list — confirmed working models, sorted by speed:
 # gemini-3.1-flash-lite: ~0.83s fastest
 # gemini-3.5-flash-lite: ~0.88s
@@ -210,22 +233,27 @@ GEMINI_CANDIDATE_MODELS = [
     "gemini-3.5-flash-lite",
 ]
 
-# Normal conversations must remain responsive even when a local model is slow.
-# A value of 0 disables the local model and uses the safe offline response library.
-OLLAMA_RESPONSE_TIMEOUT_SECONDS = float(os.environ.get("OLLAMA_RESPONSE_TIMEOUT_SECONDS", "2.0"))
+# Normal conversations must remain responsive while allowing local models sufficient time to generate.
+# Default to 20.0s for CPU inference on local Ollama models.
+OLLAMA_RESPONSE_TIMEOUT_SECONDS = float(os.environ.get("OLLAMA_RESPONSE_TIMEOUT_SECONDS", "20.0"))
+GEMINI_TIMEOUT_SECONDS = max(10.0, float(os.environ.get("GEMINI_TIMEOUT_SECONDS", "10.0")))
 
 
 from .intent_rules import has_distress_signal, match_fast_path_intent
 
 
-def _get_gemini_client(key: str, timeout_seconds: float = 10.0):
-    """Returns a configured google.genai Client with a reliable network timeout."""
+def _get_gemini_client(key: str, timeout_seconds: Optional[float] = None):
+    """Returns a configured google.genai Client with a reliable network timeout and no nested retries."""
     if genai is None or types is None:
         raise RuntimeError("google.genai SDK is not installed")
+    effective_timeout = timeout_seconds if timeout_seconds is not None else GEMINI_TIMEOUT_SECONDS
     try:
+        http_kwargs = {"timeout": int(effective_timeout * 1000)}
+        if hasattr(types, "HttpRetryOptions"):
+            http_kwargs["retry_options"] = types.HttpRetryOptions(attempts=1)
         return genai.Client(
             api_key=key.strip(),
-            http_options=types.HttpOptions(timeout=int(timeout_seconds * 1000))
+            http_options=types.HttpOptions(**http_kwargs) if hasattr(types, "HttpOptions") else None
         )
     except Exception:
         return genai.Client(api_key=key.strip())
@@ -276,12 +304,13 @@ def _call_gemini(client, model_name: str, system_prompt: str, user_prompt: str, 
             "connection", "connectionerror", "gaierror", "timeout",
             "network", "ssl", "certificate", "api_key", "invalid_argument",
             "permission_denied", "unauthenticated", "transport", "deadline", "504",
+            "503", "unavailable", "high demand", "overloaded", "service unavailable",
         ]):
-            # Connection / configuration failure — affects ALL models, not just this one.
+            # Connection / configuration / service unavailable failure — affects ALL models.
             # Activate the module-level connectivity circuit breaker for 60 s so that
             # subsequent requests skip Gemini entirely and fall through to Ollama / offline KB.
             logger.warning(
-                "Gemini connectivity/config error for %s: %s. "
+                "Gemini service unavailable/connectivity error for %s: %s. "
                 "Module-level circuit breaker active for 60s.",
                 model_name, e,
             )
@@ -337,15 +366,213 @@ def query_local_ollama(user_text: str, intent: str, emotion: str, sentiment: str
     return None
 
 
+_GROQ_SESSION = requests.Session()
+
+
+def query_groq(
+    user_text: str,
+    intent: str,
+    emotion: str,
+    sentiment: str,
+    user_context: Optional[str] = None,
+    api_key: Optional[str] = None,
+    model: Optional[str] = None,
+    timeout_seconds: Optional[float] = None,
+) -> Optional[str]:
+    """
+    Queries Groq Cloud API using official OpenAI-compatible chat completions endpoint.
+    Ultra-low latency inference on Groq LPUs.
+    Keeps API keys in backend environment variables, enforces bounded timeouts,
+    and returns None on failure without nested retries.
+    """
+    if api_key is not None:
+        key = api_key
+    elif "GROQ_API_KEY" in os.environ:
+        key = os.environ.get("GROQ_API_KEY", "")
+    else:
+        key = getattr(config, "GROQ_API_KEY", "")
+    if not key or not key.strip():
+        logger.warning("Groq API key not configured.")
+        return None
+
+    active_model = model or os.environ.get("GROQ_MODEL") or getattr(config, "GROQ_MODEL", "openai/gpt-oss-20b")
+    effective_timeout = timeout_seconds if timeout_seconds is not None else float(
+        os.environ.get("GROQ_TIMEOUT_SECONDS", getattr(config, "GROQ_TIMEOUT_SECONDS", 3.5))
+    )
+    max_tokens = int(os.environ.get("GROQ_MAX_TOKENS", getattr(config, "GROQ_MAX_TOKENS", 250)))
+
+    sanitized = sanitize_prompt_content(user_text)
+    context_block = ""
+    if user_context:
+        sanitized_ctx = sanitize_prompt_content(user_context)
+        context_block = f"About this person: {sanitized_ctx}\n"
+
+    system_instructions = (
+        "You are MindGuard, a warm, empathetic, non-clinical mental health wellness companion. "
+        "Respond concisely in 2-3 sentences. Never diagnose medical conditions or make unsupported medical claims. "
+        "Validate the person's feelings and offer gentle, practical coping or grounding suggestions."
+    )
+
+    user_prompt = (
+        f"{context_block}"
+        f"<user_message>{sanitized}</user_message>\n"
+        f"Context - Intent: {intent}, Emotion: {emotion}"
+    )
+
+    headers = {
+        "Authorization": f"Bearer {key.strip()}",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "model": active_model,
+        "messages": [
+            {"role": "system", "content": system_instructions},
+            {"role": "user", "content": user_prompt},
+        ],
+        "max_tokens": max_tokens,
+        "temperature": 0.7,
+        "reasoning_effort": "low",
+        "stream": False,
+    }
+
+    t0 = time.time()
+    try:
+        res = _GROQ_SESSION.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            json=payload,
+            headers=headers,
+            timeout=effective_timeout,
+        )
+        elapsed = time.time() - t0
+
+        if res.status_code == 200:
+            data = res.json()
+            choices = data.get("choices", [])
+            if choices:
+                message = choices[0].get("message", {})
+                content = message.get("content", "").strip()
+                if not content and message.get("reasoning"):
+                    content = message.get("reasoning").strip()
+                if content:
+                    logger.info("Generated response using Groq model (%s) in %.3fs.", active_model, elapsed)
+                    return content
+        else:
+            logger.warning("Groq API returned HTTP %s in %.3fs: %s", res.status_code, elapsed, res.text[:200])
+            return None
+    except requests.exceptions.Timeout:
+        logger.warning("Groq API request timed out after %.2fs.", effective_timeout)
+        return None
+    except Exception as e:
+        logger.warning("Groq API call failed: %s", e)
+        return None
+
+    return None
+
+
+def query_groq_stream(
+    user_text: str,
+    intent: str,
+    emotion: str,
+    sentiment: str,
+    user_context: Optional[str] = None,
+    api_key: Optional[str] = None,
+    model: Optional[str] = None,
+    timeout_seconds: Optional[float] = None,
+):
+    """
+    Generator that streams tokens from Groq Cloud API in real-time using SSE.
+    Yields (delta_text, time_since_start).
+    """
+    import json
+    key = api_key or os.environ.get("GROQ_API_KEY", "") or getattr(config, "GROQ_API_KEY", "")
+    if not key or not key.strip():
+        return
+
+    active_model = model or os.environ.get("GROQ_MODEL") or getattr(config, "GROQ_MODEL", "openai/gpt-oss-20b")
+    effective_timeout = timeout_seconds if timeout_seconds is not None else float(
+        os.environ.get("GROQ_TIMEOUT_SECONDS", getattr(config, "GROQ_TIMEOUT_SECONDS", 3.5))
+    )
+    max_tokens = int(os.environ.get("GROQ_MAX_TOKENS", getattr(config, "GROQ_MAX_TOKENS", 250)))
+
+    sanitized = sanitize_prompt_content(user_text)
+    context_block = ""
+    if user_context:
+        sanitized_ctx = sanitize_prompt_content(user_context)
+        context_block = f"About this person: {sanitized_ctx}\n"
+
+    system_instructions = (
+        "You are MindGuard, a warm, empathetic, non-clinical mental health wellness companion. "
+        "Respond concisely in 2-3 sentences. Never diagnose medical conditions or make unsupported medical claims. "
+        "Validate the person's feelings and offer gentle, practical coping or grounding suggestions."
+    )
+
+    user_prompt = (
+        f"{context_block}"
+        f"<user_message>{sanitized}</user_message>\n"
+        f"Context - Intent: {intent}, Emotion: {emotion}"
+    )
+
+    headers = {
+        "Authorization": f"Bearer {key.strip()}",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "model": active_model,
+        "messages": [
+            {"role": "system", "content": system_instructions},
+            {"role": "user", "content": user_prompt},
+        ],
+        "max_tokens": max_tokens,
+        "temperature": 0.7,
+        "reasoning_effort": "low",
+        "stream": True,
+    }
+
+    t0 = time.time()
+    try:
+        res = _GROQ_SESSION.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            json=payload,
+            headers=headers,
+            stream=True,
+            timeout=effective_timeout,
+        )
+        if res.status_code != 200:
+            return
+
+        for line in res.iter_lines():
+            if not line:
+                continue
+            line_str = line.decode("utf-8")
+            if line_str.startswith("data: "):
+                data_str = line_str[6:].strip()
+                if data_str == "[DONE]":
+                    break
+                try:
+                    chunk = json.loads(data_str)
+                    choices = chunk.get("choices", [])
+                    if choices:
+                        delta = choices[0].get("delta", {})
+                        if "content" in delta and delta["content"]:
+                            yield (delta["content"], time.time() - t0)
+                except Exception:
+                    pass
+    except Exception as e:
+        logger.warning("Groq streaming call failed: %s", e)
+
+
 def generate_llm_response(user_text: str, intent: str, emotion: str, sentiment: str, api_key: Optional[str] = None, user_context: Optional[str] = None) -> str:
     """
     Generates a context-aware response.
     Priority:
       1. Instant keyword KB (<1ms) for greetings/bot info
-      2. Gemini Cloud API via new google.genai SDK
+      2. Groq Cloud API when LLM_PROVIDER=groq (bounded 3.5s timeout, falls back immediately to safe KB)
+      3. Gemini Cloud API via new google.genai SDK
          (skipped entirely if module-level connectivity circuit breaker is active)
-      3. Local Ollama fallback with a strict short timeout
-      4. Emotion-aware offline fallback
+      4. Local Ollama fallback with a strict short timeout
+      5. Emotion-aware offline fallback
     """
     global _GEMINI_CONNECTIVITY_BROKEN_UNTIL
 
@@ -353,6 +580,38 @@ def generate_llm_response(user_text: str, intent: str, emotion: str, sentiment: 
     specific_reply = _get_keyword_specific_response(user_text)
     if specific_reply:
         return specific_reply
+
+    provider = os.environ.get("LLM_PROVIDER", "").lower()
+    demo_mode = os.environ.get("DEMO_MODE", "").lower() in ("true", "1", "yes")
+    if not provider and demo_mode:
+        provider = "ollama"
+
+    # Fast offline demo provider
+    if provider in ("fast", "offline", "demo_fast"):
+        return _get_emotion_fallback(user_text, emotion, sentiment)
+
+    # Groq as primary provider (ultra-low latency LPUs)
+    if provider == "groq" and not api_key:
+        if user_context:
+            groq_reply = query_groq(user_text, intent, emotion, sentiment, user_context=user_context)
+        else:
+            groq_reply = query_groq(user_text, intent, emotion, sentiment)
+        if groq_reply:
+            return groq_reply
+        # If Groq fails, times out, or errors: return immediate safe offline fallback!
+        # Do NOT fall back to slow Ollama when the interactive deadline has expired!
+        return _get_emotion_fallback(user_text, emotion, sentiment)
+
+    # Local Ollama as primary provider (used when configured and caller did not explicitly supply a custom api_key)
+    if provider == "ollama" and not api_key:
+        if user_context:
+            local_reply = query_local_ollama(user_text, intent, emotion, sentiment, user_context=user_context)
+        else:
+            local_reply = query_local_ollama(user_text, intent, emotion, sentiment)
+        if local_reply:
+            return local_reply
+        # If Ollama is unavailable, fallback immediately to empathetic offline counselor
+        return _get_emotion_fallback(user_text, emotion, sentiment)
 
     # 2. Try Gemini Cloud API (new google.genai SDK)
     key = api_key or os.environ.get("GEMINI_API_KEY", "") or GEMINI_API_KEY
@@ -380,23 +639,23 @@ def generate_llm_response(user_text: str, intent: str, emotion: str, sentiment: 
                     f"Context - Detected Intent: {intent}, Emotion: {emotion}, Sentiment: {sentiment}\n\n"
                     "Respond warmly and empathetically, like a counselor who knows this person. Adhere strictly to safety guidelines:"
                 )
-                for model_name in GEMINI_CANDIDATE_MODELS:
+                models_to_try = GEMINI_CANDIDATE_MODELS
+                for model_name in models_to_try:
                     if time.time() < _MODEL_QUOTA_EXCEEDED_UNTIL.get(model_name, 0):
-                        if all(time.time() < _MODEL_QUOTA_EXCEEDED_UNTIL.get(m, 0) for m in GEMINI_CANDIDATE_MODELS):
+                        if all(time.time() < _MODEL_QUOTA_EXCEEDED_UNTIL.get(m, 0) for m in models_to_try):
                             break
                         continue
                     t0 = time.time()
                     try:
-                        reply = _call_gemini(client, model_name, SYSTEM_PROMPT, prompt, timeout=1.5)
+                        reply = _call_gemini(client, model_name, SYSTEM_PROMPT, prompt, timeout=GEMINI_TIMEOUT_SECONDS)
                     except _GeminiConnectivityError:
-                        # Connectivity breaker just activated — break the model loop immediately.
-                        # The breaker is already set inside _call_gemini.
+                        # Connectivity/unavailable/timeout breaker activated — break immediately without trying further models.
                         break
                     if reply:
                         logger.info("Gemini (%s) responded in %.2fs", model_name, time.time() - t0)
                         return reply
                     if time.time() < _MODEL_QUOTA_EXCEEDED_UNTIL.get(model_name, 0):
-                        if all(time.time() < _MODEL_QUOTA_EXCEEDED_UNTIL.get(m, 0) for m in GEMINI_CANDIDATE_MODELS):
+                        if all(time.time() < _MODEL_QUOTA_EXCEEDED_UNTIL.get(m, 0) for m in models_to_try):
                             break
                         continue
             except Exception as e:

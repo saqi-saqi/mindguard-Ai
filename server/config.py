@@ -39,3 +39,17 @@ RATE_LIMIT_WINDOW_SECONDS = int(os.environ.get("RATE_LIMIT_WINDOW_SECONDS", "60"
 DEFAULT_RETENTION_DAYS = int(os.environ.get("DEFAULT_RETENTION_DAYS", "30"))
 USE_GENERALIZER_PIPELINE = os.environ.get("USE_GENERALIZER_PIPELINE", "true").lower() in ("true", "1", "yes")
 
+# Latency and Provider Configuration
+DEMO_MODE = os.environ.get("DEMO_MODE", "false").lower() in ("true", "1", "yes")
+LLM_PROVIDER = os.environ.get("LLM_PROVIDER", "ollama").lower()
+GEMINI_PRIMARY_MODEL = os.environ.get("GEMINI_PRIMARY_MODEL", "gemini-flash-lite-latest")
+GEMINI_TIMEOUT_SECONDS = max(10.0, float(os.environ.get("GEMINI_TIMEOUT_SECONDS", "10.0")))
+OLLAMA_RESPONSE_TIMEOUT_SECONDS = float(os.environ.get("OLLAMA_RESPONSE_TIMEOUT_SECONDS", "20.0"))
+SEMANTIC_SAFETY_TIMEOUT_SECONDS = max(10.0, float(os.environ.get("SEMANTIC_SAFETY_TIMEOUT_SECONDS", "10.0")))
+
+# Groq Configuration
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+GROQ_MODEL = os.environ.get("GROQ_MODEL", "openai/gpt-oss-20b")
+GROQ_TIMEOUT_SECONDS = float(os.environ.get("GROQ_TIMEOUT_SECONDS", "3.5"))
+GROQ_MAX_TOKENS = int(os.environ.get("GROQ_MAX_TOKENS", "180"))
+

@@ -74,4 +74,5 @@ export interface Helpline {
 
 export interface CrisisResources {
   pakistan?: Helpline[];
+  emergency_resources?: Helpline[];
 }

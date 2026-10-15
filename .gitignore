@@ -1,0 +1,90 @@
+# Environment & Secrets
+.env
+.env.local
+*.pem
+*.key
+
+# Databases & Backups
+*.db
+*.sqlite
+*.sqlite3
+*.bak
+
+# Datasets & Large Archives
+dataset/
+ml/data/
+*.zip
+*.tar.gz
+*.rar
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.venv
+.venv_clean/
+.venv*/
+env/
+venv/
+
+# Node / React
+node_modules/
+dist/
+build/
+.vite/
+
+# IDE / System
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Presentations & Open House (kept local only)
+openhouse/
+
+# Reviewer Sheets & Research Evaluation Reports (kept locally)
+artifacts/reviewer_sheets/
+artifacts/*_report.json
+artifacts/*_metrics.json
+artifacts/*.metrics.json
+artifacts/test_runs.json
+artifacts/report_numbers.json
+artifacts/split_report.json
+artifacts/kappa_report.json
+artifacts/naturalness_audit_sample.md
+artifacts/roman_urdu_errors.md
+tests/artifacts/
+
+# Thesis figures & local statement
+docs/figures/
+docs/project_statement.txt
+
+# AI Tooling & Local Scratch
+.zcode/
+.claude/
+.cursor/
+.gemini/
+.aider*
+changes_file.txt
+scratch/
+temp/
+tmp/
+*.tmp
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local scratch / binaries
+contact.jpg
+example.txt
+*.exe
+

@@ -55,14 +55,18 @@ RISK CATEGORIES (return exactly one):
   this as my last message"), farewell/goodbye to others ("tell my family I loved them"), 
   passive-death wishes ("I wish I would just not wake up"), or first-person ingestion of 
   lethal substances with unclear intent.
+- THREAT_AGAINST_USER: User reporting that a third party is threatening to kill, shoot, 
+  stab, or violently harm the user ("Atif wants to kill me", "someone is threatening my life").
 - HARM_TO_OTHERS_RISK: First-person intent to harm, assault, injure, attack, beat, stab, 
   shoot, or kill another person — including generic targets ("I want to hurt someone"). 
   Weapon possession + stated or implied intent escalates regardless of target generality.
+- REPORTED_THREAT_TO_OTHERS: User reporting that a third party is threatening to kill, shoot, 
+  stab, or violently harm another person ("Atif wants to kill Taimoor", "my friend wants to kill his boss").
 - COMBINED_HIGH_CRISIS: Self-harm/suicidal + harm-to-others signals present in the same 
   message or the user explicitly references both in the current turn.
 - SELF_HARM_RISK: Non-suicidal self-injury (NSSI), cutting, burning, hitting self, 
   without explicit suicidal intent.
-- THIRD_PARTY_REPORT: Reporting that someone else (friend, family member) is in crisis; 
+- THIRD_PARTY_REPORT: Reporting that someone else (friend, family member) is suicidal or in a mental health crisis; 
   speaker is not personally at risk.
 - EMOTIONAL_DISTRESS: Significant distress, hopelessness, anger, or overwhelm WITHOUT 
   active safety risk. Includes idiom, hyperbole, past history, fiction, academic framing.
@@ -71,28 +75,27 @@ RISK CATEGORIES (return exactly one):
 CLASSIFICATION RULES:
 1. INTENT: Distinguish wish/ideation ("I want to die") from plan ("I have a rope") from 
    action in progress ("I just took the pills"). All three → HIGH_CRISIS.
-2. FIRST-PERSON vs. OTHER: "I" statements with crisis content → crisis. Third-party 
-   reports about others → THIRD_PARTY_REPORT. Do not confuse them.
-3. NEGATION: "I don't want to die", "I'm not suicidal", "never thought about it" → NONE 
+2. ACTOR & TARGET IDENTIFICATION:
+   - "I want to kill [someone]" -> First-person threat -> HARM_TO_OTHERS_RISK.
+   - "[Third party] wants to kill me" -> User is the threatened target -> THREAT_AGAINST_USER.
+   - "[Third party] wants to kill [another third party]" -> Third-party threat report -> REPORTED_THREAT_TO_OTHERS.
+   - "[Third party] wants to die / commit suicide" -> Third-party self-harm report -> THIRD_PARTY_REPORT.
+3. NEGATION: "I don't want to die", "Atif does not want to kill Taimoor", "I'm not suicidal" → NONE 
    or EMOTIONAL_DISTRESS. BUT: negation in clause A + crisis in clause B → use clause B.
 4. TEMPORAL MARKERS: "tonight", "right now", "already", "decided" → escalate to 
    HIGH_CRISIS. "used to", "years ago", "back then" without relapse → EMOTIONAL_DISTRESS.
-5. QUOTATION / FICTIONAL: Song lyrics, film plot, NPC dialogue, academic citation, 
-   research context → EMOTIONAL_DISTRESS or NONE unless the speaker also expresses 
-   personal present risk.
+5. QUOTATION / FICTIONAL: "In my novel, Atif wants to kill Taimoor", song lyrics, film plot, NPC dialogue, 
+   academic citation, research context → NONE or EMOTIONAL_DISTRESS unless the speaker also expresses 
+   personal real-world present risk.
 6. MEDICATION INGESTION with unstated intent: "I took a lot of pills" without context → 
    HIGH_CRISIS (poisoning emergency route). "I accidentally double-dosed on my prescription" 
    → EMOTIONAL_DISTRESS (non-crisis but cautious).
-7. HARM-TO-OTHERS: ANY first-person statement of intent to hurt/harm/beat/assault/attack/
-   injure another person → HARM_TO_OTHERS_RISK, even with generic targets ("someone", 
-   "people"). Weapon + intent → escalate unconditionally.
-8. COMBINED CRISIS: Self-harm + harm-to-others in same message → COMBINED_HIGH_CRISIS.
-9. EXCLUSION OVERRIDE: Structured exclusions (fiction, past history, academic, quoted) 
-   are NEVER applied when the message simultaneously contains a present-tense first-person 
-   threat, a specific plan, lethal means, a time marker, OR a relapse statement following 
-   disclosed recovery.
-10. CONFIDENCE: 0.9+ for clear cases. 0.6–0.89 for ambiguous. Below 0.6 → EMOTIONAL_DISTRESS 
-    rather than a false-positive crisis call.
+7. COMBINED CRISIS: Self-harm + harm-to-others in same message → COMBINED_HIGH_CRISIS.
+8. EXCLUSION OVERRIDE: Structured exclusions (fiction, past history, academic, quoted) 
+   are NEVER applied when the message simultaneously contains an active present-tense real-world threat,
+   a specific plan, lethal means, a time marker, OR a relapse statement following disclosed recovery.
+9. CONFIDENCE: 0.9+ for clear cases. 0.6–0.89 for ambiguous. Below 0.6 → EMOTIONAL_DISTRESS 
+   rather than a false-positive crisis call.
 
 Respond ONLY in valid JSON with this exact schema (no markdown, no extra text):
 {"risk_level": "...", "category": "...", "confidence": 0.0, "rationale": "...", "exclusion_applied": null}
@@ -203,6 +206,7 @@ def _semantic_reasoning_fallback(text: str, cross_turn_context: Optional[str] = 
     # 1. Live crisis clauses that override any preceding exclusion
     has_live_crisis = bool(re.search(
         r"\b(?:want\s+to\s+end\s+it\s+all|before\s+i\s+jump|planning\s+my\s+own\s+death|holding\s+the\s+pills\s+ready\s+to\s+swallow|standing\s+on\s+the\s+edge|cutting\s+again|have\s+a\s+plan\s+and\s+i'?m\s+ready|going\s+to\s+do\s+the\s+same\s+thing\s+now)\b|"
+        r"\b(?:have|got|holding|bought|saved|stashed)\s+(?:(?:a|the|my|these|this)\s+)?(?:(?:whole|full|entire)\s+)?(?:bottle\s+of\s+|stash\s+of\s+|handful\s+of\s+)?(?:sleeping\s+)?(?:pills|meds|medication|tablets|capsules|painkillers)\b.*?\b(?:going\s+to|gonna|will|plan\s+to|planning\s+to|about\s+to|intend\s+to)\s+(?:take|swallow|down|ingest|overdose\s+on)\s+(?:them|it|all)\b|"
         r"\b(?:want\s+to|wanna|going\s+to|gonna|plan\s+to|planning\s+to)\s+(?:die|kill\s+myself|end\s+my\s+life|commit\s+suicide)\b|"
         r"\b(?:swallowed\s+(?:the|all)\s+pills|holding\s+(?:the|a)\s+(?:blade|knife|gun|razor)|about\s+to\s+jump)\b",
         t
@@ -315,8 +319,22 @@ def classify_semantically(
                 "rationale": "Empty input", "exclusion_applied": None}
 
     import os
-    if os.environ.get("FLASK_ENV") == "testing" and not os.environ.get("FORCE_LIVE_SEMANTIC"):
+    provider = os.environ.get("LLM_PROVIDER", "").lower()
+    demo_mode = os.environ.get("DEMO_MODE", "").lower() in ("true", "1", "yes")
+
+    if (os.environ.get("FLASK_ENV") == "testing" and not os.environ.get("FORCE_LIVE_SEMANTIC")) or \
+       demo_mode or \
+       provider in ("fast", "offline", "demo_fast", "ollama", "groq"):
         return _semantic_reasoning_fallback(text, cross_turn_context)
+
+    # If the Gemini circuit breaker is active, do not make remote calls
+    try:
+        from services.llm_service import is_gemini_circuit_broken
+        if is_gemini_circuit_broken():
+            logger.info("Gemini circuit breaker active; using offline semantic reasoning fallback.")
+            return _semantic_reasoning_fallback(text, cross_turn_context)
+    except Exception:
+        pass
 
     try:
         from config import GEMINI_API_KEY as _cfg_key
@@ -337,35 +355,44 @@ def classify_semantically(
         from google import genai
         from google.genai import types as genai_types
 
-        client = genai.Client(api_key=effective_key)
+        timeout_sec = max(10.0, float(os.environ.get("SEMANTIC_SAFETY_TIMEOUT_SECONDS", "10.0")))
+        http_kwargs = {"timeout": int(timeout_sec * 1000)}
+        if hasattr(genai_types, "HttpRetryOptions"):
+            http_kwargs["retry_options"] = genai_types.HttpRetryOptions(attempts=1)
 
-        _MODELS = [
-            "gemini-flash-lite-latest",
-            "gemini-flash-latest",
-            "gemini-3.1-flash-lite",
-            "gemini-3.5-flash-lite",
-        ]
+        client = genai.Client(
+            api_key=effective_key,
+            http_options=genai_types.HttpOptions(**http_kwargs) if hasattr(genai_types, "HttpOptions") else None
+        )
+
+        safety_model = os.environ.get("GEMINI_SAFETY_MODEL", "gemini-flash-lite-latest")
         raw_response = None
-        for model_name in _MODELS:
-            try:
-                response = client.models.generate_content(
-                    model=model_name,
-                    contents=user_content,
-                    config=genai_types.GenerateContentConfig(
-                        system_instruction=_SEMANTIC_SAFETY_SYSTEM_PROMPT,
-                        temperature=0.0,
-                        max_output_tokens=256,
-                        candidate_count=1,
-                    ),
-                )
-                raw_response = response.text
-                break
-            except Exception as model_err:
-                logger.debug(f"Semantic classifier model {model_name} failed: {model_err}")
-                continue
+        try:
+            response = client.models.generate_content(
+                model=safety_model,
+                contents=user_content,
+                config=genai_types.GenerateContentConfig(
+                    system_instruction=_SEMANTIC_SAFETY_SYSTEM_PROMPT,
+                    temperature=0.0,
+                    max_output_tokens=256,
+                    candidate_count=1,
+                ),
+            )
+            raw_response = response.text
+        except Exception as model_err:
+            err = str(model_err).lower()
+            if any(k in err for k in ["503", "504", "unavailable", "high demand", "deadline", "timeout"]):
+                try:
+                    from services.llm_service import activate_gemini_circuit_breaker
+                    activate_gemini_circuit_breaker(60.0)
+                except Exception:
+                    pass
+            logger.warning(
+                f"Semantic safety model {safety_model} failed or timed out ({model_err}); "
+                "applying offline reasoning fallback. A timeout never auto-approves unsafe input."
+            )
 
         if raw_response is None:
-            logger.info("All semantic models failed or timed out — applying semantic reasoning fallback.")
             return _semantic_reasoning_fallback(text, cross_turn_context)
 
         result = _strict_parse_semantic_json(raw_response)

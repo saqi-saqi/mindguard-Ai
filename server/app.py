@@ -751,12 +751,13 @@ def chat():
 
         if safety_eval.category in (
             SafetyRiskCategory.COMBINED_HIGH_CRISIS,
+            SafetyRiskCategory.THREAT_AGAINST_USER,
             SafetyRiskCategory.HARM_TO_OTHERS_RISK,
             SafetyRiskCategory.SELF_HARM_RISK,
         ):
             duration_ms = round((time.time() - start_req_time) * 1000, 2)
             # Preserve "HIGH_CRISIS" for pure self-harm to maintain existing API contracts
-            # COMBINED_HIGH_CRISIS and HARM_TO_OTHERS_RISK keep their enum value as risk_label
+            # COMBINED_HIGH_CRISIS, THREAT_AGAINST_USER, and HARM_TO_OTHERS_RISK keep their enum value as risk_label
             risk_label = "HIGH_CRISIS" if safety_eval.category == SafetyRiskCategory.SELF_HARM_RISK else safety_eval.category.value
             logger.warning(
                 f"[{req_id}] CRITICAL SAFETY RISK DETECTED: {safety_eval.category.value}. "
@@ -813,36 +814,40 @@ def chat():
                 "error": None
             }), 200
 
-        if safety_eval.category == SafetyRiskCategory.THIRD_PARTY_REPORT:
+        if safety_eval.category in (
+            SafetyRiskCategory.REPORTED_THREAT_TO_OTHERS,
+            SafetyRiskCategory.THIRD_PARTY_REPORT,
+        ):
             duration_ms = round((time.time() - start_req_time) * 1000, 2)
-            logger.info(f"[{req_id}] THIRD-PARTY REPORT DETECTED. Returning guidance panel. Duration={duration_ms}ms")
+            risk_label = safety_eval.category.value
+            logger.info(f"[{req_id}] {risk_label} DETECTED. Returning guidance panel. Duration={duration_ms}ms")
 
             if user_id and retention_enabled:
                 save_chat_message(
                     user_id=user_id,
                     sender="assistant",
                     text=safety_eval.safety_message,
-                    risk_level="THIRD_PARTY_REPORT",
-                    intent="THIRD PARTY SAFETY REPORT",
+                    risk_level=risk_label,
+                    intent=f"SAFETY PROTOCOL - {risk_label}",
                     emotion="CONCERN",
                     sentiment="NEUTRAL",
                     session_id=session_id,
                     expires_at=expires_at
                 )
-            save_audit_event("third_party_report_guidance", user_id, {"source": "safety_classifier", "request_id": req_id})
+            save_audit_event("third_party_report_guidance", user_id, {"source": "safety_classifier", "request_id": req_id, "risk_category": risk_label})
 
             return jsonify({
                 "success": True,
                 "status": "success",
-                "risk_level": "THIRD_PARTY_REPORT",
+                "risk_level": risk_label,
                 "requires_immediate_action": False,
                 "data": {
                     "status": "success",
-                    "risk_level": "THIRD_PARTY_REPORT",
-                    "classification": "THIRD_PARTY_REPORT",
+                    "risk_level": risk_label,
+                    "classification": risk_label,
                     "reply": safety_eval.safety_message,
                     "disclaimer": SAFETY_DISCLAIMER,
-                    "intent": "THIRD PARTY SAFETY REPORT",
+                    "intent": f"SAFETY PROTOCOL - {risk_label}",
                     "emotion": "CONCERN",
                     "sentiment": "NEUTRAL",
                     "emergency_resources": regional_resources,
@@ -859,33 +864,34 @@ def chat():
         # -------------------------------------------------------------------
         crisis_eval = evaluate_crisis_pipeline(user_message, allow_ml_fallback=False, context_turns=recent_context)
 
-        if crisis_eval.get("is_third_party"):
+        if crisis_eval.get("is_third_party") or crisis_eval.get("risk_level") == "REPORTED_THREAT_TO_OTHERS":
             duration_ms = round((time.time() - start_req_time) * 1000, 2)
-            logger.info(f"[{req_id}] THIRD-PARTY CRISIS REPORTED. Providing guidance. Duration={duration_ms}ms")
+            risk_label = crisis_eval.get("risk_level", "THIRD_PARTY_REPORT")
+            logger.info(f"[{req_id}] THIRD-PARTY CRISIS REPORTED ({risk_label}). Providing guidance. Duration={duration_ms}ms")
             if user_id and retention_enabled:
                 save_chat_message(
                     user_id=user_id,
                     sender="assistant",
                     text=crisis_eval["safety_message"],
-                    risk_level="LOW",
-                    intent="THIRD PARTY CRISIS REPORT",
+                    risk_level=risk_label,
+                    intent=f"THIRD PARTY CRISIS REPORT - {risk_label}",
                     emotion="CONCERN",
                     sentiment="NEUTRAL",
                     session_id=session_id,
                     expires_at=expires_at
                 )
-            save_audit_event("third_party_crisis_guidance", user_id, {"source": "third_party", "request_id": req_id})
+            save_audit_event("third_party_crisis_guidance", user_id, {"source": "third_party", "request_id": req_id, "risk_category": risk_label})
             return jsonify({
                 "success": True,
                 "status": "success",
-                "risk_level": "LOW",
+                "risk_level": risk_label,
                 "requires_immediate_action": False,
                 "data": {
                     "status": "success",
-                    "risk_level": "LOW",
+                    "risk_level": risk_label,
                     "reply": crisis_eval["safety_message"],
                     "disclaimer": SAFETY_DISCLAIMER,
-                    "intent": "THIRD PARTY CRISIS REPORT",
+                    "intent": f"THIRD PARTY CRISIS REPORT - {risk_label}",
                     "emotion": "CONCERN",
                     "sentiment": "NEUTRAL",
                     "emergency_resources": regional_resources,

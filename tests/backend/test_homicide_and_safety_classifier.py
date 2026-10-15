@@ -155,10 +155,10 @@ class TestSafetyClassifierDirect(unittest.TestCase):
         for phrase in third_party_phrases:
             with self.subTest(phrase=phrase):
                 res = classify_safety_risk(phrase)
-                self.assertEqual(
+                self.assertIn(
                     res.category,
-                    SafetyRiskCategory.THIRD_PARTY_REPORT,
-                    f"Expected THIRD_PARTY_REPORT for '{phrase}', got {res.category}"
+                    (SafetyRiskCategory.THIRD_PARTY_REPORT, SafetyRiskCategory.REPORTED_THREAT_TO_OTHERS),
+                    f"Expected THIRD_PARTY_REPORT or REPORTED_THREAT_TO_OTHERS for '{phrase}', got {res.category}"
                 )
                 # User is NOT the at-risk party -> no modal auto-popup for self
                 self.assertFalse(res.is_crisis)
@@ -262,7 +262,7 @@ class TestApiChatPipelineSafetyRouting(unittest.TestCase):
         """Self-harm risk must bypass generative paths entirely."""
         resp = self.client.post(
             "/api/chat",
-            json={"message": "I want to die tonight"},
+            json={"message": "I want to die tonight", "session_id": "test-self-harm-isolated-unique"},
             headers={"Content-Type": "application/json"}
         )
         self.assertEqual(resp.status_code, 200)
@@ -279,7 +279,7 @@ class TestApiChatPipelineSafetyRouting(unittest.TestCase):
     @patch("services.llm_service.generate_llm_response")
     @patch("services.huggingface_service.analyze_user_message")
     def test_third_party_report_response_contract(self, mock_hf, mock_llm_gen):
-        """Third-party reports must return THIRD_PARTY_REPORT without requiring immediate acute action."""
+        """Third-party reports must return THIRD_PARTY_REPORT or REPORTED_THREAT_TO_OTHERS without requiring immediate acute action."""
         resp = self.client.post(
             "/api/chat",
             json={"message": "my friend keeps talking about killing his ex"},
@@ -288,7 +288,7 @@ class TestApiChatPipelineSafetyRouting(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         data = resp.get_json()
 
-        self.assertEqual(data["risk_level"], "THIRD_PARTY_REPORT")
+        self.assertIn(data["risk_level"], ("THIRD_PARTY_REPORT", "REPORTED_THREAT_TO_OTHERS"))
         self.assertFalse(data["requires_immediate_action"])
         self.assertIn("Police", data["data"]["reply"])
         self.assertIn("15", data["data"]["reply"])

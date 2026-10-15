@@ -207,5 +207,88 @@ describe("CrisisModal Accessibility & Clinical Hierarchy", () => {
     // handleClose was called but onSafetyStatus was not
     expect(handleSafetyStatus).not.toHaveBeenCalled();
   });
+
+  it("renders complete Additional National Helplines (Pakistan) when triggered from chat with raw array resources", () => {
+    const handleClose = vi.fn();
+    const chatEmergencyResources = [
+      {
+        organization: "Police Emergency Pakistan",
+        contact_info: "15",
+        status: "active"
+      },
+      {
+        organization: "Pakistan Rescue Emergency Service",
+        contact_info: "1122",
+        status: "active"
+      },
+      {
+        organization: "Edhi Foundation Ambulance Network",
+        contact_info: "115",
+        status: "active"
+      },
+      {
+        organization: "Umang Pakistan Helpline",
+        contact_info: "0311-7786264",
+        description: "Certified clinical psychologists offering 24/7 crisis mental health support.",
+        status: "active"
+      },
+      {
+        organization: "Rozan Emotional Helpline",
+        contact_info: "0800-22444",
+        description: "Free emotional health, youth, and trauma counseling.",
+        status: "active"
+      },
+      {
+        organization: "Child Protection Bureau Helpline (CPWB)",
+        contact_info: "1121",
+        description: "Government of Punjab toll-free 24/7 helpline for minors.",
+        status: "active"
+      },
+      {
+        organization: "Madadgaar National Helpline",
+        contact_info: "1098 / 021-35150075",
+        description: "Pakistan's first national crisis helpline.",
+        status: "active"
+      },
+      {
+        organization: "Taskeen Health Initiative",
+        contact_info: "0316-8275336",
+        description: "Free mental health support and counseling line.",
+        status: "active"
+      }
+    ];
+
+    render(
+      <CrisisModal
+        isOpen={true}
+        onClose={handleClose}
+        resources={chatEmergencyResources as any}
+        mode="detected"
+      />
+    );
+
+    // Primary line should be Umang
+    expect(screen.getByText(/Umang Pakistan/i)).toBeDefined();
+    expect(screen.getByText(/0311-7786264/i)).toBeDefined();
+
+    // Directory accordion toggle should show 4 resources
+    const directoryToggle = screen.getByRole("button", { name: /view more pakistan helplines/i });
+    expect(directoryToggle).toBeDefined();
+    expect(directoryToggle.textContent).toContain("4 resources");
+
+    // Click to expand directory
+    fireEvent.click(directoryToggle);
+
+    // Section title must exist
+    expect(screen.getByText(/Additional National Helplines \(Pakistan\)/i)).toBeDefined();
+
+    // Complete list of additional helplines must be rendered
+    expect(screen.getByText(/Rozan/i)).toBeDefined();
+    expect(screen.getByText(/0800-22444/i)).toBeDefined();
+    expect(screen.getByText(/Child Protection Bureau/i)).toBeDefined();
+    expect(screen.getByText(/1121/i)).toBeDefined();
+    expect(screen.getByText(/Madadgaar/i)).toBeDefined();
+    expect(screen.getByText(/Taskeen/i)).toBeDefined();
+  });
 });
 

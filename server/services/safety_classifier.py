@@ -29,11 +29,33 @@ logger = logging.getLogger("MindGuard-SafetyClassifier")
 
 class SafetyRiskCategory(str, Enum):
     COMBINED_HIGH_CRISIS = "COMBINED_HIGH_CRISIS"
+    THREAT_AGAINST_USER = "THREAT_AGAINST_USER"
     HARM_TO_OTHERS_RISK = "HARM_TO_OTHERS_RISK"
     SELF_HARM_RISK = "SELF_HARM_RISK"
+    REPORTED_THREAT_TO_OTHERS = "REPORTED_THREAT_TO_OTHERS"
     THIRD_PARTY_REPORT = "THIRD_PARTY_REPORT"
     EMOTIONAL_DISTRESS = "EMOTIONAL_DISTRESS"
     NONE = "NONE"
+
+
+try:
+    from services.threat_actor_detector import (
+        analyze_threat_actor_target,
+        ThreatActorTargetResult,
+        REPORTED_THREAT_TO_OTHERS_SAFETY_MESSAGE,
+        THREAT_AGAINST_USER_SAFETY_MESSAGE,
+        build_reported_threat_safety_message,
+        build_threat_against_user_safety_message,
+    )
+except ImportError:
+    from .threat_actor_detector import (
+        analyze_threat_actor_target,
+        ThreatActorTargetResult,
+        REPORTED_THREAT_TO_OTHERS_SAFETY_MESSAGE,
+        THREAT_AGAINST_USER_SAFETY_MESSAGE,
+        build_reported_threat_safety_message,
+        build_threat_against_user_safety_message,
+    )
 
 
 @dataclass
@@ -71,8 +93,8 @@ _CASUAL_JOKE_DAMPENERS = [
 ]
 
 _INANIMATE_OR_METAPHOR_SUBJECTS = [
-    _c(r"\b(?:this|the|my|that)\s+(?:traffic|exam|exams|test|tests|homework|commute|job|work|boss|meeting|weather|shoes|feet|computer|printer|code|headache)\s+(?:is|are|is\s+going\s+to|will)\s+(?:literally\s+)?killing\s+me\b"),
-    _c(r"\b(?:traffic|homework|work|exam|finals|shoes|feet)\s+(?:is|are)\s+killing\s+me\b"),
+    _c(r"\b(?:this|the|my|that)\s+(?:traffic|exam|exams|test|tests|homework|commute|job|work|boss|meeting|weather|shoes|feet|computer|printer|code|headache)\s+(?:is|are|is\s+going\s+to|will)\s+(?:literally\s+)?(?:killing\s+me|kill\s+me)\b"),
+    _c(r"\b(?:traffic|homework|work|exam|finals|shoes|feet)\s+(?:is|are|is\s+going\s+to|will)\s+(?:literally\s+)?(?:killing\s+me|kill\s+me)\b"),
     _c(r"\b(?:dying|died)\s+of\s+(?:laughter|boredom|embarrassment|curiosity)\b"),
     _c(r"\bi\s+could\s+kill\s+for\s+(?:a\s+)?(?:coffee|drink|beer|pizza|nap|break|vacation|cigarette)\b"),
     _c(r"\bkill\s+two\s+birds\s+with\s+one\s+stone\b"),
@@ -84,6 +106,7 @@ _HARM_OTHERS_NEGATIONS = [
     _c(r"\b(?:i\s+would|i'd)\s+never\s+(?:kill|hurt|harm|shoot|stab)\s+(?:anyone|anybody|someone|him|her|them)\b"),
     _c(r"\bi\s+(?:do\s+not|don'?t)\s+want\s+to\s+(?:kill|hurt|harm)\s+(?:anyone|anybody|him|her|them)\b"),
     _c(r"\bno\s+intention\s+of\s+(?:hurting|killing|harming)\s+(?:anyone|him|her|them)\b"),
+    _c(r"\b(?:[a-z]+\s+)?(?:does\s+not|doesn'?t|did\s+not|didn'?t|will\s+not|won'?t|would\s+never)\s+(?:want\s+to\s+)?(?:kill|murder|harm|hurt|shoot|stab|attack)\b"),
 ]
 
 _TRIVIAL_BENIGN_PATTERNS = [
@@ -95,9 +118,9 @@ _TRIVIAL_BENIGN_PATTERNS = [
 # 2. Harm-To-Others / Homicide Patterns (Direct Threats & Specific Methods)
 _HARM_TO_OTHERS_PATTERNS = [
     # Direct intent to kill/murder/harm/attack/assault/injure someone (generic or specific)
-    _c(r"\b(?:i'?m\s+gonna|i\s+am\s+going\s+to|i\s+will|i'll|i\s+plan\s+to|i'?m\s+planning\s+to|i\s+want\s+to|wanna|intend\s+to|planning\s+to|plan\s+to|gonna|urge\s+to|feel\s+like|need\s+to)\s+(?:gonna\s+)?(?:harm|hurt|beat|attack|assault|injure|kill|murder|slaughter|shoot|stab|slit|choke|strangle|poison|assassinate|execute)\s+(?:my\s+|the\s+|this\s+|that\s+)?(?:neighbour|neighbor|friend|boss|coworker|ex|wife|husband|mother|father|brother|sister|roommate|teacher|landlord|doctor|cousin|uncle|aunt|partner|girlfriend|boyfriend|son|daughter|kid|child|people|someone|anyone|anybody|somebody|everyone|everybody|them|him|her|bitch|bastard)\b"),
-    _c(r"\b(?:gonna|going\s+to|will|i'll)\s+(?:kill|murder|shoot|stab|slaughter|poison|attack|harm|hurt|beat|assault|injure)\s+(?:him|her|them|my\s+\w+|someone|anyone|anybody|somebody|people|everybody)\b"),
-    _c(r"\b(?:i'?m\s+going\s+to|i'?m\s+gonna|i\s+will|i'll)\s+(?:poison|attack|assault|beat)\s+(?:him|her|them|someone|anyone|people|everyone|[a-z]+)\b"),
+    _c(r"\b(?:i'?m\s+gonna|i\s+am\s+going\s+to|i\s+will|i'll|i\s+plan\s+to|i'?m\s+planning\s+to|i\s+want\s+to|wanna|intend\s+to|planning\s+to|plan\s+to|gonna|urge\s+to|feel\s+like|need\s+to)\s+(?:gonna\s+)?(?:harm|hurt|beat|attack|assault|injure|kill|murder|slaughter|shoot|stab|slit|choke|strangle|poison|assassinate|execute)\s+(?:my\s+|the\s+|this\s+|that\s+)?(?:neighbour|neighbor|friend|boss|coworker|ex|wife|husband|mother|father|brother|sister|roommate|teacher|landlord|doctor|cousin|uncle|aunt|partner|girlfriend|boyfriend|son|daughter|kid|child|people|someone|anyone|anybody|somebody|everyone|everybody|them|him|her|bitch|bastard|(?!myself\b|me\b)[a-z]+)\b"),
+    _c(r"\b(?:gonna|going\s+to|will|i'll)\s+(?:kill|murder|shoot|stab|slaughter|poison|attack|harm|hurt|beat|assault|injure)\s+(?:him|her|them|my\s+\w+|someone|anyone|anybody|somebody|people|everybody|(?!myself\b|me\b)[a-z]+)\b"),
+    _c(r"\b(?:i'?m\s+going\s+to|i'?m\s+gonna|i\s+will|i'll)\s+(?:poison|attack|assault|beat)\s+(?:him|her|them|someone|anyone|people|everyone|(?!myself\b|me\b)[a-z]+)\b"),
     _c(r"\b(?:want\s+to|wanna|plan\s+to|planning\s+to|urge\s+to)\s+(?:harm|hurt|beat|attack|assault|injure)\s+(?:someone|anyone|anybody|somebody|people)\b"),
     _c(r"\b(?:have|got|holding|grabbed|brought|bring)\s+(?:a|the|my)?\s*(?:knife|gun|pistol|rifle|blade|weapon|axe|machete)\s+.*?\b(?:attack|harm|hurt|kill|shoot|stab|injure|use\s+it)\b"),
     _c(r"\bholding\s+(?:a|the|my)?\s*(?:gun|knife|blade|weapon)\b.*?\b(?:thinking\s+about\s+using|want\s+to\s+use|gonna\s+use)\b"),
@@ -130,6 +153,7 @@ _SELF_HARM_PATTERNS = [
     _c(r"\btake\s+my\s+(?:own\s+)?life\b"),
     _c(r"\b(?:i\s+am|i'?m)\s+(?:going\s+to\s+)?(?:suicidal|kill\s+myself|overdose|hang\s+myself|jump\s+off\s+a\s+bridge)\b"),
     _c(r"\b(?:took|swallowed|downed|ingested)\s+(?:a\s+whole\s+bottle|all\s+my|too\s+many)\s+(?:pills|tablets|medication|painkillers)\b"),
+    _c(r"\b(?:have|got|holding|bought|saved|stashed)\s+(?:(?:a|the|my|these|this)\s+)?(?:(?:whole|full|entire)\s+)?(?:bottle\s+of\s+|stash\s+of\s+|handful\s+of\s+)?(?:sleeping\s+)?(?:pills|meds|medication|tablets|capsules|painkillers)\b.*?\b(?:going\s+to|gonna|will|plan\s+to|planning\s+to|about\s+to|intend\s+to)\s+(?:take|swallow|down|ingest|overdose\s+on)\s+(?:them|it|all)\b"),
     _c(r"\b(?:cut|cutting|harm|harming)\s+myself\b"),
     _c(r"\b(?:kms|kys|unalive\s+myself)\b"),
     _c(r"\bnext\s+on\s+my\s+killing\s+list\s+is\s+me\b"),
@@ -208,10 +232,12 @@ THIRD_PARTY_SAFETY_MESSAGE = (
 def _risk_level_to_priority(risk_level: str) -> int:
     """Map risk level string to numeric priority for max() comparison."""
     return {
-        "COMBINED_HIGH_CRISIS": 6,
+        "COMBINED_HIGH_CRISIS": 7,
+        "THREAT_AGAINST_USER": 6,
         "HARM_TO_OTHERS_RISK": 5,
         "HIGH_CRISIS": 4,
-        "SELF_HARM_RISK": 3,
+        "SELF_HARM_RISK": 4,
+        "REPORTED_THREAT_TO_OTHERS": 3,
         "THIRD_PARTY_REPORT": 2,
         "EMOTIONAL_DISTRESS": 1,
         "NONE": 0,
@@ -222,9 +248,11 @@ def _category_from_risk_level(risk_level: str) -> SafetyRiskCategory:
     """Map risk level string to SafetyRiskCategory enum."""
     return {
         "COMBINED_HIGH_CRISIS": SafetyRiskCategory.COMBINED_HIGH_CRISIS,
+        "THREAT_AGAINST_USER": SafetyRiskCategory.THREAT_AGAINST_USER,
         "HARM_TO_OTHERS_RISK": SafetyRiskCategory.HARM_TO_OTHERS_RISK,
         "HIGH_CRISIS": SafetyRiskCategory.SELF_HARM_RISK,  # HIGH_CRISIS maps to SELF_HARM_RISK for API compat
         "SELF_HARM_RISK": SafetyRiskCategory.SELF_HARM_RISK,
+        "REPORTED_THREAT_TO_OTHERS": SafetyRiskCategory.REPORTED_THREAT_TO_OTHERS,
         "THIRD_PARTY_REPORT": SafetyRiskCategory.THIRD_PARTY_REPORT,
         "EMOTIONAL_DISTRESS": SafetyRiskCategory.EMOTIONAL_DISTRESS,
         "NONE": SafetyRiskCategory.NONE,
@@ -268,18 +296,26 @@ def classify_safety_risk(
             reasoning="Empty input"
         )
 
-    # Step A: Check for Hyperbole / Idiom / Casual Joke Dampeners
+    # Actor, Target, and Reporter analysis
+    actor_target_res = analyze_threat_actor_target(text)
+
+    # Step A: Check for Hyperbole / Idiom / Casual Joke Dampeners & Framing
     has_casual_dampener = any(pat.search(norm) for pat in _CASUAL_JOKE_DAMPENERS)
     has_inanimate_subject = any(pat.search(norm) for pat in _INANIMATE_OR_METAPHOR_SUBJECTS)
-    has_others_negation = any(pat.search(norm) for pat in _HARM_OTHERS_NEGATIONS)
+    has_others_negation = any(pat.search(norm) for pat in _HARM_OTHERS_NEGATIONS) or actor_target_res.is_negated
+    is_fictional = actor_target_res.is_fictional
 
     # Step B: Deterministic Harm-to-Others matching
     harm_to_others_matches = []
-    if not has_inanimate_subject and not has_others_negation:
-        for pat in _HARM_TO_OTHERS_PATTERNS:
-            m = pat.search(norm)
-            if m:
-                harm_to_others_matches.append(m.group(0))
+    if not has_inanimate_subject and not has_others_negation and not is_fictional:
+        if actor_target_res.is_threat and actor_target_res.category == "HARM_TO_OTHERS_RISK":
+            harm_to_others_matches.append(actor_target_res.raw_match or "direct_threat_to_others")
+        # Only check generic _HARM_TO_OTHERS_PATTERNS if actor_target did not identify a third-party threat or threat against user
+        if not (actor_target_res.is_threat and actor_target_res.category in ("REPORTED_THREAT_TO_OTHERS", "THREAT_AGAINST_USER")):
+            for pat in _HARM_TO_OTHERS_PATTERNS:
+                m = pat.search(norm)
+                if m:
+                    harm_to_others_matches.append(m.group(0))
 
     if has_casual_dampener and harm_to_others_matches:
         logger.info("Harm-to-others phrase matched but suppressed by casual/joke dampener: %s", harm_to_others_matches)
@@ -295,7 +331,9 @@ def classify_safety_risk(
     except Exception:
         pass
 
-    if not is_negated:
+    if not is_negated and not is_fictional:
+        if actor_target_res.is_threat and actor_target_res.category == "SELF_HARM_RISK":
+            self_harm_matches.append(actor_target_res.raw_match or "direct_self_harm")
         for pat in _SELF_HARM_PATTERNS:
             m = pat.search(norm)
             if m:
@@ -349,9 +387,21 @@ def classify_safety_risk(
         if (last_had_others_threat and self_harm_matches) or (last_had_self_harm and harm_to_others_matches):
             has_combined_adjacent = True
 
-    # Step E: Third-party matching
+    # Step E: Third-party & actor-target threat matching
     third_party_matches = []
-    if not harm_to_others_matches and not self_harm_matches:
+    threat_against_user_matches = []
+    reported_threat_to_others_matches = []
+
+    if not is_fictional and not has_others_negation:
+        if actor_target_res.is_threat:
+            if actor_target_res.category == "THREAT_AGAINST_USER":
+                threat_against_user_matches.append(actor_target_res.raw_match or "threat_against_user")
+            elif actor_target_res.category == "REPORTED_THREAT_TO_OTHERS":
+                reported_threat_to_others_matches.append(actor_target_res.raw_match or "reported_threat_to_others")
+            elif actor_target_res.category == "THIRD_PARTY_REPORT":
+                third_party_matches.append(actor_target_res.raw_match or "third_party_report")
+
+    if not harm_to_others_matches and not self_harm_matches and not threat_against_user_matches and not reported_threat_to_others_matches and not has_others_negation and not is_fictional:
         for pat in _THIRD_PARTY_PATTERNS:
             m = pat.search(norm)
             if m:
@@ -363,10 +413,14 @@ def classify_safety_risk(
     # -----------------------------------------------------------------------
     if has_combined_same_turn or has_combined_adjacent:
         det_risk_level = "COMBINED_HIGH_CRISIS"
+    elif threat_against_user_matches:
+        det_risk_level = "THREAT_AGAINST_USER"
     elif harm_to_others_matches:
         det_risk_level = "HARM_TO_OTHERS_RISK"
     elif self_harm_matches:
         det_risk_level = "SELF_HARM_RISK"
+    elif reported_threat_to_others_matches:
+        det_risk_level = "REPORTED_THREAT_TO_OTHERS"
     elif third_party_matches:
         det_risk_level = "THIRD_PARTY_REPORT"
     elif any(pat.search(norm) for pat in _DISTRESS_SIGNALS) or has_inanimate_subject or has_casual_dampener:
@@ -388,8 +442,8 @@ def classify_safety_risk(
     # Skip semantic call for trivially safe cases to save latency
     _skip_semantic = (
         is_trivial_benign
-        or det_risk_level in ("COMBINED_HIGH_CRISIS", "HARM_TO_OTHERS_RISK")
-        or (det_risk_level == "NONE" and has_inanimate_subject)
+        or det_risk_level in ("COMBINED_HIGH_CRISIS", "THREAT_AGAINST_USER", "HARM_TO_OTHERS_RISK", "REPORTED_THREAT_TO_OTHERS")
+        or (det_risk_level == "NONE" and (has_inanimate_subject or is_fictional or has_others_negation))
     )
 
     if not _skip_semantic:
@@ -465,6 +519,7 @@ def classify_safety_risk(
     final_category = _category_from_risk_level(final_risk_level)
     is_crisis = final_category in (
         SafetyRiskCategory.COMBINED_HIGH_CRISIS,
+        SafetyRiskCategory.THREAT_AGAINST_USER,
         SafetyRiskCategory.HARM_TO_OTHERS_RISK,
         SafetyRiskCategory.SELF_HARM_RISK,
     )
@@ -472,8 +527,14 @@ def classify_safety_risk(
 
     # Determine matched signals and safety message
     matched_signals: list = (
-        (harm_to_others_matches or []) + (self_harm_matches or []) + (third_party_matches or [])
+        (harm_to_others_matches or [])
+        + (self_harm_matches or [])
+        + (third_party_matches or [])
+        + (threat_against_user_matches or [])
+        + (reported_threat_to_others_matches or [])
     )
+    if actor_target_res.is_threat and actor_target_res.raw_match:
+        matched_signals.append(f"actor_target:{actor_target_res.category}")
     if winning_source == "semantic" and sem_rationale:
         matched_signals.append(f"semantic:{sem_rationale[:80]}")
 
@@ -483,10 +544,21 @@ def classify_safety_risk(
         safety_msg = COMBINED_CRISIS_SAFETY_MESSAGE
         reasoning = "Harm-to-others combined with self-harm intent detected"
         confidence = 0.99
+    elif final_risk_level == "THREAT_AGAINST_USER":
+        safety_msg = build_threat_against_user_safety_message(actor=actor_target_res.actor if actor_target_res else None)
+        reasoning = "User reporting a direct threat against themselves"
+        confidence = 0.98
     elif final_risk_level == "HARM_TO_OTHERS_RISK":
         safety_msg = HARM_TO_OTHERS_SAFETY_MESSAGE
         reasoning = "Direct credible threat to another person detected"
         confidence = 0.98
+    elif final_risk_level == "REPORTED_THREAT_TO_OTHERS":
+        safety_msg = build_reported_threat_safety_message(
+            actor=actor_target_res.actor if actor_target_res else None,
+            target=actor_target_res.target if actor_target_res else None,
+        )
+        reasoning = "Reported third-party threat to another person"
+        confidence = 0.96
     elif final_risk_level in ("SELF_HARM_RISK", "HIGH_CRISIS"):
         safety_msg = SELF_HARM_SAFETY_MESSAGE
         reasoning = "Self-harm or suicidal intent detected"

@@ -348,6 +348,7 @@ _LETHAL_MEANS_AND_PREPARATION = [
     r"\bmade\s+all\s+the\s+arrangements\s+already\b",
     r"\btold\s+my\s+[\w\s]{1,20}\s+goodbye\s+without\s+saying\s+why\b",
     r"\bhave\s+a\s+plan\s+ready\b",
+    r"\b(?:i\s+)?have\s+a\s+(?:lethal\s+)?plan\b",
     r"\bgathered\s+all\s+my\s+medication\s+bottles\b",
     r"\bbought\s+(?:a|the)\s+rope\b",
     r"\bpicked\s+the\s+bridge\b",
@@ -384,6 +385,9 @@ _LETHAL_MEANS_AND_PREPARATION = [
     r"\brunning\s+(?:the\s+)?car\s+in\s+(?:the\s+)?garage\b",
     r"\bdrank\s+(?:the\s+)?(?:pesticide|rat\s+poison|antifreeze)\b",
     r"\bgoing\s+to\s+swallow\s+all\s+(?:these\s+)?(?:sleeping\s+)?pills\b",
+    # Possession of lethal means combined with future self-harm intent and temporal immediacy
+    # e.g., "I have a bottle of pills and I am going to take them tonight"
+    r"\b(?:have|got|holding|bought|saved|stashed)\s+(?:(?:a|the|my|these|this)\s+)?(?:(?:whole|full|entire)\s+)?(?:bottle\s+of\s+|stash\s+of\s+|handful\s+of\s+)?(?:sleeping\s+)?(?:pills|meds|medication|tablets|capsules|painkillers)\b.*?\b(?:going\s+to|gonna|will|plan\s+to|planning\s+to|about\s+to|intend\s+to)\s+(?:take|swallow|down|ingest|overdose\s+on)\s+(?:them|it|all)\b",
     # --- Task 1 Fix: First-person high-quantity medication ingestion ---
     # Covers "I took a whole bottle of pills", "I swallowed a whole bottle of tablets",
     # "I took all my medication", "I ingested all my pills", and similar.
@@ -740,6 +744,9 @@ _NEGATION_PATTERNS = [
     r"\bno,\s+i\s+don'?t\s+want\s+to\s+hurt\s+myself\b",
     r"\bnot\s+(?:my\s+life|myself|suicidal|dying|suicide|self[\s-]?harm)\b",
     r"\bnot\s+ending\s+my\s+life\b",
+    r"\b(?:[a-z]+\s+)?(?:does\s+not|doesn'?t|did\s+not|didn'?t|will\s+not|won'?t|would\s+never|do\s+not|don'?t|has\s+no\s+intention\s+(?:of|to)|have\s+no\s+intention\s+(?:of|to)|never\s+wanted\s+to|is\s+not\s+(?:going|planning|trying)\s+to)\s+(?:want\s+to\s+)?(?:kill|murder|harm|hurt|shoot|stab|attack|injure)\b",
+    r"\b(?:i\s+would|i'd)\s+never\s+(?:kill|hurt|harm|shoot|stab|murder)\b",
+    r"\b(?:nahi|nahin)\s+(?:marna|qatal|jaan\s+se\s+marna)\s+chaht[ai]\b",
     r"\bnot\s+killing\s+myself\b",
     r"\b(?:have\s+)?(?:zero|no)\s+(?:intention|desire|plan|plans|thoughts?)\s+of\s+(?:hurting|harming|killing|suicid\w*|ending\s+my\s+life|doing\s+anything\s+drastic)\b",
     r"\b(?:zero|no)\s+(?:intention|desire|plan|plans)\s+to\s+(?:hurt|harm|kill|end)\s+(?:myself|my\s+life)\b",
@@ -1573,6 +1580,80 @@ def evaluate_crisis_pipeline(
                     pp.text, re.IGNORECASE)
                 if not _u_own:
                     pp.is_third_party = True
+
+        # Step 1c: Threat Actor & Target Analysis
+        from .threat_actor_detector import (
+            analyze_threat_actor_target,
+            build_reported_threat_safety_message,
+            build_threat_against_user_safety_message,
+        )
+        actor_target = analyze_threat_actor_target(raw_text)
+        if actor_target.is_fictional:
+            return {
+                "is_crisis": False,
+                "risk_level": "none",
+                "high_risk": False,
+                "imminent_risk": False,
+                "protective_factor": False,
+                "is_third_party": False,
+                "bypass_triggered": True,
+                "bypass_reason": "fictional_narrative_context",
+                "source": "contextual_bypass",
+                "confidence": 0.95,
+                "safety_message": "",
+                "disclaimer": SAFETY_DISCLAIMER,
+                "resources": CRISIS_RESOURCES,
+                "preprocess_result": pp,
+            }
+        if actor_target.is_negated:
+            return {
+                "is_crisis": False,
+                "risk_level": "none",
+                "high_risk": False,
+                "imminent_risk": False,
+                "protective_factor": False,
+                "is_third_party": False,
+                "bypass_triggered": True,
+                "bypass_reason": "grammatical_negation",
+                "source": "contextual_bypass",
+                "confidence": 0.95,
+                "safety_message": "",
+                "disclaimer": SAFETY_DISCLAIMER,
+                "resources": CRISIS_RESOURCES,
+                "preprocess_result": pp,
+            }
+        if actor_target.is_threat:
+            if actor_target.category == "REPORTED_THREAT_TO_OTHERS":
+                return {
+                    "is_crisis": False,
+                    "is_third_party": True,
+                    "third_party_crisis_reported": True,
+                    "risk_level": "REPORTED_THREAT_TO_OTHERS",
+                    "high_risk": False,
+                    "imminent_risk": False,
+                    "protective_factor": False,
+                    "source": "threat_actor_analysis",
+                    "confidence": 0.98,
+                    "safety_message": build_reported_threat_safety_message(actor_target.actor, actor_target.target),
+                    "disclaimer": SAFETY_DISCLAIMER,
+                    "resources": CRISIS_RESOURCES,
+                    "preprocess_result": pp,
+                }
+            elif actor_target.category == "THREAT_AGAINST_USER":
+                return {
+                    "is_crisis": True,
+                    "risk_level": "THREAT_AGAINST_USER",
+                    "high_risk": True,
+                    "imminent_risk": True,
+                    "protective_factor": False,
+                    "is_third_party": False,
+                    "source": "threat_actor_analysis",
+                    "confidence": 0.98,
+                    "safety_message": build_threat_against_user_safety_message(actor_target.actor),
+                    "disclaimer": SAFETY_DISCLAIMER,
+                    "resources": CRISIS_RESOURCES,
+                    "preprocess_result": pp,
+                }
 
         # Step 2: Third-party subject crisis routing (L1)
         if pp.is_third_party:

@@ -65,7 +65,8 @@ function AnalysisBadges({ msg }: { msg: ChatMessage }) {
     msg.risk_level === "HIGH_CRISIS" ||
     msg.risk_level === "HARM_TO_OTHERS_RISK" ||
     msg.risk_level === "COMBINED_HIGH_CRISIS" ||
-    msg.risk_level === "SELF_HARM_RISK"
+    msg.risk_level === "SELF_HARM_RISK" ||
+    msg.risk_level === "THREAT_AGAINST_USER"
   ) {
     return (
       <div className="flex items-center gap-2 pt-2 px-1">
@@ -77,7 +78,10 @@ function AnalysisBadges({ msg }: { msg: ChatMessage }) {
     );
   }
 
-  if (msg.risk_level === "THIRD_PARTY_REPORT") {
+  if (
+    msg.risk_level === "THIRD_PARTY_REPORT" ||
+    msg.risk_level === "REPORTED_THREAT_TO_OTHERS"
+  ) {
     return (
       <div className="flex items-center gap-2 pt-2 px-1">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900 shadow-2xs">
@@ -286,13 +290,16 @@ export default function ChatInterface({
         throw new Error("Invalid or empty response received from server.");
       }
       const data = resData.data || resData;
-      const isThirdParty = data.risk_level === "THIRD_PARTY_REPORT";
+      const isThirdParty =
+        data.risk_level === "THIRD_PARTY_REPORT" ||
+        data.risk_level === "REPORTED_THREAT_TO_OTHERS";
       const isCrisisAlert =
         !isThirdParty &&
         (data.risk_level === "HIGH_CRISIS" ||
           data.risk_level === "HARM_TO_OTHERS_RISK" ||
           data.risk_level === "COMBINED_HIGH_CRISIS" ||
           data.risk_level === "SELF_HARM_RISK" ||
+          data.risk_level === "THREAT_AGAINST_USER" ||
           data.requires_immediate_action);
 
       const replyText =
