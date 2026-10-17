@@ -46,6 +46,11 @@ ghar walon walid ghar-wale dost doston bhai behen bahan ammi abbu
 """.split())
 
 _ARABIC_SCRIPT = re.compile(r"[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]")
+# MindGuard's supported natural-language safety scope is English and Roman
+# Urdu. Native Urdu is detected separately so it can receive a safe check-in;
+# other non-Latin scripts (for example Devanagari) use the same fallback and
+# must not enter English/Roman-Urdu classifiers.
+_OTHER_NON_LATIN_SCRIPT = re.compile(r"[\u0900-\u097F\u0980-\u09FF\u0A00-\u0A7F\u0B80-\u0BFF]")
 _WORD = re.compile(r"[A-Za-z\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]+")
 
 
@@ -66,16 +71,24 @@ def has_arabic_script(text: str) -> bool:
     return bool(_ARABIC_SCRIPT.search(text or ""))
 
 
+def has_unsupported_script(text: str) -> bool:
+    """Return True when text uses a non-Latin script outside this release's scope."""
+    return bool(_OTHER_NON_LATIN_SCRIPT.search(text or ""))
+
+
 ROUTE_ENGLISH = "english"
 ROUTE_URDU = "roman_urdu"
 ROUTE_BOTH = "both"
 ROUTE_ARABIC_SCRIPT = "arabic_script"
+ROUTE_UNSUPPORTED_SCRIPT = "unsupported_script"
 
 
 def route(text: str) -> Tuple[str, float]:
     """Returns (route, urdu_density). Never raises on odd input."""
     if has_arabic_script(text):
         return ROUTE_ARABIC_SCRIPT, 0.0
+    if has_unsupported_script(text):
+        return ROUTE_UNSUPPORTED_SCRIPT, 0.0
     toks = [t.lower() for t in _tokenize(text)]
     hits = sum(1 for t in toks if t in _URDU_TOKENS)
     d = hits / len(toks) if toks else 0.0

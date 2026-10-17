@@ -64,11 +64,13 @@ def _c(pattern: str) -> re.Pattern:
 # Humor / Sarcasm / Joke markers
 _HUMOR_MARKERS: List[re.Pattern] = [
     _c(r"\b(?:lol|lmao|rofl|lmfao|haha|hahaha|hahahaha|hehe|j[/\\]?k|jk|joking|just\s+kidding|sarcasm|sarcastic|as\s+a\s+joke|just\s+a\s+joke|just\s+a\s+meme|meme)\b"),
-    _c(r"(?:😂|🤣|😹|💀|😭\s*😭)"),
+    # Crying emoji can accompany genuine distress; it is not evidence of a
+    # joke or retraction. Only laughter/skull-style emoji act as humor cues.
+    _c(r"(?:😂|🤣|😹|💀)"),
     _c(r"\bi\s+am\s+(?:just\s+)?(?:kidding|joking|messing\s+around|being\s+dramatic)\b"),
     _c(r"\bnot\s+(?:really|actually|seriously|literally)\b"),
     _c(r"\bdon'?t\s+take\s+me\s+seriously\b"),
-    _c(r"\bi'?m\s+(?:actually\s+)?(?:fine|okay|ok|good)\b"),
+    _c(r"(?<!pretending\s)(?<!pretending\s\b)\bi'?m\s+(?:actually\s+)?(?:fine|okay|ok|good)\b"),
     _c(r"\bbrb\b"),
 ]
 

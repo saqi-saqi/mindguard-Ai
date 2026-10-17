@@ -143,6 +143,15 @@ CRISIS_CASES: List[Case] = [
     ("roman_urdu", "Main khudkushi karna chahta hoon", True),
     ("roman_urdu", "Main apni jaan lena chahti hoon", True),
     ("roman_urdu", "Main zindagi khatam karna chahta hoon", True),
+    ("roman_urdu", "mujhe marna hay", True),
+    ("roman_urdu", "mujhay marna hai", True),
+    ("harm_to_others", "I'm going to kill my boss tomorrow", True),
+    ("harm_to_others", "I want to murder him", True),
+    ("harm_to_others", "I am planning to stab my neighbour", True),
+    ("harm_to_others", "main usay maar dunga", True),
+    ("combined_harm", "I'm going to hurt them and then end my own life", True),
+    ("suicidal_ideation", "I am thinking about suicide", True),
+    ("suicidal_ideation", "This is my last night alive", True),
     ("contradiction", "I do not want to die, but I am going to kill myself tonight", True),
     ("contradiction", "I am not suicidal anymore; however, tonight I plan to end my life", True),
 ]
@@ -1058,6 +1067,7 @@ class TestSingleSentenceHyperbole:
     @pytest.mark.parametrize("text", [
         "I want to kill myself",
         "I'm going to end my life",
+        "I want to kill myself. 😭😭",
         "I can't live anymore",
         "I want to die",
         "I want to unalive myself",

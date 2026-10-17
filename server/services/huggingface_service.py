@@ -16,6 +16,11 @@ logger = logging.getLogger("MindGuard-ML")
 import re
 import numpy as np
 
+try:
+    from .crisis_rules import is_contextual_or_negated
+except ImportError:
+    from services.crisis_rules import is_contextual_or_negated
+
 _EMOTION_PIPE = None
 _SENTIMENT_PIPE = None
 _ZERO_SHOT_PIPE = None
@@ -204,7 +209,11 @@ def analyze_user_message(text: str, context_turns: list[str] | None = None) -> D
                 norm_text = _normalize_leetspeak(clean_text)
                 segments = _extract_clauses(norm_text)
                 for seg in segments:
-                    t_res = _CRISIS_TRANSFORMER_PIPE(seg, truncation=True, max_length=128)[0]
+                    clean_seg = re.sub(r"\s+", " ", seg).strip().lower()
+                    clean_seg = re.sub(r"\.{2,}", ".", clean_seg)
+                    if not clean_seg:
+                        continue
+                    t_res = _CRISIS_TRANSFORMER_PIPE(clean_seg, truncation=True, max_length=128)[0]
                     for item in t_res:
                         if str(item.get("label", "")).upper() in ["CRISIS", "SUICIDE", "LABEL_1", "1"]:
                             score = float(item.get("score", 0.0))
@@ -235,7 +244,6 @@ def analyze_user_message(text: str, context_turns: list[str] | None = None) -> D
                 logger.error(f"Joblib crisis model prediction failed: {e}")
 
         # 3. High probability check for crisis (combining Transformer & Joblib)
-        from .crisis_rules import is_contextual_or_negated
         effective_crisis_prob = max(transformer_crisis_prob, joblib_crisis_prob)
         raw_thresh = float(_CRISIS_MODEL_ARTIFACT.get("threshold", 0.50)) if _CRISIS_MODEL_ARTIFACT else 0.50
         threshold = 0.50

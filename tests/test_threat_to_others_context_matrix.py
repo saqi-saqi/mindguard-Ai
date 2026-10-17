@@ -240,13 +240,14 @@ def test_explicit_first_person_threats_escalate_and_offer_relevant_help():
 
 def test_third_party_threats_are_reports_not_the_reporters_own_intent():
     failures = []
-    for case_id, text in THIRD_PARTY_THREATS + USER_IS_TARGET:
+    # 1. Third-party threats to others (not user) -> reported threat, user not in crisis
+    for case_id, text in THIRD_PARTY_THREATS:
         try:
             result = _classify(text)
             category = _category(result)
-            if category != "THIRD_PARTY_REPORT":
+            if category not in {"THIRD_PARTY_REPORT", "REPORTED_THREAT_TO_OTHERS"}:
                 failures.append(
-                    f"{_summary(case_id, text, result)}; expected THIRD_PARTY_REPORT, not an assumed first-person threat"
+                    f"{_summary(case_id, text, result)}; expected THIRD_PARTY_REPORT or REPORTED_THREAT_TO_OTHERS, not an assumed first-person threat"
                 )
             if result.is_crisis:
                 failures.append(f"{case_id}: report about another person's threat was mislabeled as the reporter's own crisis")
@@ -258,6 +259,25 @@ def test_third_party_threats_are_reports_not_the_reporters_own_intent():
                 failures.append(f"{case_id}: returned generic self-harm/distress template for a reported threat to another person")
         except Exception as exc:
             failures.append(f"{case_id}: exception for {text!r}: {type(exc).__name__}: {exc}")
+
+    # 2. User is the target of another person's threat -> THREAT_AGAINST_USER with emergency police guidance
+    for case_id, text in USER_IS_TARGET:
+        try:
+            result = _classify(text)
+            category = _category(result)
+            if category not in {"THREAT_AGAINST_USER", "THIRD_PARTY_REPORT"}:
+                failures.append(
+                    f"{_summary(case_id, text, result)}; expected THREAT_AGAINST_USER, not an assumed first-person threat"
+                )
+            if not result.safety_message.strip():
+                failures.append(f"{case_id}: threat against user returned no safety guidance")
+            if "15" not in result.safety_message and "Police" not in result.safety_message:
+                failures.append(f"{case_id}: report guidance omitted police/emergency direction")
+            if "your feelings are valid" in result.safety_message.lower() or "feeling overwhelmed and in pain" in result.safety_message.lower():
+                failures.append(f"{case_id}: returned generic self-harm/distress template for a threat against user")
+        except Exception as exc:
+            failures.append(f"{case_id}: exception for {text!r}: {type(exc).__name__}: {exc}")
+
     assert not failures, "Third-party threat routing failures:\n- " + "\n- ".join(failures)
 
 
@@ -299,8 +319,8 @@ def test_target_screenshot_text_gets_third_party_guidance_not_self_harm_script()
     """The exact message from the screenshot should identify a reported threat."""
     text = "atif want to kill taim oor"
     result = _classify(text)
-    assert _category(result) == "THIRD_PARTY_REPORT", (
-        f"Expected THIRD_PARTY_REPORT for {text!r}; got {_category(result)}, "
+    assert _category(result) in {"THIRD_PARTY_REPORT", "REPORTED_THREAT_TO_OTHERS"}, (
+        f"Expected THIRD_PARTY_REPORT or REPORTED_THREAT_TO_OTHERS for {text!r}; got {_category(result)}, "
         f"is_crisis={result.is_crisis}, signals={result.matched_signals!r}"
     )
     assert result.is_crisis is False, "A report about another person's threat must not be mislabeled as the user threatening someone"

@@ -80,9 +80,12 @@ def _c(pat: str) -> re.Pattern:
 def _normalize(text: str) -> str:
     if not text:
         return ""
-    t = text.replace("\u2019", "'").replace("\u2018", "'")
-    t = t.replace("\u201c", '"').replace("\u201d", '"')
+    t = re.sub(r"[\u2018\u2019\u201A\u201B\u2032]", "'", text)
+    t = re.sub(r"[\u201C\u201D\u201E\u201F]", '"', t)
     t = t.lower()
+    t = re.sub(r"\bsu[1!i]c[1!i]d", "suicid", t)
+    t = re.sub(r"\bk[!1i]ll\b", "kill", t)
+    t = re.sub(r"\bd[1!i]e\b", "die", t)
     t = " ".join(t.split())
     return t
 
@@ -96,10 +99,19 @@ _INANIMATE_OR_METAPHOR_SUBJECTS = [
     _c(r"\b(?:this|the|my|that)\s+(?:traffic|exam|exams|test|tests|homework|commute|job|work|boss|meeting|weather|shoes|feet|computer|printer|code|headache)\s+(?:is|are|is\s+going\s+to|will)\s+(?:literally\s+)?(?:killing\s+me|kill\s+me)\b"),
     _c(r"\b(?:traffic|homework|work|exam|finals|shoes|feet)\s+(?:is|are|is\s+going\s+to|will)\s+(?:literally\s+)?(?:killing\s+me|kill\s+me)\b"),
     _c(r"\b(?:dying|died)\s+of\s+(?:laughter|boredom|embarrassment|curiosity)\b"),
-    _c(r"\bi\s+could\s+kill\s+for\s+(?:a\s+)?(?:coffee|drink|beer|pizza|nap|break|vacation|cigarette)\b"),
+    _c(r"\bi\s+(?:could|can)\s+kill\s+for\s+(?:a\s+)?(?:coffee|drink|beer|pizza|nap|break|vacation|cigarette|burger|food)\b"),
     _c(r"\bkill\s+two\s+birds\s+with\s+one\s+stone\b"),
     _c(r"\bdressed\s+to\s+kill\b"),
-    _c(r"\btime\s+to\s+kill\b"),
+    _c(r"\b(?:need\s+to|have\s+to|want\s+to|trying\s+to|just)?\s*kill(?:ing)?\s+time\b"),
+    _c(r"\b(?:kill|terminate|stop)\s+(?:the\s+)?(?:python|process|server|daemon|container|job|task|pid|session|service|thread|app|application|script|query|connection)\b"),
+    _c(r"\bkill\s+-[0-9]+\b"),
+    _c(r"\b(?:in\s+chess|chess|kill\s+the\s+king's\s+defense|kill\s+the\s+defense)\b"),
+    _c(r"\bkill\s+the\s+(?:old\s+)?(?:browser\s+)?session\b"),
+    _c(r"\b(?:killer\s+song|killer\s+performance)\b"),
+    _c(r"\bcooking\s+could\s+kill\b"),
+    _c(r"\b(?:my\s+)?(?:mom|dad|parents|mother|father|teacher|boss|wife|husband)\s+will\s+(?:literally\s+)?kill\s+me\s+if\b"),
+    _c(r"\b(?:the\s+song\s+says|lyrics\s+(?:say|are)|texted\s*['\"].*?['\"]\s+and\s+then\s+laughed)\b"),
+    _c(r"\b(?:psychology\s+assignment|assignment\s+is\s+about|homework\s+is\s+about|research\s+is\s+about)\b"),
 ]
 
 _HARM_OTHERS_NEGATIONS = [
@@ -107,6 +119,8 @@ _HARM_OTHERS_NEGATIONS = [
     _c(r"\bi\s+(?:do\s+not|don'?t)\s+want\s+to\s+(?:kill|hurt|harm)\s+(?:anyone|anybody|him|her|them)\b"),
     _c(r"\bno\s+intention\s+of\s+(?:hurting|killing|harming)\s+(?:anyone|him|her|them)\b"),
     _c(r"\b(?:[a-z]+\s+)?(?:does\s+not|doesn'?t|did\s+not|didn'?t|will\s+not|won'?t|would\s+never)\s+(?:want\s+to\s+)?(?:kill|murder|harm|hurt|shoot|stab|attack)\b"),
+    _c(r"\b(?:clean\s+from\s+self[\s-]?harm|used\s+to\s+(?:want\s+to\s+)?(?:die|kill\s+myself|cut)|doing\s+much\s+better\s+now|therapy\s+(?:really\s+)?helped)\b"),
+    _c(r"\b(?:don'?t|do\s+not)\s+want\s+to\s+die,?\s*(?:i\s+)?just\s+want\s+to\s+sleep\b"),
 ]
 
 _TRIVIAL_BENIGN_PATTERNS = [
@@ -137,6 +151,10 @@ _HARM_TO_OTHERS_PATTERNS = [
     _c(r"\bput\s+a\s+bullet\s+(?:in|through)\s+(?:his|her|their|him|them)\b"),
     _c(r"\bhunt(?:ing)?\s+(?:him|her|them)\s+down\s+(?:and|to)\s+(?:kill|end|destroy)\b"),
     _c(r"\bbeat\s+(?:him|her|them)\s+to\s+death\b"),
+    _c(r"\b(?:have|got)\s+(?:a\s+)?knife\s+and\s+.*?\bwaiting\s+outside\b"),
+    _c(r"\bmake\s+(?:my\s+\w+|[a-z]+)\s+pay\s+with\s+(?:his|her|their)\s+life\b"),
+    _c(r"\bfantasiz(?:e|ing)\s+about\s+killing\b"),
+    _c(r"\btake\s+(?:him|her|them|[a-z]+)\s+down\s+with\s+me\b"),
     # Roman Urdu threats to others
     _c(r"\b(?:mai|main|hum)\s+(?:usko|usey|usay|unko|isay|isko)\s+(?:jaan\s+se\s+)?(?:maar|mar)\s*(?:dun\s*ga|doon\s*ga|dalun\s*ga|daal\s*donga|marunga)\b"),
     _c(r"\b(?:usko|usey|usay|unko)\s+(?:jaan\s+se\s+)?(?:maar|mar)\s+d[ou]+n\s*ga\b"),
@@ -153,13 +171,56 @@ _SELF_HARM_PATTERNS = [
     _c(r"\btake\s+my\s+(?:own\s+)?life\b"),
     _c(r"\b(?:i\s+am|i'?m)\s+(?:going\s+to\s+)?(?:suicidal|kill\s+myself|overdose|hang\s+myself|jump\s+off\s+a\s+bridge)\b"),
     _c(r"\b(?:took|swallowed|downed|ingested)\s+(?:a\s+whole\s+bottle|all\s+my|too\s+many)\s+(?:pills|tablets|medication|painkillers)\b"),
-    _c(r"\b(?:have|got|holding|bought|saved|stashed)\s+(?:(?:a|the|my|these|this)\s+)?(?:(?:whole|full|entire)\s+)?(?:bottle\s+of\s+|stash\s+of\s+|handful\s+of\s+)?(?:sleeping\s+)?(?:pills|meds|medication|tablets|capsules|painkillers)\b.*?\b(?:going\s+to|gonna|will|plan\s+to|planning\s+to|about\s+to|intend\s+to)\s+(?:take|swallow|down|ingest|overdose\s+on)\s+(?:them|it|all)\b"),
+    _c(r"\b(?:have|got|holding|bought|saved|stashed)\s+(?:(?:a|the|my|these|this)\s+)?(?:(?:whole|full|entire)\s+)?(?:bottle\s+of\s+|stash\s+of\s+|handful\s+of\s+)?(?:sleeping\s+)?(?:pills|meds|medication|tablets|capsules|painkillers)\b.*?\b(?:going\s+to|gonna|will|plan\s+to|planning\s+to|about\s+to|intend\s+to|i'?m\s+taking|taking)\s+(?:take|taking|swallow|down|ingest|overdose\s+on|them|it|all)\b"),
+    _c(r"\b(?:saved|saving)\s+up\s+all\s+my\s+pills\s+and\s+.*?\btaking\s+them\b"),
+    _c(r"\bending\s+it\s+(?:today|tonight|now|all)\b"),
+    _c(r"\bnobody\s+will\s+miss\s+me\b"),
+    _c(r"\bdoing\s+it\s+(?:tonight|today)\b"),
+    _c(r"\bdecided\s+to\s+die\b"),
+    _c(r"\bdone\s+living\b"),
+    _c(r"\b(?:wrote|written|writing)\s+(?:my\s+)?goodbye\s+letters?\b"),
+    _c(r"\btonight\s+is\s+the\s+night\b"),
+    _c(r"\b(?:don'?t|do\s+not)\s+want\s+to\s+be\s+alive\b"),
+    _c(r"\bwhat'?s\s+(?:even\s+)?(?:the\s+)?point\s+of\s+(?:living|being\s+alive)\b"),
+    _c(r"\blife\s+isn'?t\s+worth\s+it(?:\s+anymore)?\b"),
+    _c(r"\b(?:keep\s+)?thinking\s+about\s+dying\b"),
+    _c(r"\b(?:happy|glad|wish)\s+if\s+i\s+got\s+hit\s+by\s+(?:a\s+)?(?:bus|truck|car|train)\b"),
+    _c(r"\bburn\s+(?:my\s+)?arms?\b"),
+    _c(r"\bhit\s+myself\s+until\s+(?:i\s+)?bruise\b"),
+    _c(r"\bhow\s+many\s+.*?\b(?:tablets?|pills?|mg|grams?)\s+.*?\b(?:lethal|fatal|overdose|kill|die)\b"),
+    _c(r"\b(?:what|which)\s+(?:is\s+)?(?:the\s+)?(?:painless|quickest|easiest)\s+way\s+to\s+die\b"),
+    _c(r"\bwhich\s+(?:medicine|drug|pill|poison)\s+can\s+kill\b"),
+    _c(r"\bhow\s+tall\s+does\s+a\s+building\s+need\s+to\s+be\s+to\s+die\b"),
     _c(r"\b(?:cut|cutting|harm|harming)\s+myself\b"),
     _c(r"\b(?:kms|kys|unalive\s+myself)\b"),
     _c(r"\bnext\s+on\s+my\s+killing\s+list\s+is\s+me\b"),
     _c(r"\bkill\s+myself\s+(?:too|after|next)\b"),
     # Roman Urdu self harm
     _c(r"\b(?:mujhe\s+mar\s+ja+na\s+hai|main\s+khudkushi\s+karna\s+chaht[ai]\s+hoon|apni\s+jaan\s+lena\s+chaht[ai]\s+hoon)\b"),
+    _c(r"\b(?:bhai\s+)?(?:i\s+swear\s+)?(?:mujhe\s+)?jee+na\s+(?:hi\s+)?nah?i\s+hai\b"),
+    _c(r"\b(?:suicide|death|dying|killing\s+myself)\s+is\s+(?:my\s+|the\s+)?(?:only\s+)?(?:way\s+out|option|choice|answer|plan)\b"),
+    _c(r"\b(?:ab\s+)?aur\s+nah?i\s+jee\s+sakt[ai]\b"),
+    _c(r"\bkhud\s*kush[eií]+\s*(?:kar|karn[ei]|kr)\s*(?:lun\s*ga|lunga|chaht[ai]|raha|rahi|dunga|karunga)\b"),
+    _c(r"\b(?:mein|main)\s+khud\s*kush[eií]+\b"),
+    _c(r"\b(?:apni\s+)?zindagi\s+khatam\s+kar\b"),
+    _c(r"\bsab\s+khatam\s+kar\s*(?:dunga|doon\s*ga|dun\s*ga)\b"),
+    _c(r"\bmeri\s+maut\s+(?:hi\s+)?behtar\b"),
+    _c(r"\bmere\s+bina\s+(?:sab\s+)?khush\b"),
+    _c(r"\bmain\s+mar\s+jao+n\b"),
+    _c(r"\b(?:main\s+)?(?:apni\s+)?jaan\s+(?:de|le)\s*(?:dunga|doonga|doon\s*ga|dun\s*ga|lun\s*ga|lunga|loon\s*ga|loonga)\b"),
+    _c(r"\bkaash\s+(?:mein\s+)?subah\s+uthon\s+hi\s+na\b"),
+    _c(r"\bkitni\s+goliyan?\s+(?:khane\s+se\s+)?.*?\bmar\s+jata\s+hai\b"),
+    _c(r"\bsuicide\s+karna\s+hai\b"),
+    _c(r"\bmai\s+khudkashi\s+kr\s+lunga\b"),
+    # Passive death wishes and non-waking euphemisms
+    _c(r"\b(?:fall|falling|go|going)\s+asleep\s+and\s+(?:never|not)\s+(?:have\s+to\s+)?(?:wake|get)\s+up\b"),
+    _c(r"\b(?:fall\s+asleep\s+and\s+not\s+come\s+back|fall\s+asleep\s+and\s+never\s+wake)\b"),
+    _c(r"\b(?:wish\s+(?:i\s+)?(?:could\s+just\s+|would\s+just\s+)?|hope\s+(?:i\s+)?)(?:never|not|don'?t|wouldn'?t)\s+wake\s+up(?:\s+tomorrow|\s+again|\s+anymore)?\b"),
+    _c(r"\b(?:don'?t|do\s+not)\s+want\s+to\s+wake\s+up\s+anymore\b"),
+    _c(r"\b(?:close|shut)\s+my\s+eyes\s+and\s+(?:never|not)\s+(?:open\s+them\s+(?:again|anymore)|wake\s+up)\b"),
+    _c(r"\bdidn'?t\s+open\s+my\s+eyes\s+tomorrow\b"),
+    _c(r"\b(?:logging\s+off|checking\s+out)\s+(?:forever|permanently|of\s+life)\b"),
+    _c(r"\bpermanently\s+log\s+off\b"),
 ]
 
 # 4. Third-Party Crisis / Threat Disclosure Patterns
@@ -167,11 +228,20 @@ _THIRD_PARTY_PATTERNS = [
     _c(r"\b(?:my\s+|a\s+)?(?:friend|roommate|brother|sister|cousin|ex|coworker|colleague|classmate|partner|neighbour|neighbor|someone|somebody|he|she|they)(?:\s+in\s+my\s+\w+)?\b.{0,60}?\b(?:talks?|talking|said|says?|told\s+me|threaten(?:ed|ing)?|planning|plans?|posted|going|wants?)\b.{0,60}?\b(?:kill(?:ing)?|murder(?:ing)?|shoot(?:ing)?|stab(?:bing)?|hurt(?:ing)?|harm(?:ing)?|die|suicid|end\s+(?:his|her|their)\s+life|commit\s+suicide)\b"),
     _c(r"\b(?:my\s+friend|my\s+brother|my\s+sister|my\s+roommate|someone\s+i\s+know|someone\s+in\s+my\s+\w+)\s+(?:wants\s+to\s+die|is\s+suicidal|wants\s+to\s+kill|is\s+threatening\s+to\s+kill|wants\s+to\s+commit\s+suicide)\b"),
     _c(r"\b(?:someone|she|he|they)\s+posted\s+that\s+(?:she|he|they)\s+(?:wants?\s+to|is\s+going\s+to)\s+(?:die|commit\s+suicide|kill)\b"),
+    _c(r"\b(?:left\s+a\s+(?:suicide\s+)?note|roommate\s+left\s+a\s+note)\b"),
 ]
 
 # 5. Emotional Distress Signals
 _DISTRESS_SIGNALS = [
-    _c(r"\b(?:depressed|overwhelmed|hopeless|anxious|panic|panicking|crying|heartbroken|angry|furious|desperate|scared|terrified|can't\s+cope|exhausted)\b"),
+    _c(r"\b(?:depressed|overwhelmed|hopeless|anxious|panic|panicking|crying|heartbroken|angry|furious|desperate|scared|terrified|can't\s+cope|exhausted|wanted\s+to\s+kill\s+myself\s+earlier|shaky)\b"),
+    _c(r"\b(?:blackmail(?:ing)?|touches\s+me|being\s+followed|feel\s+unsafe|beats\s+me|sasural\s+wale\s+mujhe\s+maarte\s+hain|abused|harassed)\b"),
+    _c(r"\b(?:haven't\s+eaten|throw\s+up\s+after\s+every\s+meal|drinking\s+every\s+night\s+to\s+forget|way\s+too\s+many\s+(?:sleeping\s+)?pills|overdosed)\b"),
+    _c(r"\b(?:i\s+)?(?:just\s+)?want\s+(?:the\s+)?pain\s+to\s+stop\b"),
+    # A bare first-person finality statement is ambiguous, not confirmed
+    # crisis. Route it to the gentle elevated-distress check-in rather than
+    # silently treating it as ordinary chat.
+    _c(r"\bi(?:'m|\s+am)\s+done\s*[.!?]*$"),
+    _c(r"\b(?:it'll\s+all\s+be\s+over\s+soon|remember\s+me\s+kindly|bas\s+ab\s+khatam)\b"),
 ]
 
 
@@ -302,7 +372,10 @@ def classify_safety_risk(
     # Step A: Check for Hyperbole / Idiom / Casual Joke Dampeners & Framing
     has_casual_dampener = any(pat.search(norm) for pat in _CASUAL_JOKE_DAMPENERS)
     has_inanimate_subject = any(pat.search(norm) for pat in _INANIMATE_OR_METAPHOR_SUBJECTS)
-    has_others_negation = any(pat.search(norm) for pat in _HARM_OTHERS_NEGATIONS) or actor_target_res.is_negated
+    has_others_negation = (
+        (any(pat.search(norm) for pat in _HARM_OTHERS_NEGATIONS) and not (actor_target_res.is_threat and not actor_target_res.is_negated))
+        or actor_target_res.is_negated
+    )
     is_fictional = actor_target_res.is_fictional
 
     # Step B: Deterministic Harm-to-Others matching
@@ -318,8 +391,15 @@ def classify_safety_risk(
                     harm_to_others_matches.append(m.group(0))
 
     if has_casual_dampener and harm_to_others_matches:
-        logger.info("Harm-to-others phrase matched but suppressed by casual/joke dampener: %s", harm_to_others_matches)
-        harm_to_others_matches = []
+        is_explicit_live_threat = (
+            (actor_target_res.is_threat and actor_target_res.category == "HARM_TO_OTHERS_RISK")
+            or bool(re.search(r"\b(?:tonight|today|tomorrow|now|after\s+work|right\s+now)\b", norm))
+            or bool(re.search(r"\b(?:gun|knife|pistol|rifle|blade|weapon|shoot|stab|slit)\b", norm))
+            or bool(re.search(r"\b(?:i\s+will|i'll|i\s+am\s+going\s+to|i'?m\s+gonna|brought|bring|plan\s+to)\s+(?:kill|murder|shoot|stab)\b", norm))
+        )
+        if not is_explicit_live_threat:
+            logger.info("Harm-to-others phrase matched but suppressed by casual/joke dampener: %s", harm_to_others_matches)
+            harm_to_others_matches = []
 
     # Step C: Deterministic Self-Harm matching
     self_harm_matches = []
@@ -334,25 +414,36 @@ def classify_safety_risk(
     if not is_negated and not is_fictional:
         if actor_target_res.is_threat and actor_target_res.category == "SELF_HARM_RISK":
             self_harm_matches.append(actor_target_res.raw_match or "direct_self_harm")
-        for pat in _SELF_HARM_PATTERNS:
-            m = pat.search(norm)
-            if m:
-                self_harm_matches.append(m.group(0))
+        if not (actor_target_res.is_threat and actor_target_res.category in ("REPORTED_THREAT_TO_OTHERS", "THIRD_PARTY_REPORT")):
+            for pat in _SELF_HARM_PATTERNS:
+                m = pat.search(norm)
+                if m:
+                    self_harm_matches.append(m.group(0))
 
         # Also check Tier-1 deterministic crisis engine
-        if not self_harm_matches:
-            try:
-                from services.crisis_rules import evaluate_crisis
-                det_res = evaluate_crisis(text)
-                if det_res.get("is_crisis"):
-                    self_harm_matches.append("tier1_deterministic_crisis")
-            except Exception as e:
-                logger.debug("Error checking crisis_rules: %s", e)
+        try:
+            from services.crisis_rules import evaluate_crisis
+            det_res = evaluate_crisis(text)
+            if det_res.get("is_crisis"):
+                matched_cats = det_res.get("matched_categories", [])
+                tier1_self_harm_cats = [c for c in matched_cats if c != "direct_threat_to_others"]
+                tier1_others_cats = [c for c in matched_cats if c == "direct_threat_to_others"]
+                if tier1_others_cats and not harm_to_others_matches:
+                    if not (actor_target_res.is_threat and actor_target_res.category in ("REPORTED_THREAT_TO_OTHERS", "THREAT_AGAINST_USER", "THIRD_PARTY_REPORT")):
+                        harm_to_others_matches.append("tier1_direct_threat_to_others")
+                if tier1_self_harm_cats and not self_harm_matches:
+                    if not (actor_target_res.is_threat and actor_target_res.category in ("REPORTED_THREAT_TO_OTHERS", "THIRD_PARTY_REPORT")):
+                        self_harm_matches.append("tier1_deterministic_crisis")
+        except Exception as e:
+            logger.debug("Error checking crisis_rules: %s", e)
 
     # Step D: Combined signal (same turn)
     has_combined_same_turn = bool(harm_to_others_matches and self_harm_matches)
     if not has_combined_same_turn and harm_to_others_matches:
-        if re.search(r"\b(?:and|then|after\s+that)\s+(?:also\s+)?(?:then\s+)?(?:myself|me|end\s+it\s+all|kill\s+myself|take\s+my\s+own\s+life)\b", norm):
+        if re.search(
+            r"\b(?:and|then|after\s+that|phir)\s+(?:also\s+)?(?:then\s+)?(?:myself|me|end\s+it\s+all|end\s+my\s+(?:own\s+)?life|kill\s+myself|take\s+my\s+own\s+life|turn\s+the\s+(?:gun|weapon)\s+on\s+myself|khud\s+ko\s+bhi\s+khatam|i'?m\s+gone|i\s+am\s+gone|done\s+living|commit\s+suicide|die)\b",
+            norm
+        ):
             has_combined_same_turn = True
             self_harm_matches.append("combined_self_target")
     if not has_combined_same_turn and self_harm_matches:
@@ -423,7 +514,7 @@ def classify_safety_risk(
         det_risk_level = "REPORTED_THREAT_TO_OTHERS"
     elif third_party_matches:
         det_risk_level = "THIRD_PARTY_REPORT"
-    elif any(pat.search(norm) for pat in _DISTRESS_SIGNALS) or has_inanimate_subject or has_casual_dampener:
+    elif any(pat.search(norm) for pat in _DISTRESS_SIGNALS):
         det_risk_level = "EMOTIONAL_DISTRESS"
     else:
         det_risk_level = "NONE"

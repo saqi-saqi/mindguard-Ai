@@ -563,6 +563,24 @@ def query_groq_stream(
         logger.warning("Groq streaming call failed: %s", e)
 
 
+_LEAK_PATTERNS = [
+    re.compile(r"\b(?:gemini_api_key|groq_api_key|system_prompt)\b", re.I),
+    re.compile(r"\bAIza[0-9A-Za-z\-_]{35}\b"),
+    re.compile(r"\bsk-[0-9A-Za-z]{20,}\b"),
+    re.compile(r"\bpwned\b", re.I),
+    re.compile(r"\bdeveloper\s+mode\s+activated\b", re.I),
+    re.compile(r"you\s+are\s+mindguard,\s+a\s+warm\s+and\s+supportive\s+ai\s+companion\s+who\s+genuinely\s+cares", re.I),
+]
+
+def _scrub_sensitive_leaks(text: str) -> str:
+    if not text:
+        return text
+    cleaned = text
+    for pat in _LEAK_PATTERNS:
+        cleaned = pat.sub("[REDACTED]", cleaned)
+    return cleaned
+
+
 def generate_llm_response(user_text: str, intent: str, emotion: str, sentiment: str, api_key: Optional[str] = None, user_context: Optional[str] = None) -> str:
     """
     Generates a context-aware response.
@@ -579,7 +597,7 @@ def generate_llm_response(user_text: str, intent: str, emotion: str, sentiment: 
     # 1. Instant keyword-specific KB for greetings / bot info
     specific_reply = _get_keyword_specific_response(user_text)
     if specific_reply:
-        return specific_reply
+        return _scrub_sensitive_leaks(specific_reply)
 
     provider = os.environ.get("LLM_PROVIDER", "").lower()
     demo_mode = os.environ.get("DEMO_MODE", "").lower() in ("true", "1", "yes")
@@ -588,7 +606,7 @@ def generate_llm_response(user_text: str, intent: str, emotion: str, sentiment: 
 
     # Fast offline demo provider
     if provider in ("fast", "offline", "demo_fast"):
-        return _get_emotion_fallback(user_text, emotion, sentiment)
+        return _scrub_sensitive_leaks(_get_emotion_fallback(user_text, emotion, sentiment))
 
     # Groq as primary provider (ultra-low latency LPUs)
     if provider == "groq" and not api_key:
@@ -597,10 +615,10 @@ def generate_llm_response(user_text: str, intent: str, emotion: str, sentiment: 
         else:
             groq_reply = query_groq(user_text, intent, emotion, sentiment)
         if groq_reply:
-            return groq_reply
+            return _scrub_sensitive_leaks(groq_reply)
         # If Groq fails, times out, or errors: return immediate safe offline fallback!
         # Do NOT fall back to slow Ollama when the interactive deadline has expired!
-        return _get_emotion_fallback(user_text, emotion, sentiment)
+        return _scrub_sensitive_leaks(_get_emotion_fallback(user_text, emotion, sentiment))
 
     # Local Ollama as primary provider (used when configured and caller did not explicitly supply a custom api_key)
     if provider == "ollama" and not api_key:
@@ -609,9 +627,9 @@ def generate_llm_response(user_text: str, intent: str, emotion: str, sentiment: 
         else:
             local_reply = query_local_ollama(user_text, intent, emotion, sentiment)
         if local_reply:
-            return local_reply
+            return _scrub_sensitive_leaks(local_reply)
         # If Ollama is unavailable, fallback immediately to empathetic offline counselor
-        return _get_emotion_fallback(user_text, emotion, sentiment)
+        return _scrub_sensitive_leaks(_get_emotion_fallback(user_text, emotion, sentiment))
 
     # 2. Try Gemini Cloud API (new google.genai SDK)
     key = api_key or os.environ.get("GEMINI_API_KEY", "") or GEMINI_API_KEY
@@ -653,7 +671,7 @@ def generate_llm_response(user_text: str, intent: str, emotion: str, sentiment: 
                         break
                     if reply:
                         logger.info("Gemini (%s) responded in %.2fs", model_name, time.time() - t0)
-                        return reply
+                        return _scrub_sensitive_leaks(reply)
                     if time.time() < _MODEL_QUOTA_EXCEEDED_UNTIL.get(model_name, 0):
                         if all(time.time() < _MODEL_QUOTA_EXCEEDED_UNTIL.get(m, 0) for m in models_to_try):
                             break
@@ -667,10 +685,10 @@ def generate_llm_response(user_text: str, intent: str, emotion: str, sentiment: 
     else:
         local_reply = query_local_ollama(user_text, intent, emotion, sentiment)
     if local_reply:
-        return local_reply
+        return _scrub_sensitive_leaks(local_reply)
 
     # 4. Final emotion-aware offline fallback
-    return _get_emotion_fallback(user_text, emotion, sentiment)
+    return _scrub_sensitive_leaks(_get_emotion_fallback(user_text, emotion, sentiment))
 
 
 

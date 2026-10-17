@@ -195,6 +195,32 @@ def _semantic_reasoning_fallback(text: str, cross_turn_context: Optional[str] = 
     """
     t = text.lower()
 
+    # Reuse the deterministic context gate before interpreting broad semantic
+    # patterns.  A direct denial such as "I don't want to die, I just want to
+    # sleep" is not active intent, while a later un-negated crisis clause
+    # makes this helper return False and therefore still reaches escalation.
+    try:
+        from .crisis_rules import is_contextual_or_negated
+        if is_contextual_or_negated(text):
+            return {
+                "risk_level": "NONE",
+                "category": "contextual_or_negated",
+                "confidence": 0.95,
+                "rationale": "Deterministic context evaluation found no active crisis intent.",
+                "exclusion_applied": "contextual_or_negated",
+            }
+    except ImportError:
+        # Support direct execution from the server directory.
+        from services.crisis_rules import is_contextual_or_negated
+        if is_contextual_or_negated(text):
+            return {
+                "risk_level": "NONE",
+                "category": "contextual_or_negated",
+                "confidence": 0.95,
+                "rationale": "Deterministic context evaluation found no active crisis intent.",
+                "exclusion_applied": "contextual_or_negated",
+            }
+
     # 0. Benign idioms and valid negations (highest specificity check for known non-crisis idioms)
     if re.search(r"\b(?:not\s+suicidal\s+just\s+stressed|no\s+intention\s+of\s+self\s*harm|would\s+never\s+actually\s+hurt\s+myself|not\s+planning\s+to\s+die|don'?t\s+have\s+any\s+desires\s+to\s+self\s*harm|just\s+having\s+a\s+bad\s+day|no\s+plans\s+to\s+act|not\s+in\s+any\s+danger)\b", t):
         return {"risk_level": "NONE", "category": "direct_negation", "confidence": 0.95, "rationale": "Explicit grammatical negation of suicidal intent.", "exclusion_applied": "direct_negation"}

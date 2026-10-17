@@ -21,6 +21,7 @@ CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "http://localhost:5173,http://127.
 FLASK_ENV = os.environ.get("FLASK_ENV", "development")
 MAX_MESSAGE_LENGTH = int(os.environ.get("MAX_MESSAGE_LENGTH", "2000"))
 RATE_LIMIT_PER_MINUTE = int(os.environ.get("RATE_LIMIT_PER_MINUTE", "60"))
+TRUSTED_PROXIES = [ip.strip() for ip in os.environ.get("TRUSTED_PROXIES", "").split(",") if ip.strip()]
 
 # MongoDB Configuration
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb://127.0.0.1:27017/mindguard_db")

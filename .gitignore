@@ -59,6 +59,10 @@ artifacts/kappa_report.json
 artifacts/naturalness_audit_sample.md
 artifacts/roman_urdu_errors.md
 tests/artifacts/
+test_artifacts/
+client/coverage/
+client/test-results/
+test-results/
 
 # Thesis figures & local statement
 docs/figures/

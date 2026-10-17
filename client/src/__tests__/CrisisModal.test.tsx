@@ -290,5 +290,285 @@ describe("CrisisModal Accessibility & Clinical Hierarchy", () => {
     expect(screen.getByText(/Madadgaar/i)).toBeDefined();
     expect(screen.getByText(/Taskeen/i)).toBeDefined();
   });
+
+  describe("CrisisModal High Function Coverage Suite", () => {
+    it("handles QuickCall and QuickCopy for emergency dispatch 15, 1122, and 115", () => {
+      const originalLocation = window.location;
+      delete (window as any).location;
+      window.location = { href: "" } as any;
+
+      Object.assign(navigator, {
+        clipboard: {
+          writeText: vi.fn().mockImplementation(() => Promise.resolve()),
+        },
+      });
+
+      render(<CrisisModal isOpen={true} onClose={vi.fn()} />);
+
+      // QuickCall 15
+      const call15Btn = screen.getByRole("button", { name: /call 15 \(police emergency\)/i });
+      fireEvent.click(call15Btn);
+      expect(window.location.href).toBe("tel:15");
+
+      // QuickCopy 15
+      const copy15Btn = screen.getByRole("button", { name: /copy 15 emergency number/i });
+      fireEvent.click(copy15Btn);
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith("15");
+
+      // QuickCall 1122
+      const call1122Btn = screen.getByRole("button", { name: /call 1122 \(pakistan rescue\)/i });
+      fireEvent.click(call1122Btn);
+      expect(window.location.href).toBe("tel:1122");
+
+      // QuickCopy 1122
+      const copy1122Btn = screen.getByRole("button", { name: /copy 1122 emergency number/i });
+      fireEvent.click(copy1122Btn);
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith("1122");
+
+      // QuickCall 115
+      const call115Btn = screen.getByRole("button", { name: /call 115 \(edhi ambulance\)/i });
+      fireEvent.click(call115Btn);
+      expect(window.location.href).toBe("tel:115");
+
+      // QuickCopy 115
+      const copy115Btn = screen.getByRole("button", { name: /copy 115 emergency number/i });
+      fireEvent.click(copy115Btn);
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith("115");
+
+      window.location = originalLocation;
+    });
+
+    it("handles QuickCall, QuickCopy, and QuickText for trusted contact and preferred hospital", () => {
+      const originalLocation = window.location;
+      delete (window as any).location;
+      window.location = { href: "" } as any;
+
+      Object.assign(navigator, {
+        clipboard: {
+          writeText: vi.fn().mockImplementation(() => Promise.resolve()),
+        },
+      });
+
+      render(
+        <CrisisModal
+          isOpen={true}
+          onClose={vi.fn()}
+          trustedContact={{ name: "Kashif", phone: "0321-9988776", relationship: "Brother" }}
+          safetyProfile={{
+            emergency_actions_consent: true,
+            preferred_hospital_name: "Shaukat Khanum",
+            preferred_hospital_phone: "042-35905000",
+            city_or_district: "Lahore",
+          } as any}
+        />
+      );
+
+      // Trusted Contact Call
+      const callAnchor = screen.getByRole("button", { name: /call kashif/i });
+      fireEvent.click(callAnchor);
+      expect(window.location.href).toBe("tel:03219988776");
+
+      // Trusted Contact Text
+      const textAnchor = screen.getByRole("button", { name: /text kashif for support/i });
+      fireEvent.click(textAnchor);
+      expect(window.location.href).toContain("sms:03219988776");
+
+      // Trusted Contact Copy
+      const copyAnchor = screen.getByRole("button", { name: /copy kashif's phone number/i });
+      fireEvent.click(copyAnchor);
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith("0321-9988776");
+
+      // Hospital Call
+      const callHospital = screen.getByRole("button", { name: /call hospital/i });
+      fireEvent.click(callHospital);
+      expect(window.location.href).toBe("tel:04235905000");
+
+      window.location = originalLocation;
+    });
+
+    it("handles Primary Mental Health Line (Umang) call and copy", () => {
+      const originalLocation = window.location;
+      delete (window as any).location;
+      window.location = { href: "" } as any;
+
+      Object.assign(navigator, {
+        clipboard: {
+          writeText: vi.fn().mockImplementation(() => Promise.resolve()),
+        },
+      });
+
+      render(<CrisisModal isOpen={true} onClose={vi.fn()} />);
+
+      const callUmang = screen.getByRole("button", { name: /call umang pakistan mental health helpline/i });
+      fireEvent.click(callUmang);
+      expect(window.location.href).toBe("tel:03117786264");
+
+      const copyUmang = screen.getByRole("button", { name: /copy phone number for umang/i });
+      fireEvent.click(copyUmang);
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith("0311-7786264");
+
+      window.location = originalLocation;
+    });
+
+    it("exercises HelplineCard Call, Copy, Text, and Website actions", () => {
+      const originalLocation = window.location;
+      delete (window as any).location;
+      window.location = { href: "" } as any;
+
+      Object.assign(navigator, {
+        clipboard: {
+          writeText: vi.fn().mockImplementation(() => Promise.resolve()),
+        },
+      });
+
+      const customResources = [
+        {
+          name: "Direct Line Only",
+          contact_info: "0300-1122334",
+          description: "Direct line description",
+        },
+        {
+          name: "SMS and Phone Combo",
+          contact_info: "021-34567890 / Text SAFE to 9999",
+          website: "http://safe-pakistan.org",
+          description: "Dual channel service",
+        },
+        {
+          name: "Web Portal Direct",
+          contact_info: "https://support.mentalhealth.pk",
+          description: "Online chat only",
+        },
+      ];
+
+      render(<CrisisModal isOpen={true} onClose={vi.fn()} resources={customResources} />);
+
+      // Expand accordion
+      const directoryToggle = screen.getByRole("button", { name: /view more pakistan helplines/i });
+      fireEvent.click(directoryToggle);
+
+      // 1. Call button in HelplineCard
+      const callBtn = screen.getByRole("button", { name: /call 021-34567890/i });
+      fireEvent.click(callBtn);
+      expect(window.location.href).toBe("tel:02134567890");
+
+      // 2. Copy phone button in HelplineCard
+      const copyPhoneBtn = screen.getByRole("button", { name: /copy phone number for sms and phone combo/i });
+      fireEvent.click(copyPhoneBtn);
+      expect(navigator.clipboard.writeText).toHaveBeenCalled();
+
+      // 3. Text button in HelplineCard
+      const textSmsBtn = screen.getByRole("button", { name: /text safe to 9999/i });
+      fireEvent.click(textSmsBtn);
+      expect(window.location.href).toBe("sms:9999");
+
+      // 4. Copy SMS button in HelplineCard
+      const copySmsBtn = screen.getByRole("button", { name: /copy sms shortcode for sms and phone combo/i });
+      fireEvent.click(copySmsBtn);
+      expect(navigator.clipboard.writeText).toHaveBeenCalled();
+
+      window.location = originalLocation;
+    });
+
+    it("runs complete 4-7-8 breathing timer phases and pause/resume", () => {
+      vi.useFakeTimers();
+      render(<CrisisModal isOpen={true} onClose={vi.fn()} />);
+
+      // Open tool
+      const openBtn = screen.getByRole("button", { name: /open 4-7-8 tool/i });
+      fireEvent.click(openBtn);
+
+      // Start breathing
+      const startBtn = screen.getByRole("button", { name: /start breathing/i });
+      fireEvent.click(startBtn);
+
+      // Inhale: 4 steps
+      vi.advanceTimersByTime(4000);
+      // Hold: 7 steps
+      vi.advanceTimersByTime(7000);
+      // Exhale: 8 steps
+      vi.advanceTimersByTime(8000);
+      // Inhale again
+      vi.advanceTimersByTime(1000);
+
+      // Pause
+      const pauseBtn = screen.getByRole("button", { name: /pause breathing/i });
+      fireEvent.click(pauseBtn);
+
+      // Hide tool
+      const hideBtn = screen.getByRole("button", { name: /hide/i });
+      fireEvent.click(hideBtn);
+
+      vi.useRealTimers();
+    });
+
+    it("traps focus between first and last interactive elements via Tab and Shift+Tab", () => {
+      render(<CrisisModal isOpen={true} onClose={vi.fn()} />);
+
+      const closeBtn = screen.getByRole("button", { name: /close emergency modal/i });
+      const safeBtn = screen.getByRole("button", { name: /i'm safe for now/i });
+
+      closeBtn.focus();
+      expect(document.activeElement).toBe(closeBtn);
+
+      // Shift+Tab from closeBtn should wrap to safeBtn (last element)
+      fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
+      expect(document.activeElement).toBe(safeBtn);
+
+      // Tab from safeBtn should wrap to closeBtn (first element)
+      fireEvent.keyDown(window, { key: "Tab", shiftKey: false });
+      expect(document.activeElement).toBe(closeBtn);
+    });
+
+    it("normalizes varying resource configurations and non-Umang custom payloads", () => {
+      // 1. Array with non-Umang custom line
+      const { unmount: u1 } = render(
+        <CrisisModal
+          isOpen={true}
+          onClose={vi.fn()}
+          resources={[{ name: "Local Clinic", contact_info: "051-1234567", description: "Clinic line" }]}
+        />
+      );
+      expect(screen.getByText(/Local Clinic/i)).toBeDefined();
+      u1();
+
+      // 2. Object with pakistan list
+      const { unmount: u2 } = render(
+        <CrisisModal
+          isOpen={true}
+          onClose={vi.fn()}
+          resources={{ pakistan: [{ name: "Provincial Care", contact_info: "091-7654321" }] }}
+        />
+      );
+      expect(screen.getByText(/Provincial Care/i)).toBeDefined();
+      u2();
+
+      // 3. Object with emergency_resources list
+      const { unmount: u3 } = render(
+        <CrisisModal
+          isOpen={true}
+          onClose={vi.fn()}
+          resources={{ emergency_resources: [{ name: "Hospital Emergency Care", contact_info: "021-9922334" }] }}
+        />
+      );
+      expect(screen.getByText(/Hospital Emergency Care/i)).toBeDefined();
+      u3();
+
+      // 4. Object with resources list
+      const { unmount: u4 } = render(
+        <CrisisModal
+          isOpen={true}
+          onClose={vi.fn()}
+          resources={{ resources: [{ name: "General Mental Health", contact_info: "042-3344556" }] }}
+        />
+      );
+      expect(screen.getByText(/General Mental Health/i)).toBeDefined();
+      u4();
+
+      // 5. Empty array falls back to DEFAULT_PAKISTAN_HELPLINES
+      const { unmount: u5 } = render(<CrisisModal isOpen={true} onClose={vi.fn()} resources={[]} />);
+      expect(screen.getByText(/Umang Pakistan/i)).toBeDefined();
+      u5();
+    });
+  });
 });
 

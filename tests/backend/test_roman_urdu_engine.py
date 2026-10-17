@@ -16,7 +16,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 os.environ.setdefault("USE_MONGOMOCK", "true")
 os.environ.setdefault("FLASK_ENV", "testing")
 
-from server.services.roman_urdu_router import route, ROUTE_ENGLISH, ROUTE_URDU, ROUTE_BOTH, ROUTE_ARABIC_SCRIPT, urdu_density
+from server.services.roman_urdu_router import (
+    route,
+    ROUTE_ENGLISH,
+    ROUTE_URDU,
+    ROUTE_BOTH,
+    ROUTE_ARABIC_SCRIPT,
+    ROUTE_UNSUPPORTED_SCRIPT,
+    urdu_density,
+)
 from server.services.roman_urdu_normalizer import normalize_roman_urdu, FORBIDDEN_FOLDS
 from server.services.crisis_rules import evaluate_deterministic_crisis, evaluate_crisis_pipeline
 
@@ -47,6 +55,10 @@ class RouterTests(unittest.TestCase):
     def test_arabic_script_routes_fallback(self):
         r, _ = route("مجھے مرنا ہے")
         self.assertEqual(r, ROUTE_ARABIC_SCRIPT)
+
+    def test_other_native_scripts_route_to_scope_fallback(self):
+        r, _ = route("मुझे मदद चाहिए")
+        self.assertEqual(r, ROUTE_UNSUPPORTED_SCRIPT)
 
 
 class NormalizerTests(unittest.TestCase):
@@ -112,6 +124,12 @@ class PipelineRouteTests(unittest.TestCase):
     def test_arabic_script_never_silent(self):
         res = evaluate_crisis_pipeline("مجھے مدد کی ضرورت ہے", allow_ml_fallback=False)
         self.assertEqual(res.get("source"), "arabic_script_fallback")
+        self.assertTrue(res.get("resources"))
+        self.assertTrue(res.get("safety_message"))
+
+    def test_other_native_scripts_use_scope_fallback(self):
+        res = evaluate_crisis_pipeline("मुझे मदद चाहिए", allow_ml_fallback=False)
+        self.assertEqual(res.get("source"), "unsupported_script_fallback")
         self.assertTrue(res.get("resources"))
         self.assertTrue(res.get("safety_message"))
 

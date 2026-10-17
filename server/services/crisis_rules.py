@@ -78,8 +78,8 @@ def _normalize(text: str) -> str:
     if not text:
         return ""
     t = normalize_evasion_text(text)
-    t = t.replace("\u2019", "'").replace("\u2018", "'")
-    t = t.replace("\u201c", '"').replace("\u201d", '"')
+    t = re.sub(r"[\u2018\u2019\u201A\u201B\u2032]", "'", t)
+    t = re.sub(r"[\u201C\u201D\u201E\u201F]", '"', t)
     t = t.lower()
     t, _ = normalize_algospeak(t)
     t = re.sub(r"\bs[\*#@!]icide\b", "suicide", t)
@@ -105,7 +105,14 @@ def _normalize(text: str) -> str:
     t = re.sub(r"\bcatch\s+the\s+bus\b", "commit suicide", t)
     t = re.sub(r"\bpull\s+the\s+plug\s+on\s+(?:this\s+)?life\b", "end my life", t)
     t = re.sub(r"\bself\s+h[@a]rm\b", "self harm", t)
-    t = re.sub(r"\bk[.\s]*y[.\s]*s\b", "kys", t)
+    t = re.sub(r"\bsu1c1de\b", "suicide", t)
+    t = re.sub(r"\bsuiside\b", "suicide", t)
+    t = re.sub(r"\bm4in\b", "main", t)
+    t = re.sub(r"\bm4rna\b", "marna", t)
+    t = re.sub(r"\bch4hta\b", "chahta", t)
+    t = re.sub(r"\bd[i!1]{3,}e\b", "die", t)
+    t = re.sub(r"\bi\s+w\s+a\s+n\s+t\s+t\s+o\s+e\s+n\s+d\s+i\s+t\s+a\s+l\s+l\b", "i want to end it all", t)
+    t = re.sub(r"\bwant\s+to\s+end\s+it\s+all\b", "end my life", t)
     t = re.sub(r"\bw@nna\b", "wanna", t)
     t = " ".join(t.split())
     return t
@@ -195,13 +202,32 @@ _INDIRECT_IMPLICIT_DISTRESS = [
     r"\bnot\s+existing\b",
     r"\bwant(?:ed)?\s+it\s+all\s+to\s+end\b",
     r"\b(?:no|zero)\s+(?:reason|point)\s+(?:in|to)\s*(?:staying|stay|keep\s+going|live|be)\s+alive\b",
-    r"\bdon'?t\s+want\s+to\s+(?:be\s+here|exist)\s+anymore\b",
+    r"\bdon'?t\s+want\s+to\s+(?:be\s+here|exist|be\s+alive)\s+anymore\b",
     r"\btired\s+of\s+(?:living|being\s+alive)\b",
-    r"\bwhat'?s\s+the\s+point\s+of\s+(?:living|being\s+alive)\b",
+    r"\bwhat'?s\s+(?:even\s+)?(?:the\s+)?point\s+of\s+(?:living|being\s+alive)\b",
+    r"\blife\s+isn'?t\s+worth\s+it(?:\s+anymore)?\b",
+    r"\b(?:keep\s+)?thinking\s+about\s+dying\b",
+    r"\b(?:i\s+am|i'?m)\s+thinking\s+about\s+suicide\b",
+    r"\b(?:happy|glad|wish)\s+if\s+i\s+got\s+hit\s+by\s+(?:a\s+)?(?:bus|truck|car|train)\b",
+    r"\b(?:saved|saving)\s+up\s+all\s+my\s+pills\s+and\s+.*?\btaking\s+them\b",
+    r"\bending\s+it\s+(?:today|tonight|now|all)\b",
+    r"\bnobody\s+will\s+miss\s+me\b",
+    r"\bdoing\s+it\s+(?:tonight|today)\b",
+    r"\bhow\s+many\s+.*?\b(?:tablets?|pills?|mg|grams?)\s+.*?\b(?:lethal|fatal|overdose|kill|die)\b",
+    r"\b(?:what|which)\s+(?:is\s+)?(?:the\s+)?(?:painless|quickest|easiest)\s+way\s+to\s+die\b",
+    r"\bwhich\s+(?:medicine|drug|pill|poison)\s+can\s+kill\b",
+    r"\bhow\s+tall\s+does\s+a\s+building\s+need\s+to\s+be\s+to\s+die\b",
     r"\bimagining\s+everyone\s+at\s+peace\s+without\s+me\b",
     r"\bforever\s+kind\s+of\s+rest\b",
-    r"\bstop\s+feeling\s+anything\s+permanently\b",
     r"\bnever\s+wake\s+up\b",
+    r"\b(?:fall|falling|go|going)\s+asleep\s+and\s+(?:never|not)\s+(?:have\s+to\s+)?(?:wake|get)\s+up\b",
+    r"\b(?:fall\s+asleep\s+and\s+not\s+come\s+back|fall\s+asleep\s+and\s+never\s+wake)\b",
+    r"\b(?:wish\s+(?:i\s+)?(?:could\s+just\s+|would\s+just\s+)?|hope\s+(?:i\s+)?)(?:never|not|don'?t|wouldn'?t)\s+wake\s+up(?:\s+tomorrow|\s+again|\s+anymore)?\b",
+    r"\b(?:don'?t|do\s+not)\s+want\s+to\s+wake\s+up\s+anymore\b",
+    r"\b(?:close|shut)\s+my\s+eyes\s+and\s+(?:never|not)\s+(?:open\s+them\s+(?:again|anymore)|wake\s+up)\b",
+    r"\bdidn'?t\s+open\s+my\s+eyes\s+tomorrow\b",
+    r"\b(?:logging\s+off|checking\s+out)\s+(?:forever|permanently|of\s+life)\b",
+    r"\bpermanently\s+log\s+off\b",
     r"\b(?:i\s+)?can'?t\s+remember\s+the\s+last\s+time\s+i\s+felt\s+o?k\b",
     r"\b(?:i\s+)?(?:keep\s+)?(?:feel\s+like\s+)?can'?t\s+remember\s+the\s+last\s+time\s+i\s+felt\s+(?:okay|ok)\b",
     r"\b(?:see\s+no|don'?t\s+see\s+a|no)\s+way\s+out\b",
@@ -269,8 +295,13 @@ _INDIRECT_IMPLICIT_DISTRESS = [
 _BURDEN_AND_GOODBYE = [
     r"\b(?:everyone|everybody|they|my\s+family|people)\s+(?:would\s+be|is|are)\s+(?:relieved|better\s+off|much\s+better\s+off)\s+(?:if\s+i\s+(?:was|were)\s+gone|without\s+me)\b",
     r"\b(?:relieved|relief)\s+if\s+i\s+(?:was|were)\s+gone\b",
-    r"\b(?:writ(?:e|ten|ing)|wrote)\s+(?:a\s+)?(?:goodbye|farewell)\s+(?:letter|note|message)\b",
+    r"\b(?:writ(?:e|ten|ing)|wrote)\s+(?:a\s+)?(?:goodbye|farewell)\s+(?:letters?|notes?|messages?)\b",
     r"\b(?:writ(?:e|ten|ing)|wrote)\s+letters?\s+for\s+(?:everyone|my\s+family|all)\b",
+    r"\btonight\s+is\s+the\s+night\b",
+    r"\bthis\s+is\s+my\s+last\s+night\s+alive\b",
+    r"\bdecided\s+to\s+die\b",
+    r"\bdone\s+living\b",
+    r"\btake\s+(?:him|her|them|[a-z]+)\s+down\s+with\s+me\b",
     r"\bgoodbye\s+(?:note|letter|world|everyone|all|friends)\b",
     r"\b(?:this\s+is\s+)?my\s+final\s+(?:message|goodbye|note|letter|words)\b",
     r"\bfinal\s+message\s+(?:to\s+my\s+family)?\b",
@@ -419,6 +450,10 @@ _SUBTLE_SLANG_AND_INFORMAL = [
     r"\bi\s+should\s+kill\s+myself\b",
     r"\bself[\s-]?delet(?:e|ing)\b",
     r"\bsewer\s*slide\b",
+    r"\b(?:thinking\s+about\s+)?sewerslide\b",
+    r"\bsu1c1de\b",
+    r"\b(?:i\s+)?(?:wana|wanna|want\s+to)\s+kil\s+myself\b",
+    r"\bkil\s+myself\b",
     r"\bi\s+should\s+kys\b",
     r"\b(?:tryna|trying\s+to|gonna|finna|bout\s+to)?\s*(?:log\s+off|peace\s+out|self\s*delete|tap\s+out|check\s+out|dip|off\s+myself|unalive\s+myself|unalive)\s*(?:for\s+good|permanently|forever|fr)?\b",
     r"\bend(?:ing)?\s+the\s+sim\b",
@@ -481,7 +516,8 @@ _SELF_HARM_AND_CUTTING = [
     r"\bslic(?:e|ing)\s+(?:my\s+)?(?:wrist|arm|thigh)s?\b",
     r"\bhit(?:ting)?\s+myself\s+(?:in\s+the\s+head\s+)?repeatedly\b",
     r"\bhave\s+(?:a|the)\s+blade\s+in\s+my\s+hand\b",
-    r"\bburn(?:ed|ing)?\s+(?:my\s+)?(?:arm|skin|legs?|hand|myself)\b",
+    r"\bburn(?:ed|ing)?\s+(?:my\s+)?(?:arms?|skin|legs?|hand|myself)\b",
+    r"\bhit(?:ting)?\s+myself\s+until\s+(?:i\s+)?bruise\b",
     r"\bput\s+the\s+lighter\s+down\b",
     r"\bsqueez(?:ing|ed)\s+(?:my\s+)?(?:arm|hand|skin)\s+until\s+it\s+bruises\b",
     r"\bpunch(?:ed|ing)?\s+myself\b",
@@ -491,6 +527,7 @@ _SELF_HARM_AND_CUTTING = [
     r"\bbreaking\s+(?:my\s+)?skin\s+until\s+it\s+bleeds\b",
     r"\bfresh\s+cuts\s+on\s+my\b",
     r"\bmaking\s+the\s+injuries\s+worse\b",
+    r"\b(?:slit|slitting)\s+(?:my\s+)?(?:wrists?|throat|arms?)\b",
 ]
 
 # 7. ACTIVE ESCALATION IN PROGRESS -------------------------------------------
@@ -515,6 +552,20 @@ _ACTIVE_ESCALATION_IN_PROGRESS = [
     r"\bhave\s+the\s+pills\s+in\s+front\s+of\s+me\s+right\s+now\b",
 ]
 
+# 8. DIRECT THREATS TO OTHER PEOPLE -----------------------------------------
+# Tier 1 must recognise a credible first-person threat even when the broader
+# safety classifier is unavailable. These require explicit intent/future
+# language and an other-person target, excluding ordinary idioms.
+_DIRECT_HARM_TO_OTHERS = [
+    r"\b(?:i'?m\s+(?:gonna|going\s+to|planning\s+to)|i\s+(?:am\s+)?(?:going\s+to|will|plan(?:ning)?\s+to|want\s+to|intend\s+to)|i'll)\s+"
+    r"(?:kill|murder|harm|hurt|attack|assault|injure|shoot|stab|strangle|poison)\s+"
+    r"(?!(?:myself|me)\b)(?:my\s+(?!(?:alarm|clock|phone|laptop|computer|car|pizza|burger|food|game|exam|test)\b)[a-z]+|the\s+[a-z]+|him|her|them|someone|anyone|anybody|everybody|everyone|people|(?!(?:alarm|clock|phone|laptop|computer|car|pizza|burger|food|game|exam|test|my|this|that)\b)[a-z]+)\b",
+    r"\b(?:i\s+)?want\s+to\s+(?:harm|hurt|attack|assault|injure)\s+"
+    r"(?:someone|anyone|anybody|people|him|her|them)\b",
+    r"\b(?:main|mein|mai)\s+(?:usay|usey|usko|isko|isay|unko)\s+(?:jaan\s+se\s+)?(?:maar|mar)\s*"
+    r"(?:dun\s*ga|doon\s*ga|dunga|dalun\s*ga|daal\s*dunga|marunga)\b",
+]
+
 CRISIS_PATTERN_CATEGORIES: List[PatternCategory] = [
     PatternCategory("explicit_suicidal_intent", 5, [_c(p) for p in _EXPLICIT_SUICIDAL_INTENT]),
     PatternCategory("indirect_implicit_distress", 3, [_c(p) for p in _INDIRECT_IMPLICIT_DISTRESS]),
@@ -523,6 +574,7 @@ CRISIS_PATTERN_CATEGORIES: List[PatternCategory] = [
     PatternCategory("subtle_slang_and_informal", 4, [_c(p) for p in _SUBTLE_SLANG_AND_INFORMAL]),
     PatternCategory("self_harm_and_cutting", 4, [_c(p) for p in _SELF_HARM_AND_CUTTING]),
     PatternCategory("active_escalation_in_progress", 5, [_c(p) for p in _ACTIVE_ESCALATION_IN_PROGRESS]),
+    PatternCategory("direct_threat_to_others", 5, [_c(p) for p in _DIRECT_HARM_TO_OTHERS]),
 ]
 
 # ---------------------------------------------------------------------------
@@ -561,16 +613,40 @@ _URDU_EXPLICIT_INTENT = [
     r"\bintezar\s+nahi\b[^.!?]{0,25}\baaj\s+hi\b",
     r"\bbas\s+waqt\s+aa\s*gay[ai]\b",
     r"\bmarne\s+ka\s+irada\s+kar\s+liy[ai]\b",
+    r"\b(?:mujhe\s+)?jee+na\s+nah?i\s+hai\b",
+    r"\b(?:ab\s+)?aur\s+nah?i\s+jee\s+sakt[ai]\b",
+    r"\bkhud\s*kush[eií]+\s*(?:kar|karn[ei]|kr)\s*(?:lun\s*ga|lunga|chaht[ai]|raha|rahi|dunga|karunga)\b",
+    r"\b(?:mein|main)\s+khud\s*kush[eií]+\b",
+    r"\b(?:apni\s+)?zindagi\s+khatam\s+kar\b",
+    r"\bsab\s+khatam\s+kar\s*(?:dunga|doon\s*ga|dun\s*ga)\b",
+    r"\bmeri\s+maut\s+(?:hi\s+)?behtar\b",
+    r"\bmere\s+bina\s+(?:sab\s+)?khush\b",
+    r"\bmain\s+mar\s+jao+n\b",
+    r"\b(?:main\s+)?(?:apni\s+)?jaan\s+(?:de|le)\s*(?:dunga|doonga|doon\s*ga|dun\s*ga|lun\s*ga|lunga|loon\s*ga|loonga)\b",
+    r"\bkaash\s+(?:mein\s+)?subah\s+uthon\s+hi\s+na\b",
+    r"\bkitni\s+goliyan?\s+(?:khane\s+se\s+)?.*?\bmar\s+jata\s+hai\b",
+    r"\bsuicide\s+karna\s+hai\b",
+    r"\bmai\s+khudkashi\s+kr\s+lunga\b",
+    r"\b(?:mein\s+|main\s+)?(?:apni\s+)?jaan\s+lene\s+ja\s+raha\b",
+    r"\bapne\s+aap\s+ko\s+khatam\s+kar\b",
+    r"\b(?:mein|main)\s+kal\s+nahi\s+hu?nga\b",
+    r"\bmarna\s+hi\s+mera\s+muqaddar\b",
+    r"\baur\s+mein\s+maroonga\b",
+    r"\bpukhta\s+irada\s+kar\s+li[ai]\b",
+    r"\bzinda\s+nahi\s+reh\s+sakt[aei]\s+khud\s*kush[eií]+\b",
+    r"\bdun(?:y|iy)a\s+se\s+(?:mukammal\s+)?chutkara\s+chaht[aei]\b",
+    r"\bkhud\s*kush[eií]+\s+kar\s*k[ae]?\s+bojh\s+khatam\b",
 ]
 _URDU_LETHAL_MEANS = [
     r"\bgoli(?:ya|ia|a)?n?\s+kha\s*(?:li|liya|lia|raha|rahi)\b",
     r"\bgoli(?:ya|ia|a)?n?\s+(?:gin|ginn)\s*rah[ai]\b",
     r"\bgoli\s+nigal\s*rah[ai]\b",
     r"\bzeher\s+(?:pi|pia|pe|kharid|khared|mila|milay|khali)\b",
+    r"\bzeh[ae]?r\s+(?:khaa?|kha|khana|kharid|pi|peene)\b",
     r"\bzeher\b[^.!?]{0,25}\bmangw[ai]\b",
     r"\bzeher\s+ka\s+bottle\b",
     r"\bphansi\s+(?:laga|lagai)\b",
-    r"\bphanda\s+(?:taiyar|bandh)\b",
+    r"\bphanda\s+(?:laga|lagane|taiyar|bandh)\b",
     r"\brassi\b[^.!?]{0,25}\bbandh\s+(?:li|di|ki)\b",
     r"\bgas\s+(?:chula|chulah)\s+lag[ai]\b",
     r"\bchhat\s+se\s+kud\b",
@@ -581,6 +657,38 @@ _URDU_LETHAL_MEANS = [
     r"\bneend\s+ki\s+goli(?:ya|ia)?n?\b[^.!?]{0,25}\b(?:khali|bohat\s+saari|saari|gin)\b",
     r"\bgoli(?:ya|ia|a)?n?\b[^.!?]{0,25}\b(?:nikal\s+kar\s+rakhi|rakhi\s+hain|saamne)\b",
     r"\bkhu?d\s+bhi\s+khatam\s+kar\b",
+    r"\b(?:pankh?[ae]y?|fan)\s+se\s+(?:latka|latak)\s*(?:kar|k[ae]|ke)?\s*(?:mar|jaan)\b",
+    r"\bkhud\s+ko\s+(?:pankh?[ae]y?|fan)\s+se\s+latka\b",
+    r"\bpankh?[ae]y?\s+se\s+rassi\s+bandh\b",
+    r"\bzeh[ae]?r\s+pee\s*(?:kar|k[ae])?\s*(?:kissa|qissa)\s+tamam\b",
+    r"\brag(?:on)?\s+ko\s+kaat\b",
+    r"\bblade\s+(?:khareed|le)\s+(?:lia|liya|hai)\b",
+    r"\b(?:chhat|chat)\s+ki\s+boundary\b",
+    r"\bchhalang\s+laga\s*rah[aei]\b",
+    r"\bneend\s+ki\s+(?:\w+\s+)?goli(?:ya|ia|a)?n?\s+(?:jama|rakh|ikathi)\b",
+    r"\b(?:dawa(?:on)?|goli(?:yon)?)\s+ki\s+(?:poori|sari)\s+patti\s+nigal\b",
+    r"\bphanda\s+(?:tayar|tayyar|bandh)\s+(?:kar\s+lia|kar\s+liya|hai)\b",
+    r"\bstool\s+hata\b",
+    r"\bgoli\s+maar\s*(?:kar|k[ae])\s+(?:apna\s+)?kaam\s+khatam\b",
+    r"\btezaab\s+(?:pee|pi|peene)\b",
+    r"\brailway\s+track\b[^.!?]{0,30}\b(?:let|kood|chhalang)\b",
+    r"\bzeh[ae]?r\s+ka\s+asar\s+shuru\b",
+    r"\bsar\s+mein\s+goli\s+(?:daagne|marne|chalane)\b",
+    r"\b(?:dawa(?:on)?|medicine|pills?)\s+ka\s+overdose\b",
+    r"\bnabz\s+kaat\s*rah[aei]\b",
+    r"\b(?:gari|gaari|train|rail)\s+k[ae]?\s+(?:a?ag[ae]y?|neech[ae])\s+(?:gira|phenk)\b",
+    r"\bzeh[ae]?r\s+(?:ghol|mila)\s*(?:lia|liya|hai)\b",
+    r"\brailing\s+paar\s+kar\b",
+    r"\bgardan\s+(?:pe|par)\s+(?:chhuri|blade|chaku)\s+(?:pheer|chala)\b",
+    r"\b(?:tablets?|goliyan?)\s+(?:aik\s+sath|sab)\s+nigal\b",
+    r"\bzehrili\s+dawa\s+(?:pee|pi)\b",
+    r"\b(?:meri\s+)?la?ash\s+(?:darya|nadi|samundar|nehar)\s+se\s+milegi\b",
+    r"\b(?:pani\s+k[a-z]?\s+tanki|darya|nadi|nehar)\s+mein\s+doob\s*kar\s+mar",
+    r"\b(?:rail|train|gari|gaari)\s+k[ae]?\s+(?:a?ag[ae]y?|samn[ae]|neech[ae])\s+(?:kood|chalang|gir|gira)\b",
+    r"\b(?:khud\s+ko|apne\s+aap\s+ko)\s+aag\s+laga\s*(?:loon?ga|doon?ga|lunga|dunga|raha|rahi)\b",
+    r"\b(?:chhat|chat|building)\s+se\s+(?:foran\s+)?(?:kood|chalang|chhalang)\b",
+    r"\bzeh[ae]?r\b[^.!?]{0,35}\bpee\s+(?:loon?ga|lunga|doon?ga|dunga|raha|rahi)\b",
+    r"\bzeh[ae]?r\s+ki\s+(?:sheeshi|botal|dawa)\b[^.!?]{0,30}\bkhol\b",
 ]
 _URDU_BURDEN_GOODBYE = [
     r"\bsab\s+ka\s+bojh\b",
@@ -602,11 +710,21 @@ _URDU_BURDEN_GOODBYE = [
     r"\bmain\s+ab\s+yahan\s+ka\s+nahi\b",
     r"\b(?:tumhe|tumhein|kisi\s+ko)\s+pareshan\s+nahi\s+karu?nga\b",
     r"\bsab\s+ko\b[^.!?]{0,20}\bsalam\b[^.!?]{0,25}\b(?:ja\s*raha|akhri)\b",
+    r"\bmere\s+marne\s+k[ae]?\s+baad\b",
+    r"\bsubah\s+ka\s+sooraj\s+nahi\s+dekh",
+    r"\bzindagi\s+k[ae]?\s+aa?kh?ri\s+lamhaat\b",
+    r"\bdun(?:y|iy)a\s+(?:chhor|chor|chhod)\s*kar\s+ja\s*rah[aei]\b",
+    r"\bdun(?:y|iy)a\s+(?:ko\s+)?hamesha\s+k[ae]?\s+liye\s+(?:chhor|chor)\s*kar\s+ja\b",
+    r"\bmere\s+janaz[ae]y?\s+pe\b",
+    r"\baa?kh?ri\s+raat\s+sabit\s+hogi\b",
+    r"\bis\s+zameen\s+par\s+aa?kh?ri\s+raat\b",
+    r"\bmere\s+marne\s+se\s+sab\s+(?:sukhi|khush)\b",
+    r"\b(?:meri\s+)?la?ash\s+(?:hi\s+)?dekhog[aei]\b",
 ]
 _URDU_SELF_HARM = [
     r"\bkalai\s+kaat\b",
-    r"\b(?:khud|apne\s+aap)\s+ko\s+(?:nuqsan|zakhami|chot|chubhot|jalat|kaat)",
-    
+    r"\b(?:khud|apne\s+aap)\s+ko\s+(?:nu[kq]san|zakhami|chot|chubhot|jalat|kaat)",
+    r"\b(?:haath|hath)\s+kaat\b",
     r"\bchhuri\s+le\s+kar\s+baith[ai]\b",
     r"\bdard\s+mein\s+sukoon\s+milt[ai]\b",
     r"\bkhud\s+ko\s+saza\s+deta\b",
@@ -614,6 +732,8 @@ _URDU_SELF_HARM = [
     r"\bdobara\s+kaat\b",
     r"\bkalai\s+par\s+blade\b|\bblade\s+chal[ai]\s+chuk[ai]\b",
     r"\bchot\s+lagane\s+se\s+dil\b",
+    r"\bkalaai\s+(?:par|pe)\s+(?:gehra\s+)?cut\b",
+    r"\bkalaai\b[^.!?]{0,30}\bkhoon\s+beh\s+raha\b",
 ]
 _URDU_INDIRECT = [
     r"\bjee?ne\s+ki\s+himmat\s+nahi\b",
@@ -649,9 +769,19 @@ _URDU_INDIRECT = [
     r"\bbehtar\s+hog[ai]\s+mere\s+bina\b",
     r"\bthak\s+chuk[ai]\s+hoo?n\b[^.!?]{0,20}\bsab\b",
     r"\bkhud\s+par\s+bharosa\s+u?th\s*gay[ai]\b",
-    r"\bdil\s+nahi\s+karta\b",
     r"\bmera\s+kuch\s+nahi\s+hot[ai]\b",
     r"\b(?:jee?|ji)\s+chahta\s+hai\b[^.!?]{0,25}\bghayab\b",
+    r"\bjeen[ae]\s+ki\s+koi\s+wajah\s+nahi\b",
+    r"\b(?:apni\s+)?saans(?:ain|en)?\s+khatam\s+kar\b",
+    r"\bkhud\s*kush[eií]+\s+hi\s+aa?kh?ri\s+ra?asta\b",
+    r"\bmaut\s+ko\s+gale\s+lagan[ae]\b",
+    r"\bapni\s+qabar\s+khud\s+khod\b",
+    r"\bmujhse\s+(?:ab\s+)?nahi\s+jiya\s+jata\b",
+    r"\b(?:is\s+)?jism\s+ko\s+mita\s*rah[aei]\b",
+    r"\bmein\s+mar\s+jaon\s+aur\s+sab\s+theek\b",
+    r"\bis\s+dard\s+ka\s+aik\s+hi\s+ilaaj\b[^.!?]{0,30}\bmar\s+jaon\b",
+    r"\bkoi\s+ra?sta\s+nahi\s+bacha\s+maut\s+k[ae]?\s+siwa\b",
+    r"\b(?:khud|apne\s+aap)\s+ko\s+mita\s*rah[aei]\b",
 ]
 # Tier-2 ideation present-tense (help-seeking disclosure) — own category, sev 4
 _URDU_IDEATION_PRESENT = [
@@ -878,8 +1008,8 @@ _IDIOMATIC_METAPHOR_AND_HYPERBOLE_PATTERNS = [
     r"\bworld\s+(?:is\s+)?(?:gonna\s+|going\s+to\s+)?collapse\b",
     r"\bcollapse\s+on\s+my\s+head\b",
     r"\bweight\s+of\s+the\s+world\b",
-    r"\bfalling\s+apart\b",
-    r"\b(?:meeting|meetings|homework|test|tests|traffic|game|games|presentation|presentations|exam|exams|finals|math|chores|movie|show|bored)\b.*\b(?:want\s+to\s+die|wanna\s+die|kill\s+myself|makes\s+me\s+want\s+to\s+die|makes\s+me\s+wanna\s+die)\b",
+    r"\b(?:this|that|the|another|one\s+more)\s+(?:meeting|meetings|homework|test|tests|traffic|game|games|presentation|presentations|exam|exams|finals|math|chores|movie|show|class)\s+(?:is\s+making\s+me|makes?\s+me|made\s+me|is\s+gonna\s+make\s+me)\s+(?:want\s+to\s+die|wanna\s+die|kill\s+myself)\b",
+    r"\b(?:makes?\s+me|making\s+me)\s+(?:want\s+to\s+die|wanna\s+die)\b",
     r"\bif\s+i\s+have\s+to\s+.*\b(?:kill\s+myself|want\s+to\s+die|wanna\s+die)\b",
     # --- Expanded death idioms ---
     r"\bdead\s+tired\b",
@@ -913,7 +1043,7 @@ _SLANG_HYPERBOLE_DAMPENER_PATTERNS = [
 
 # Third-party subject indicators: statements about someone else's crisis
 _THIRD_PARTY_SUBJECT_PATTERNS = [
-    r"^\s*(?:my\s+)?(?:friend|brother|sister|mom|dad|mother|father|uncle|aunt|partner|colleague|teammate|roommate|classmate|neighbor|best\s+friend|bf|gf|girlfriend|boyfriend|husband|wife|son|daughter|cousin|nephew|niece)",
+    r"^\s*(?:my\s+)?(?:friend|brother|sister|mom|dad|mother|father|uncle|aunt|partner|colleague|teammate|roommate|classmate|neighbor|best\s+friend|bf|gf|girlfriend|boyfriend|husband|wife|son|daughter|cousin|nephew|niece)\b",
     r"^\s*someone\s+(?:on\s+this\s+|in\s+the\s+|at\s+|i\s+know\s+)?",
     r"\b(?:my\s+)?(?:friend|brother|sister|mom|dad|mother|father|partner|uncle|aunt|teammate|roommate|cousin|best\s+friend|colleague|classmate)\s+(?:is|was|has|just|told|texted|said|sent|has\s+been|might\s+be|wants?\s+to|plans?\s+to)\s+",
     r"\b(?:he|she|they)\s+(?:is|are|was|were|has|have)\s+(?:going\s+to|gonna|about\s+to|planning\s+to|trying\s+to)\s+(?:kill|hurt|harm|end|commit|jump|cut|overdose|suicide|die)\b",
@@ -935,6 +1065,8 @@ _ACCIDENTAL_CONTEXT_PATTERNS = [
     r"\b(?:so\s+i\s+don'?t\s+run\s+out|in\s+case\s+of\s+(?:shortage|emergency)|in\s+case\s+they\s+run\s+out)\b",
     r"\b(?:suicidal|dying)\s+for\s+(?:pizza|burger|food|coffee|tacos|ice\s+cream|chocolate|sushi|boba)\b",
     r"\bafter\s+(?:the\s+)?funeral\b",
+    r"\bkill\s+-[0-9]+\b",
+    r"\bkill\s+(?:-[a-z0-9]+\s+)?(?:the\s+)?(?:zombie|python|node|process|daemon|task|job)\b",
 ]
 
 # Protective contrast patterns: crisis keyword + protective second clause
@@ -1053,6 +1185,93 @@ _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE: List[re.Pattern] = (
     [_c(p) for p in _ACTIVE_ESCALATION_IN_PROGRESS]
 )
 
+# These anchors prevent broad contextual dampeners (for example, a trailing
+# "bye" or informal opener) from suppressing clear, present-tense intent.
+# Negation, fiction, and recovery checks still run before this guard.
+_ACTIVE_CRISIS_CONTEXT_OVERRIDE: List[re.Pattern] = (
+    _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE
+    + [_c(p) for p in _DIRECT_HARM_TO_OTHERS]
+    + ([_c(p) for p in (
+        _URDU_EXPLICIT_INTENT
+        + _URDU_BURDEN_GOODBYE
+        + _URDU_LETHAL_MEANS
+        + _URDU_SELF_HARM
+        + _URDU_IDEATION_PRESENT
+    )] if _URDU_RULES_ENABLED else [])
+)
+
+_ACUTE_FIRST_PERSON_CRISIS_PATTERNS: List[re.Pattern] = [
+    # English first-person acute suicidal intent
+    re.compile(r"\b(?:i\s+am|i'?m|i\s+will|i'?ll|i)\s+(?:going\s+to|gonna|about\s+to|planning\s+to|want\s+to|plan\s+to|wanna|have\s+decided\s+to)\s+(?:kill\s+myself|end\s+my\s+(?:own\s+)?life|commit\s+suicide|hang\s+myself|shoot\s+myself|slit\s+my\s+wrists?|jump\s+from|take\s+my\s+own\s+life|hurt\s+myself)\b", re.I),
+    re.compile(r"\bi\s+(?:want\s+to\s+die|wanna\s+die|wish\s+i\s+(?:was|were)\s+dead|tired\s+of\s+living|ready\s+to\s+die|bought\s+pills\s+to\s+overdose)\b", re.I),
+    re.compile(r"\b(?:will\s+|gonna\s+)?slit\s+my\s+wrists?\b", re.I),
+    re.compile(r"\bi\s+am\s+going\s+to\s+kill\s+myself\b", re.I),
+    re.compile(r"\bholding\s+the\s+blade\b", re.I),
+    re.compile(r"\bhave\s+the\s+pills\s+(?:ready\s+)?(?:in\s+front\s+of\s+me|ready|here)\b", re.I),
+    re.compile(r"\b(?:i\s+will|i'?ll|i\s+am\s+going\s+to|i'?m\s+gonna|i\s+plan\s+to|i\s+want\s+to)\s+(?:kill|murder|shoot|stab|hurt)\s+(?!(?:alarm|clock|phone|laptop|computer|car|pizza|burger|food|game|exam|test|my|this|that)\b)(?:someone|them|him|her|[a-z]+)\b", re.I),
+    re.compile(r"\bthe\s+only\s+way\s+out\s+feels\s+like\s+ending\s+my\s+life\b", re.I),
+    re.compile(r"\bi'?m\s+done\s+fighting.*\bgive\s+up\s+on\s+everything\s+including\s+myself\b", re.I),
+    re.compile(r"\bi(?:\s+have|'ve)\s+been\s+planning\s+how\s+to\s+end\s+things\b", re.I),
+    re.compile(r"\bi\s+(?:do\s+not|don'?t)\s+think\s+i\s+can\s+survive\s+another\s+day\b", re.I),
+    re.compile(r"\b(?:i'?m\s+)?ready\s+to\s+give\s+up\s+on\s+life\b", re.I),
+    re.compile(r"\b(?:i\s+)?(?:already\s+)?made\s+the\s+first\s+cut\b", re.I),
+    re.compile(r"\bswallowed\s+the\s+pills\s+already\b", re.I),
+    re.compile(r"\b(?:i\s+am|i'?m)\s+(?:going\s+to|gonna)\s+suicide\b", re.I),
+    re.compile(r"\bi\s+(?:might|want\s+to|going\s+to|gonna|plan\s+to)\s+hurt\s+myself\b", re.I),
+    re.compile(r"\bi'?m\s+going\s+to\s+hurt\s+them\s+and\s+then\s+end\s+my\s+own\s+life\b", re.I),
+    re.compile(r"\bi\s+have\s+a\s+lethal\s+plan\b", re.I),
+    re.compile(r"\bjust\s+won'?t\s+be\s+here\s+next\s+week\b", re.I),
+    re.compile(r"\bjust\s+ready\s+to\s+die\b", re.I),
+    re.compile(r"\bsorry\s+i\s+couldn'?t\s+be\s+stronger\s+for\s+you\b", re.I),
+    # Roman Urdu first-person acute suicidal intent
+    re.compile(r"\b(?:mein|main|mai|hum)\s+(?:(?:khudkushi|khud-kushi)\s+(?:kar(?:ne\s+laga|\s*k[ae]\s+mar|unga|ungi|na(?:\s+chaht[aei](?:\s+h[uo]o?n)?)?)?)|apni\s+jaan\s+(?:lene\s+ja\s+raha|lene\s+ja\s+rahi|de\s+dunga|de\s+doonga)|apne\s+aap\s+ko\s+khatam|khud\s+ko\s+khatam\s+kar\s*(?:lunga|doonga|dunga|raha|rahi)|zinda\s+nahi\s+rehna\s+chahta\s+bas\s+marna\s+chahta|phanda\s+laga\s*(?:kar|k[ae])\s+marne|apni\s+nas\s+kaat\s*k[ae])\b", re.I),
+    re.compile(r"\b(?:(?:mein|main|mai|hum)\s+)?apni\s+nas\s+kaat\s+kar\s+jaan\s+de\s+dunga\b", re.I),
+    re.compile(r"\b(?:mujhe|mjhe)\s+marna\s+hai\b", re.I),
+    re.compile(r"\b(?:zehr|zehar)\s+khaa?\s*kar\s+mar\s+jaunga\b", re.I),
+    re.compile(r"\bapne\s+aap\s+ko\s+khatam\s+kar\s+raha\b", re.I),
+    re.compile(r"\bmain\s+marna\s+chahta\s+hoon\b", re.I),
+    re.compile(r"\b(?:mein|main|mai|hum)\s+.*?\b(?:rail|train|gari|gaari)\s+k[ae]?\s+(?:a?ag[ae]y?|samn[ae]|neech[ae])\s+(?:kood|chalang|gir|gira)\b", re.I),
+    re.compile(r"\b(?:mein|main|mai|hum)\s+.*?\b(?:pankh?[ae]y?|fan)\s+se\s+latka\b", re.I),
+    re.compile(r"\b(?:mein|main|mai|hum)\s+.*?\b(?:chhat|chat|building)\s+se\s+kood\b", re.I),
+    re.compile(r"\b(?:meri\s+)?la?ash\s+(?:hi\s+)?dekhog[aei]\b", re.I),
+    re.compile(r"\bzeh[ae]?r\b[^.!?]{0,35}\bpee\s+(?:loon?ga|lunga|doon?ga|dunga|raha|rahi)\b", re.I),
+    re.compile(r"\b(?:apni\s+)?saans(?:ain|en)?\s+khatam\s+kar\b", re.I),
+    re.compile(r"\b(?:khud\s+ko|apne\s+aap\s+ko)\s+aag\s+laga\b", re.I),
+]
+
+_DIRECT_NEGATION_PREFIX = re.compile(
+    r"\b(?:i\s+)?(?:do\s+not|don'?t|does\s+not|doesn'?t|did\s+not|didn'?t|would\s+never|would\s+not|will\s+not|won'?t|am\s+not|'m\s+not|have\s+no|have\s+zero|without\s+any)\b|"
+    r"\b(?:how\s+to\s+stop|help\s+me\s+not)\b|"
+    r"\b(?:nahi|nahin|mat)\b",
+    re.I
+)
+_DIRECT_NEGATION_SUFFIX_URDU = re.compile(
+    r"^\s*(?:nahi|nahin|nai|nhe)\s*(?:karu|kare|karta|karti|dena|deni|hoga|hogi)?\b",
+    re.I
+)
+
+def _has_unnegated_acute_crisis(text: str) -> bool:
+    """
+    Returns True if text contains an active, un-negated first-person acute crisis signal.
+    Precedence Rule: An acute crisis statement takes precedence over contextual bypasses
+    (academic, fiction, jokes/sarcasm, support requests, disclaimers).
+    """
+    t = _normalize(text)
+    if not t:
+        return False
+    for pat in _ACUTE_FIRST_PERSON_CRISIS_PATTERNS:
+        for m in pat.finditer(t):
+            pre = t[:m.start()].strip()
+            post = t[m.end():].strip()
+            if _DIRECT_NEGATION_SUFFIX_URDU.search(post):
+                continue
+            if _DIRECT_NEGATION_PREFIX.search(pre):
+                last_neg = list(_DIRECT_NEGATION_PREFIX.finditer(pre))[-1]
+                if m.start() - last_neg.end() <= 35:
+                    continue
+            return True
+    return False
+
 NEGATION_PATTERNS = [_c(p) for p in _NEGATION_PATTERNS]
 PAST_HISTORICAL_REFLECTION_PATTERNS = [_c(p) for p in _PAST_HISTORICAL_REFLECTION_PATTERNS]
 CONTINUATION_OVERRIDE_MARKERS = [_c(p) for p in _CONTINUATION_OVERRIDE_MARKERS]
@@ -1075,8 +1294,8 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
     # A negated thought or idiom combined with a crisis clause is not a safe bypass.
     # Example: "I don't want to die, but I am going to kill myself tonight."
     # Example: "I want to die, but this exam is killing me."
-    contrast_parts = [p.strip() for p in re.split(r"\b(?:but|however|though|yet)\b", t) if p.strip()][:4]
-    so_parts = [p.strip() for p in re.split(r",?\s+(?:so|and)\s+", t) if p.strip()][:4]
+    contrast_parts = [p.strip() for p in re.split(r"\b(?:but|however|though|yet)\b", t) if p.strip()]
+    so_parts = [p.strip() for p in re.split(r",?\s+(?:so|and)\s+", t) if p.strip()]
     allow_idiom_bypass = True
     if len(contrast_parts) >= 2:
         for idx, part in enumerate(contrast_parts):
@@ -1104,7 +1323,12 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
     # contrastive phir bhi/bas) veto suppression. Gated on Urdu-token presence
     # so English text can never trip these.
     if _URDU_RULES_ENABLED and re.search(r"\b(?:mujhe|main|mein|mera|meri|nahi|nahin|hoon|karna|zindagi|khudkushi|dil|allah|yaar|mar|marr|bore|garmi|bhook|zeher|phansi|chhat|alvida|akhri|aakhri|maut|sochta|jaoon|jaunga|himmat|tang|umeed)\b", t, re.IGNORECASE):
-        _has_escalation = bool(re.search(r"\b(?:ab|abhi|aaj|phir\s+bhi|bas)\b", t, re.IGNORECASE))
+        _has_escalation = bool(re.search(
+            r"\b(?:abhi|aaj|phir\s+bhi|bas)\b"
+            r"|\bab\s+(?:bas|khatam|marna|mar|aur|socht[aei]|soch|lag|chaht[aei]|dil|irada)\b"
+            r"|\bpehle\b[^.!?]{0,60}\b(?:tha|thi|thay)\b[^.!?]{0,30}\bab\b[^.!?]{0,25}\b(?:socht[aei]|chaht[aei])\s+hoo?n\b",
+            t, re.IGNORECASE
+        ))
         if (
             re.search(r"\b(?:garmi|bhook|bhok|bhookh|bukhar|exam|assignment|thakan|traffic|has\s*ke|has-has|hans|bore|maza|mazak|mauz|paise)\b", t, re.IGNORECASE)
             and re.search(r"\bmarr?\b|\bmar\s*(?:jao+un?ga|jaunga|gaya|gayi|dala|dalegi|jao|jati)\b|\bjaan\s+nikal\b", t, re.IGNORECASE)
@@ -1114,12 +1338,14 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
         if (
             re.search(r"\b(?:pehle|pehlay|puran[ai]|kabhi)\b", t, re.IGNORECASE)
             and re.search(r"\b(?:tha|thi|thay)\b", t, re.IGNORECASE)
+            and not re.search(r"\b(?:pehle|pehlay)\s+(?:kabhi\s+)?(?:nahi|nahin|nai|nhe)\b", t, re.IGNORECASE)
             and not _has_escalation
         ):
             return "urdu_past_recovery"
         # sarcasm / joke / quoted-song frame: suppresses within its own span
         if re.search(r"\b(?:maza+k|mazaaq|joke|drama\s+hai|gaane?\s+ka\s+bol|gaane?\s+ki\s+line|song|filmy)\b", t, re.IGNORECASE):
-            return "urdu_sarcasm_frame"
+            if not _has_unnegated_acute_crisis(t):
+                return "urdu_sarcasm_frame"
         _urdu_denials = [
             r"\bmarr?na?\s+(?:nahi|nahin|nai|nhe)\b",
             r"\b(?:nahi|nahin|nai|nhe)\s+marr?na?\b",
@@ -1133,7 +1359,8 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
             r"\bdil\s+(?:nahi|nahin|nai|nhe)\s+karta?\s+marr?ne?\s+ka\b",
         ]
         if any(re.search(p, t, re.IGNORECASE) for p in _urdu_denials) and not _has_escalation:
-            return "urdu_negation"
+            if not _has_unnegated_acute_crisis(t):
+                return "urdu_negation"
 
     # (2) Specific compound distress pattern that is active distress:
     if re.search(r"\bi\s+feel\s+like\s+everything\s+is\s+falling\s+apart\s+and\s+i\s+can'?t\s+stop\s+it\b", t):
@@ -1151,7 +1378,7 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
             r"(?:(?:going\s+)?to\s+|gonna\s+)?(?:kill|hurt|harm|end|cut|overdos|suicide|swallow|jump|hang|shoot|drown|crash|have\s+(?:the\s+)?(?:pills|rope|blade))",
             t, re.IGNORECASE
         ))
-        has_explicit_override = any(pat.search(t) for pat in [_c(p) for p in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE_RAW])
+        has_explicit_override = any(pat.search(t) for pat in [_c(p) for p in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE_RAW]) or _has_unnegated_acute_crisis(t)
         if not (has_first_person_crisis or has_explicit_override):
             return "third_party_subject_report"
 
@@ -1162,10 +1389,10 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
 
     # (2.7) Slang hyperbole dampener: kms/kys/unalive in humorous/trivial context
     discourse = evaluate_discourse(text)
-    if discourse.should_downgrade:
+    if discourse.should_downgrade and not _has_unnegated_acute_crisis(t):
         return "slang_hyperbole_dampener"
     _slang_dampener_compiled = [_c(p) for p in _SLANG_HYPERBOLE_DAMPENER_PATTERNS]
-    if any(pat.search(t) for pat in _slang_dampener_compiled):
+    if any(pat.search(t) for pat in _slang_dampener_compiled) and not _has_unnegated_acute_crisis(t):
         return "slang_hyperbole_dampener"
 
     # (2.8) Protective contrast: "want to die but won't because of my dog"
@@ -1187,10 +1414,12 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
     # (4) Direct grammatical negation of a crisis phrase / survival request.
     for pat in NEGATION_PATTERNS:
         if pat.search(t):
+            if _has_unnegated_acute_crisis(t):
+                return None
             # Negation-disclaimer paradox fix:
             # "I'm not suicidal, but I took the pills / want to die tonight"
             # (negation in 1st clause + un-negated lethal action in 2nd clause)
-            negation_contrast = [p.strip() for p in re.split(r"\b(?:but|just|except|although|however|yet)\b", t) if p.strip()][:4]
+            negation_contrast = [p.strip() for p in re.split(r"\b(?:but|just|except|although|however|yet)\b", t) if p.strip()]
             if len(negation_contrast) >= 2:
                 for second_clause in negation_contrast[1:]:
                     second_is_negated = any(p.search(second_clause) for p in NEGATION_PATTERNS)
@@ -1213,27 +1442,23 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
     # (6) Support-seeking and emotionally venting language without present self-harm/crisis intent
     for pat in SUPPORT_REQUEST_AND_VENTING_PATTERNS:
         if pat.search(t):
-            if not any(override.search(t) for override in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE):
+            if not _has_unnegated_acute_crisis(t):
                 return "support_request_or_emotional_venting"
 
     # (7) Academic context
     if detect_academic_frame(t) or any(pat.search(t) for pat in ACADEMIC_CONTEXT_PATTERNS):
-        unquoted = re.sub(r"['\"].*?['\"]", "", t)
-        has_real_override = any(pat.search(unquoted) for pat in [_c(p) for p in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE_RAW])
-        if not has_real_override:
+        if not _has_unnegated_acute_crisis(t):
             return "academic_or_research_context"
 
     # (8) Media / third-person / fictional narrative context
     if detect_fictional_frame(t) or any(pat.search(t) for pat in MEDIA_CONTEXT_PATTERNS):
-        unquoted = re.sub(r"['\"].*?['\"]", "", t)
-        has_real_override = any(pat.search(unquoted) for pat in [_c(p) for p in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE_RAW])
-        if not has_real_override:
+        if not _has_unnegated_acute_crisis(t):
             return "media_or_third_person_reference"
 
     # (9) Non-crisis situational expressions -- must not suppress active first-person crisis overrides
     for pat in NON_CRISIS_SITUATIONAL_EXPRESSIONS:
         if pat.search(t):
-            if not any(override.search(t) for override in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE):
+            if not (any(override.search(t) for override in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE) or _has_unnegated_acute_crisis(t)):
                 return "non_crisis_situational_expression"
 
     return None
@@ -1259,7 +1484,7 @@ def is_contextual_or_negated(text: str) -> bool:
 
     for sentence in sentences:
         norm_sent = _normalize(sentence)
-        has_crisis_pattern = match_crisis_regex(norm_sent) or any(p.search(norm_sent) for p in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE)
+        has_crisis_pattern = match_crisis_regex(norm_sent) or any(p.search(norm_sent) for p in _ACTIVE_CRISIS_CONTEXT_OVERRIDE)
         reason = _contextual_bypass_reason(sentence)
         
         if has_crisis_pattern and reason is None:
@@ -1374,6 +1599,28 @@ def evaluate_crisis(text: str, preprocess_result: Optional[PreprocessResult] = N
             "bypassed": is_bypassed,
             "bypass_reason": reason,
         })
+
+    if not any_crisis_sentence_found:
+        if "\n" in clean_text or "\r" in clean_text:
+            norm_full = _normalize(clean_text)
+            full_matches = _find_category_matches(norm_full)
+            if full_matches:
+                reason = _contextual_bypass_reason(clean_text)
+                if reason is None:
+                    any_crisis_sentence_found = True
+                    for cname, phrases in full_matches.items():
+                        all_matched_categories.add(cname)
+                        all_matched_phrases.update(phrases)
+                        escalating_categories.add(cname)
+                        escalating_phrases.update(phrases)
+                        cat_obj = next(c for c in CRISIS_PATTERN_CATEGORIES if c.name == cname)
+                        max_escalating_severity = max(max_escalating_severity, cat_obj.severity)
+                    sentence_findings.append({
+                        "sentence": clean_text,
+                        "matched_categories": list(full_matches.keys()),
+                        "bypassed": False,
+                        "bypass_reason": None,
+                    })
 
     if not any_crisis_sentence_found:
         return _empty_result()
@@ -1534,11 +1781,16 @@ def evaluate_crisis_pipeline(
 
         # Step 1a: Roman Urdu routing + normalization (feature-flagged)
         if _URDU_RULES_ENABLED:
-            from .roman_urdu_router import route as _urdu_route, ROUTE_ARABIC_SCRIPT as _ROUTE_ARABIC
+            from .roman_urdu_router import (
+                route as _urdu_route,
+                ROUTE_ARABIC_SCRIPT as _ROUTE_ARABIC,
+                ROUTE_UNSUPPORTED_SCRIPT as _ROUTE_UNSUPPORTED,
+            )
             _route, _density = _urdu_route(raw_text)
-            if _route == _ROUTE_ARABIC:
-                # Urdu-script (Nastaliq) is out of detection scope but must NOT
-                # fail silently: gentle generic check-in with resources.
+            if _route in (_ROUTE_ARABIC, _ROUTE_UNSUPPORTED):
+                # Native Urdu/Nastaliq and other unsupported scripts are outside
+                # the English/Roman-Urdu detection scope. They must not be sent
+                # to those classifiers or silently treated as ordinary chat.
                 return {
                     "is_crisis": False,
                     "risk_level": "script_checkin",
@@ -1546,7 +1798,7 @@ def evaluate_crisis_pipeline(
                     "imminent_risk": False,
                     "protective_factor": False,
                     "is_third_party": False,
-                    "source": "arabic_script_fallback",
+                    "source": "arabic_script_fallback" if _route == _ROUTE_ARABIC else "unsupported_script_fallback",
                     "confidence": 0.9,
                     "safety_message": (
                         "We may not fully understand this language yet, but we're glad you reached out. "
@@ -1589,56 +1841,71 @@ def evaluate_crisis_pipeline(
         )
         actor_target = analyze_threat_actor_target(raw_text)
         if actor_target.is_fictional:
-            return {
-                "is_crisis": False,
-                "risk_level": "none",
-                "high_risk": False,
-                "imminent_risk": False,
-                "protective_factor": False,
-                "is_third_party": False,
-                "bypass_triggered": True,
-                "bypass_reason": "fictional_narrative_context",
-                "source": "contextual_bypass",
-                "confidence": 0.95,
-                "safety_message": "",
-                "disclaimer": SAFETY_DISCLAIMER,
-                "resources": CRISIS_RESOURCES,
-                "preprocess_result": pp,
-            }
-        if actor_target.is_negated:
-            return {
-                "is_crisis": False,
-                "risk_level": "none",
-                "high_risk": False,
-                "imminent_risk": False,
-                "protective_factor": False,
-                "is_third_party": False,
-                "bypass_triggered": True,
-                "bypass_reason": "grammatical_negation",
-                "source": "contextual_bypass",
-                "confidence": 0.95,
-                "safety_message": "",
-                "disclaimer": SAFETY_DISCLAIMER,
-                "resources": CRISIS_RESOURCES,
-                "preprocess_result": pp,
-            }
-        if actor_target.is_threat:
-            if actor_target.category == "REPORTED_THREAT_TO_OTHERS":
+            det_check = evaluate_crisis(pp.text, preprocess_result=pp) or evaluate_crisis(raw_text, preprocess_result=pp)
+            if (det_check and det_check.get("is_crisis")) or _has_unnegated_acute_crisis(raw_text) or _has_unnegated_acute_crisis(pp.text):
+                # ARCHITECTURE INVARIANT: Acute self-harm crisis cannot be downgraded to non-crisis fictional bypass
+                pass
+            else:
                 return {
                     "is_crisis": False,
-                    "is_third_party": True,
-                    "third_party_crisis_reported": True,
-                    "risk_level": "REPORTED_THREAT_TO_OTHERS",
+                    "risk_level": "none",
                     "high_risk": False,
                     "imminent_risk": False,
                     "protective_factor": False,
-                    "source": "threat_actor_analysis",
-                    "confidence": 0.98,
-                    "safety_message": build_reported_threat_safety_message(actor_target.actor, actor_target.target),
+                    "is_third_party": False,
+                    "bypass_triggered": True,
+                    "bypass_reason": "fictional_narrative_context",
+                    "source": "contextual_bypass",
+                    "confidence": 0.95,
+                    "safety_message": "",
                     "disclaimer": SAFETY_DISCLAIMER,
                     "resources": CRISIS_RESOURCES,
                     "preprocess_result": pp,
                 }
+        if actor_target.is_negated:
+            det_check = evaluate_crisis(pp.text, preprocess_result=pp) or evaluate_crisis(raw_text, preprocess_result=pp)
+            if (det_check and det_check.get("is_crisis")) or _has_unnegated_acute_crisis(raw_text) or _has_unnegated_acute_crisis(pp.text):
+                # ARCHITECTURE INVARIANT: Acute self-harm crisis cannot be downgraded to non-crisis negation bypass
+                pass
+            else:
+                return {
+                    "is_crisis": False,
+                    "risk_level": "none",
+                    "high_risk": False,
+                    "imminent_risk": False,
+                    "protective_factor": False,
+                    "is_third_party": False,
+                    "bypass_triggered": True,
+                    "bypass_reason": "grammatical_negation",
+                    "source": "contextual_bypass",
+                    "confidence": 0.95,
+                    "safety_message": "",
+                    "disclaimer": SAFETY_DISCLAIMER,
+                    "resources": CRISIS_RESOURCES,
+                    "preprocess_result": pp,
+                }
+        if actor_target.is_threat:
+            if actor_target.category == "REPORTED_THREAT_TO_OTHERS":
+                det_check = evaluate_crisis(raw_text, preprocess_result=pp)
+                if det_check.get("is_crisis") and any(c != "direct_threat_to_others" for c in det_check.get("matched_categories", [])):
+                    # ARCHITECTURE INVARIANT: Acute self-harm crisis cannot be downgraded to non-crisis reported threat
+                    pass
+                else:
+                    return {
+                        "is_crisis": False,
+                        "is_third_party": True,
+                        "third_party_crisis_reported": True,
+                        "risk_level": "REPORTED_THREAT_TO_OTHERS",
+                        "high_risk": False,
+                        "imminent_risk": False,
+                        "protective_factor": False,
+                        "source": "threat_actor_analysis",
+                        "confidence": 0.98,
+                        "safety_message": build_reported_threat_safety_message(actor_target.actor, actor_target.target),
+                        "disclaimer": SAFETY_DISCLAIMER,
+                        "resources": CRISIS_RESOURCES,
+                        "preprocess_result": pp,
+                    }
             elif actor_target.category == "THREAT_AGAINST_USER":
                 return {
                     "is_crisis": True,
@@ -1663,7 +1930,7 @@ def evaluate_crisis_pipeline(
                 r"(?:(?:going\s+)?to\s+|gonna\s+)?(?:kill|hurt|harm|end|cut|overdos|suicide|swallow|jump|hang|shoot|drown|crash|have\s+(?:the\s+)?(?:pills|rope|blade))",
                 unquoted, re.IGNORECASE
             ))
-            has_explicit_override = any(pat.search(unquoted) for pat in [_c(p) for p in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE_RAW])
+            has_explicit_override = any(pat.search(unquoted) for pat in [_c(p) for p in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE_RAW]) or _has_unnegated_acute_crisis(unquoted)
             if has_first_person_crisis or has_explicit_override:
                 pp.is_third_party = False
             else:
@@ -1689,7 +1956,7 @@ def evaluate_crisis_pipeline(
         discourse = evaluate_discourse(raw_text, _split_sentences(pp.text))
         concepts = extract_all_concepts(pp.text)
         unquoted = re.sub(r"['\"].*?['\"]", "", pp.text)
-        has_first_person_override = any(pat.search(unquoted) for pat in [_c(p) for p in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE_RAW])
+        has_first_person_override = any(pat.search(unquoted) for pat in [_c(p) for p in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE_RAW]) or _has_unnegated_acute_crisis(unquoted)
 
         # Step 4: Run Precedence Arbitration
         arb_input = ArbitrationInput(

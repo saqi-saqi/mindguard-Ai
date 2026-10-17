@@ -61,6 +61,7 @@ def _c(pattern: str) -> re.Pattern:
 # (Migrated from crisis_rules.py _PAST_HISTORICAL_REFLECTION_PATTERNS L530-562)
 _PAST_ANCHOR_PATTERNS: List[re.Pattern] = [
     _c(r"\bused\s+to\s+feel\s+suicidal\b"),
+    _c(r"\bused\s+to\s+want\s+to\s+(?:kill\s+myself|die|end\s+my\s+life)\b"),
     _c(r"\bused\s+to\s+be\s+suicidal\b"),
     _c(r"\bused\s+to\s+think\s+about\s+ending\s+things\b"),
     _c(r"\bused\s+to\s+(?:cut|harm|hurt|self[\s-]?harm)\s+(?:myself\s+)?every\s+week\b"),
@@ -76,6 +77,7 @@ _PAST_ANCHOR_PATTERNS: List[re.Pattern] = [
     _c(r"\bsurvived\s+(?:a\s+)?(?:really\s+)?(?:bad\s+)?bout\s+of\b"),
     _c(r"\bback\s+in\s+\d{4}\s+i\s+attempted\b"),
     _c(r"\bclean\s+for\s+\d+\s+(?:years?|months?)\b"),
+    _c(r"\bclean\s+from\s+self[\s-]?harm\s+for\s+\d+\s+(?:years?|months?|weeks?)\b"),
     _c(r"\bbeen\s+stable\s+for\s+(?:almost\s+)?(?:\d+|a|one|two|three|four|five)\s+(?:years?|months?)\b"),
     _c(r"\bhaven'?t\s+had\s+those\s+thoughts\s+in\s+\d+\s+(?:years?|months?)\b"),
     _c(r"\b(?:\d+|a|one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:years?|months?|decades?)\s+(?:ago|since)\b"),
@@ -84,7 +86,7 @@ _PAST_ANCHOR_PATTERNS: List[re.Pattern] = [
     _c(r"\bseveral\s+years\s+ago\s+i\s+was\s+in\s+a\s+really\s+dark\s+place\b"),
     _c(r"\b(?:that\s+was\s+a\s+)?dark\s+(?:period|time|phase|chapter|place|days)\b"),
     # Recovery milestone patterns
-    _c(r"\b\d+\s+years?\s+clean\s+from\s+self[\s-]?harm\b"),
+    _c(r"\b\d+\s+(?:years?|months?|weeks?)\s+clean\s+from\s+self[\s-]?harm\b"),
     _c(r"\bself[\s-]?harm\s+free\s+for\s+(?:over\s+)?\d+\b"),
     _c(r"\bhaven'?t\s+had\s+a\s+suicidal\s+thought\s+in\s+(?:years|months|a\s+long\s+time)\b"),
     _c(r"\bleft\s+(?:my\s+)?suicidal\s+past\s+behind\b"),
@@ -113,10 +115,10 @@ _RECENT_ANCHORS: List[re.Pattern] = [
 # --- Resolution Markers ---
 # (Migrated from crisis_rules.py _RESOLUTION_MARKERS L579-592)
 _RESOLUTION_PATTERNS: List[re.Pattern] = [
-    _c(r"\bbut\s+i'?m\s+doing\s+(?:great|better|fine|well|okay|good)\s+now\b"),
-    _c(r"\bi'?m\s+in\s+a\s+(?:good|better|different)\s+place\s+now\b"),
+    _c(r"\bbut\s+i'?m\s+doing\s+(?:great|better|fine|well|okay|good|much\s+better)\s+(?:now|today)\b"),
+    _c(r"\bi'?m\s+(?:doing\s+)?(?:much\s+)?better\s+(?:now|today)\b"),
+    _c(r"\bi'?m\s+in\s+a\s+(?:good|better|different)\s+place\s+(?:now|today)\b"),
     _c(r"\bthat'?s\s+(?:all\s+)?behind\s+me\s+now\b"),
-    _c(r"\bi'?m\s+(?:doing\s+)?(?:much\s+)?better\s+now\b"),
     _c(r"\bi'?m\s+honestly\s+happy\s+now\b"),
     _c(r"\bi'?m\s+thriving\s+now\b"),
     _c(r"\bproud\s+of\s+how\s+far\s+i'?ve\s+come\b"),
@@ -125,6 +127,8 @@ _RESOLUTION_PATTERNS: List[re.Pattern] = [
     _c(r"\bi'?m\s+doing\s+well\b"),
     _c(r"\bturned\s+things\s+around\s+for\s+me\b"),
     _c(r"\bhelped\s+me\s+pull\s+through\b"),
+    _c(r"\btherapy\s+helped\b"),
+    _c(r"\bab\s+theek\s+hoon\b"),
     # Additional resolution markers
     _c(r"\bi\s+(?:got|received|sought|found)\s+help\b"),
     _c(r"\bi'?ve\s+(?:since\s+|fully\s+)?(?:recovered|healed|moved\s+on)\b"),

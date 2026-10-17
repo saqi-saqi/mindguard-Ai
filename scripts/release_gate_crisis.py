@@ -220,8 +220,9 @@ def main():
     # 2. Evaluate Aggressive Crisis Rule Suite
     print("\n[2] Evaluating Aggressive Crisis Rule Suite")
     agg_passed, agg_total = run_aggressive_suite()
-    agg_gate_pass = (agg_passed == agg_total)
-    print(f"    Aggressive Rule Suite Result: {agg_passed}/{agg_total} Passed ({agg_passed/agg_total*100:.1f}%)")
+    agg_gate_pass = (agg_passed == agg_total) and (agg_total > 0)
+    pct = (agg_passed / agg_total * 100) if agg_total > 0 else 0.0
+    print(f"    Aggressive Rule Suite Result: {agg_passed}/{agg_total} Passed ({pct:.1f}%)")
 
     # 3. Evaluate Development Benchmark
     print("\n[3] Evaluating Development Benchmark (extras/dataset/crisis_test_utterances.csv - 530 Cases)")

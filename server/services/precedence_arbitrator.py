@@ -213,19 +213,22 @@ def arbitrate(inp: ArbitrationInput) -> ArbitrationResult:
 
     # 6. DISCOURSE MODULATION: Sarcasm / Casual Hyperbole Downgrade
     if inp.discourse and inp.discourse.should_downgrade:
-        reasoning.append(f"Rule 6 (Discourse modulation): Downgrade approved for {inp.discourse.humor_type}.")
-        return ArbitrationResult(
-            is_crisis=False,
-            risk_level="none",
-            high_risk=False,
-            imminent_risk=False,
-            protective_factor=inp.has_protective_behavior,
-            bypass_triggered=True,
-            bypass_reason="slang_hyperbole_dampener",
-            source="contextual_bypass",
-            confidence=0.85,
-            reasoning=reasoning,
-        )
+        if not inp.has_first_person_override:
+            reasoning.append(f"Rule 6 (Discourse modulation): Downgrade approved for {inp.discourse.humor_type}.")
+            return ArbitrationResult(
+                is_crisis=False,
+                risk_level="none",
+                high_risk=False,
+                imminent_risk=False,
+                protective_factor=inp.has_protective_behavior,
+                bypass_triggered=True,
+                bypass_reason="slang_hyperbole_dampener",
+                source="contextual_bypass",
+                confidence=0.85,
+                reasoning=reasoning,
+            )
+        else:
+            reasoning.append("Rule 6 Override: Discourse humor/hyperbole detected, but acute first-person crisis overrides downgrade.")
 
     # 7. SAFE PAST NARRATIVE (Resolved)
     if inp.temporal and inp.temporal.past_anchor.detected:

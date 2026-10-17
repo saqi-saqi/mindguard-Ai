@@ -30,7 +30,8 @@ if BASE_DIR not in sys.path:
 
 from config import (
     CORS_ORIGINS, RATE_LIMIT_PER_MINUTE, MAX_MESSAGE_LENGTH,
-    GEMINI_API_KEY, FLASK_ENV, FLASK_USE_RELOADER, FLASK_DEBUG
+    GEMINI_API_KEY, FLASK_ENV, FLASK_USE_RELOADER, FLASK_DEBUG,
+    TRUSTED_PROXIES
 )
 from database import (
     init_db, get_db, serialize_doc,
@@ -69,6 +70,11 @@ from services.crisis_resources import (
 from services.intent_rules import match_fast_path_intent
 from services.safety_classifier import (
     classify_safety_risk, SafetyRiskCategory
+)
+from services.roman_urdu_router import (
+    route as route_language_scope,
+    ROUTE_ARABIC_SCRIPT,
+    ROUTE_UNSUPPORTED_SCRIPT,
 )
 
 
@@ -122,19 +128,48 @@ if os.environ.get("WERKZEUG_RUN_MAIN") in (None, "true"):
 # ---------------------------------------------------------------------------
 # Rate Limiting & Security In-Memory Storage
 # ---------------------------------------------------------------------------
+# Note: In-memory rate limiting operates per-process. In a multi-worker deployment
+# (e.g., Gunicorn or uWSGI with multiple workers), an out-of-process store such as
+# Redis is required to share sliding-window rate counters across worker processes.
 _RATE_LIMIT_STORAGE: Dict[str, list] = {}
 _RATE_LIMIT_LOCK = threading.Lock()
 RATE_LIMIT_WINDOW_SECONDS = 60
 
 
+def get_client_ip(req) -> str:
+    """
+    Safely resolves the client IP address.
+    Only trusts X-Forwarded-For if request.remote_addr is in TRUSTED_PROXIES.
+    Otherwise uses request.remote_addr directly to prevent spoofing bypasses.
+    """
+    remote_addr = req.remote_addr or "127.0.0.1"
+    raw_trusted = app.config.get("TRUSTED_PROXIES") if "TRUSTED_PROXIES" in app.config else (os.environ.get("TRUSTED_PROXIES") or TRUSTED_PROXIES)
+    if isinstance(raw_trusted, str):
+        trusted_set = {ip.strip() for ip in raw_trusted.split(",") if ip.strip()}
+    elif isinstance(raw_trusted, (list, set, tuple)):
+        trusted_set = {str(ip).strip() for ip in raw_trusted if str(ip).strip()}
+    else:
+        trusted_set = set()
+
+    if remote_addr in trusted_set:
+        forwarded_for = req.headers.get("X-Forwarded-For")
+        if forwarded_for:
+            # Parse comma-separated IPs; leftmost IP is the original client
+            ips = [ip.strip() for ip in forwarded_for.split(",") if ip.strip()]
+            if ips:
+                return ips[0]
+    return remote_addr
+
+
 def is_rate_limited(client_ip: str) -> bool:
     """Sliding-window IP rate limiter."""
+    effective_limit = int(app.config.get("RATE_LIMIT_PER_MINUTE") if "RATE_LIMIT_PER_MINUTE" in app.config else (os.environ.get("RATE_LIMIT_PER_MINUTE") or RATE_LIMIT_PER_MINUTE))
     now = time.time()
     cutoff = now - RATE_LIMIT_WINDOW_SECONDS
     with _RATE_LIMIT_LOCK:
         timestamps = _RATE_LIMIT_STORAGE.get(client_ip, [])
         valid_timestamps = [t for t in timestamps if t > cutoff]
-        if len(valid_timestamps) >= RATE_LIMIT_PER_MINUTE:
+        if len(valid_timestamps) >= effective_limit:
             _RATE_LIMIT_STORAGE[client_ip] = valid_timestamps
             return True
         valid_timestamps.append(now)
@@ -162,7 +197,7 @@ def before_request_hook():
         return "", 200
 
     if request.path.startswith("/api/"):
-        client_ip = request.headers.get("X-Forwarded-For", request.remote_addr or "127.0.0.1").split(",")[0].strip()
+        client_ip = get_client_ip(request)
         if is_rate_limited(client_ip):
             logger.warning(f"Rate limit exceeded for IP: {client_ip} on {request.path}")
             return jsonify({
@@ -170,7 +205,7 @@ def before_request_hook():
                 "data": None,
                 "error": {
                     "code": "RATE_LIMIT_EXCEEDED",
-                    "message": f"Rate limit of {RATE_LIMIT_PER_MINUTE} requests per minute exceeded. Please slow down."
+                    "message": f"Rate limit of {RATE_LIMIT_PER_MINUTE} requests per minute exceeded. If you are in immediate danger or need crisis support, please contact emergency services at 1122 (Pakistan) or Umang helpline at 0311-7786264."
                 }
             }), 429
 
@@ -647,6 +682,19 @@ def chat():
     user_message = user_message.strip()
 
     if len(user_message) > MAX_MESSAGE_LENGTH:
+        long_safety = classify_safety_risk(user_message)
+        if long_safety.is_crisis:
+            return jsonify({
+                "success": True,
+                "data": {
+                    "reply": long_safety.safety_message,
+                    "is_crisis": True,
+                    "risk_level": "HIGH_CRISIS",
+                    "category": long_safety.category.value if hasattr(long_safety.category, "value") else str(long_safety.category),
+                    "safety_message": long_safety.safety_message,
+                },
+                "error": None
+            }), 200
         return jsonify({"success": False, "data": None, "error": {"code": "MESSAGE_TOO_LONG", "message": f"Message exceeds maximum allowed length ({MAX_MESSAGE_LENGTH} characters)."}}), 400
 
     session_id = body.get("session_id")
@@ -726,6 +774,45 @@ def chat():
                 and msg.get("text")
                 and msg.get("sender") == "user"
             ][-3:]
+
+        # This release classifies English and Roman Urdu only. Do this scope
+        # check before any safety, ML, or generative model call so native Urdu
+        # and other unsupported scripts receive a transparent local check-in
+        # instead of an unreliable classification result.
+        language_route, _ = route_language_scope(user_message)
+        if language_route in (ROUTE_ARABIC_SCRIPT, ROUTE_UNSUPPORTED_SCRIPT):
+            duration_ms = round((time.time() - start_req_time) * 1000, 2)
+            scope_reply = (
+                "We may not fully understand this language yet, but we're glad you reached out. "
+                "If you are struggling or feel unsafe, please contact someone you trust or local emergency support right now."
+            )
+            logger.info(f"[{req_id}] Unsupported-script check-in returned without model inference. Duration={duration_ms}ms")
+            save_audit_event(
+                "unsupported_script_checkin",
+                user_id,
+                {"request_id": req_id, "route": language_route},
+            )
+            return jsonify({
+                "success": True,
+                "status": "success",
+                "risk_level": "script_checkin",
+                "requires_immediate_action": False,
+                "data": {
+                    "status": "success",
+                    "risk_level": "script_checkin",
+                    "reply": scope_reply,
+                    "disclaimer": SAFETY_DISCLAIMER,
+                    "intent": "UNSUPPORTED_LANGUAGE_CHECKIN",
+                    "emotion": "UNKNOWN",
+                    "sentiment": "NEUTRAL",
+                    "emergency_resources": regional_resources,
+                    "requires_immediate_action": False,
+                    "session_id": session_id,
+                    "latency_ms": duration_ms,
+                    "inference_latency_ms": duration_ms,
+                },
+                "error": None,
+            }), 200
 
         # Save user message
         if user_id and retention_enabled:
@@ -1017,7 +1104,7 @@ def chat():
             and not (crisis_eval.get("bypass_triggered") or is_contextual_or_negated(clean_user_message))
         )
 
-        triage_level = "LOW"
+        triage_level = "ELEVATED_DISTRESS" if safety_eval.category == SafetyRiskCategory.EMOTIONAL_DISTRESS else "LOW"
 
         if is_crisis_signal:
             conf = float(ml_results.get("intent_confidence", 0.5))

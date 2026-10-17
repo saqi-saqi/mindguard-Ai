@@ -44,6 +44,25 @@ import app as flask_app_module
 class TestActorTargetSafetyClassification(unittest.TestCase):
     """Unit tests for actor-target disambiguation across safety pathways."""
 
+    def test_first_person_suicide_denial_is_not_misread_as_third_party_report(self):
+        result = analyze_threat_actor_target("I don't want to die, I just want to sleep")
+        self.assertFalse(result.is_threat)
+        self.assertEqual(result.category, "NONE")
+
+    def test_roman_urdu_first_person_suicide_not_dropped_by_actor_target(self):
+        """BUG-ROUTER-DROP-01: Roman Urdu verb token 'gay' followed by 'main' must not mis-parse as third-party threat."""
+        phrase = "aj k baad meri koi awaz nahi suno gay main marna chahta hoon"
+        ta_res = analyze_threat_actor_target(phrase)
+        self.assertEqual(ta_res.category, "SELF_HARM_RISK")
+        self.assertTrue(ta_res.is_threat)
+
+        pipe_res = evaluate_crisis_pipeline(phrase)
+        self.assertTrue(pipe_res["is_crisis"])
+
+        safety_res = classify_safety_risk(phrase)
+        self.assertTrue(safety_res.is_crisis)
+        self.assertEqual(safety_res.category, SafetyRiskCategory.SELF_HARM_RISK)
+
     # Case 1: "Atif wants to kill Taimoor." -> Reported threat to others
     def test_case_1_reported_threat_to_others(self):
         phrases = [

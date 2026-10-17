@@ -25,11 +25,13 @@ if hasattr(sys.stdout, 'reconfigure'):
 ROOT_DIR = Path(__file__).resolve().parent.parent
 SERVER_DIR = ROOT_DIR / "server"
 TESTS_BACKEND_DIR = ROOT_DIR / "tests" / "backend"
+TESTS_DEEP_DIR = ROOT_DIR / "tests" / "deep"
 CLIENT_DIR = ROOT_DIR / "client"
 
 sys.path.insert(0, str(ROOT_DIR))
 sys.path.insert(0, str(SERVER_DIR))
 sys.path.insert(0, str(TESTS_BACKEND_DIR))
+sys.path.insert(0, str(TESTS_DEEP_DIR))
 
 os.environ['USE_MONGOMOCK'] = 'true'
 os.environ['FLASK_ENV'] = 'testing'
@@ -37,14 +39,14 @@ os.environ['FLASK_ENV'] = 'testing'
 
 def run_backend_tests():
     print("\n=================================================================")
-    print("           1. RUNNING BACKEND UNIT & INTEGRATION TESTS           ")
+    print("      1. RUNNING BACKEND UNIT, INTEGRATION & DEEP SUITE TESTS    ")
     print("=================================================================")
     start_time = time.time()
     
-    proc = subprocess.run([sys.executable, "-m", "pytest", str(TESTS_BACKEND_DIR), "-q"], cwd=str(ROOT_DIR), text=True, encoding='utf-8', errors='replace')
+    proc = subprocess.run([sys.executable, "-m", "pytest", str(TESTS_BACKEND_DIR), str(TESTS_DEEP_DIR), "-q"], cwd=str(ROOT_DIR), text=True, encoding='utf-8', errors='replace')
     
     elapsed = time.time() - start_time
-    print(f"\n[Backend Tests Execution Time: {elapsed:.2f}s]")
+    print(f"\n[Backend & Deep Tests Execution Time: {elapsed:.2f}s]")
     return proc.returncode == 0
 
 
@@ -82,17 +84,38 @@ def run_frontend_type_check():
     print("=================================================================")
     start_time = time.time()
     
-    cmd = f'cmd.exe /c "cd /d {CLIENT_DIR} && npm run type-check"'
-    proc = subprocess.run(cmd, shell=True, capture_output=True, text=True, encoding='utf-8', errors='replace')
-    
-    elapsed = time.time() - start_time
-    if proc.returncode == 0:
+def _run_npm(args: list[str]) -> tuple[bool, str, float]:
+    start_time = time.time()
+    npm_bin = "npm.cmd" if sys.platform == "win32" else "npm"
+    try:
+        proc = subprocess.run(
+            [npm_bin] + args,
+            cwd=str(CLIENT_DIR),
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='replace'
+        )
+        elapsed = time.time() - start_time
+        output = (proc.stdout or "") + (proc.stderr or "")
+        return proc.returncode == 0, output, elapsed
+    except FileNotFoundError:
+        elapsed = time.time() - start_time
+        return False, "npm executable not found in PATH", elapsed
+
+
+def run_frontend_type_check():
+    print("\n=================================================================")
+    print("           4. RUNNING FRONTEND TYPESCRIPT TYPE-CHECK             ")
+    print("=================================================================")
+    ok, output, elapsed = _run_npm(["run", "type-check"])
+    if ok:
         print("[PASS] Frontend TypeScript type-check passed with 0 errors!")
         print(f"[TypeScript Type-Check Execution Time: {elapsed:.2f}s]")
         return True
     else:
         print("[FAIL] Frontend TypeScript type-check failed:")
-        print(proc.stderr or proc.stdout)
+        print(output)
         return False
 
 
@@ -100,20 +123,15 @@ def run_frontend_tests():
     print("\n=================================================================")
     print("           5. RUNNING FRONTEND VITEST UNIT & ACCESSIBILITY TESTS ")
     print("=================================================================")
-    start_time = time.time()
-    
-    cmd = f'cmd.exe /c "cd /d {CLIENT_DIR} && npm test"'
-    proc = subprocess.run(cmd, shell=True, capture_output=True, text=True, encoding='utf-8', errors='replace')
-    
-    elapsed = time.time() - start_time
-    if proc.returncode == 0:
+    ok, output, elapsed = _run_npm(["test"])
+    if ok:
         print("[PASS] Frontend Vitest tests passed!")
-        print(proc.stdout)
+        print(output)
         print(f"[Frontend Test Execution Time: {elapsed:.2f}s]")
         return True
     else:
         print("[FAIL] Frontend Vitest tests failed:")
-        print(proc.stderr or proc.stdout)
+        print(output)
         return False
 
 
@@ -121,19 +139,14 @@ def run_frontend_build_check():
     print("\n=================================================================")
     print("           6. RUNNING FRONTEND VITE PRODUCTION BUILD             ")
     print("=================================================================")
-    start_time = time.time()
-    
-    cmd = f'cmd.exe /c "cd /d {CLIENT_DIR} && npm run build"'
-    proc = subprocess.run(cmd, shell=True, capture_output=True, text=True, encoding='utf-8', errors='replace')
-    
-    elapsed = time.time() - start_time
-    if proc.returncode == 0:
+    ok, output, elapsed = _run_npm(["run", "build"])
+    if ok:
         print("[PASS] Frontend Vite build completed successfully!")
         print(f"[Frontend Build Execution Time: {elapsed:.2f}s]")
         return True
     else:
         print("[FAIL] Frontend Vite build failed:")
-        print(proc.stderr or proc.stdout)
+        print(output)
         return False
 
 
@@ -144,31 +157,48 @@ def run_security_audits():
     start_time = time.time()
     
     # 1. Python Pip Audit
-    print("-> Checking Python dependencies with pip-audit...")
-    pip_proc = subprocess.run([sys.executable, "-m", "pip_audit"], capture_output=True, text=True, encoding='utf-8', errors='replace')
-    pip_ok = pip_proc.returncode == 0
-    if pip_ok:
-        print("   [PASS] 0 Python vulnerabilities detected.")
-    else:
-        print("   [WARN] pip-audit output:")
-        print(pip_proc.stdout or pip_proc.stderr)
-        pip_ok = True  # Warn but proceed if network/mirror warning
+    print("-> Checking Python dependencies with pip-audit (server/requirements.txt)...")
+    try:
+        req_file = str(SERVER_DIR / "requirements.txt")
+        pip_proc = subprocess.run([sys.executable, "-m", "pip_audit", "-r", req_file], capture_output=True, text=True, encoding='utf-8', errors='replace')
+        if pip_proc.returncode == 0:
+            print("   [PASS] 0 Python vulnerabilities detected in server/requirements.txt.")
+            pip_status = "PASS"
+        else:
+            out = (pip_proc.stdout or "") + (pip_proc.stderr or "")
+            if "network" in out.lower() or "connection" in out.lower() or "timeout" in out.lower():
+                print("   [UNAVAILABLE] pip-audit network/mirror connection issue:")
+                print(out[:400])
+                pip_status = "UNAVAILABLE"
+            else:
+                print("   [FAIL] pip-audit detected vulnerabilities:")
+                print(out)
+                pip_status = "FAIL"
+    except FileNotFoundError:
+        print("   [UNAVAILABLE] pip-audit is not installed in the environment.")
+        pip_status = "UNAVAILABLE"
 
-    # 2. Frontend NPM Audit
-    print("-> Checking Frontend npm dependencies with npm audit...")
-    npm_cmd = f'cmd.exe /c "cd /d {CLIENT_DIR} && npm audit"'
-    npm_proc = subprocess.run(npm_cmd, shell=True, capture_output=True, text=True, encoding='utf-8', errors='replace')
-    npm_ok = npm_proc.returncode == 0
+    # 2. Frontend NPM Audit (Production Dependencies)
+    print("-> Checking Frontend production npm dependencies with npm audit (--omit=dev)...")
+    npm_ok, npm_out, _ = _run_npm(["audit", "--omit=dev"])
     if npm_ok:
-        print("   [PASS] 0 npm vulnerabilities detected.")
+        print("   [PASS] 0 production npm vulnerabilities detected.")
+        npm_status = "PASS"
     else:
-        print("   [WARN] npm audit output:")
-        print(npm_proc.stdout or npm_proc.stderr)
-        npm_ok = True
+        if "not found" in npm_out.lower() or "network" in npm_out.lower() or "ENOTFOUND" in npm_out:
+            print("   [UNAVAILABLE] npm audit unavailable or network failure:")
+            print(npm_out[:400])
+            npm_status = "UNAVAILABLE"
+        else:
+            print("   [FAIL] npm audit detected vulnerabilities in production dependencies:")
+            print(npm_out)
+            npm_status = "FAIL"
 
     elapsed = time.time() - start_time
     print(f"\n[Security Audits Execution Time: {elapsed:.2f}s]")
-    return pip_ok and npm_ok
+    # Return True if clean (PASS) or audit service unavailable (due to network in offline CI)
+    # Fail if confirmed vulnerabilities are found
+    return (pip_status != "FAIL") and (npm_status != "FAIL")
 
 
 def main():

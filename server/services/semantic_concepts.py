@@ -44,7 +44,7 @@ def _c(pattern: str) -> re.Pattern:
 
 # 1. FATAL SLEEP METAPHOR
 _FATAL_SLEEP_POSITIVE: List[re.Pattern] = [
-    _c(r"\b(?:go|going|want\s+to\s+go)\s+to\s+sleep\s+and\s+(?:never|not)\s+(?:have\s+to\s+)?(?:wake|get)\s+up\b"),
+    _c(r"\b(?:go|going|want\s+to\s+go|fall|falling|want\s+to\s+fall)\s+(?:to\s+)?sleep\s+and\s+(?:never|not)\s+(?:have\s+to\s+)?(?:wake|get)\s+up\b"),
     _c(r"\b(?:go\s+to\s+)?sleep\s+and\s+(?:not|never)\s+(?:have\s+to\s+)?wake\s+up(?:\s+to\s+this)?\b"),
     _c(r"\b(?:close|shut)\s+my\s+eyes\s+and\s+(?:never|not)\s+(?:wake|open\s+them)\s*(?:up|again)?\b"),
     _c(r"\bsleep\s+forever\b"),
@@ -52,9 +52,14 @@ _FATAL_SLEEP_POSITIVE: List[re.Pattern] = [
     _c(r"\bforever\s+kind\s+of\s+(?:rest|sleep)\b"),
     _c(r"\bgo\s+to\s+sleep\s+and\s+not\s+wake\s+up\b"),
     _c(r"\bnever\s+want\s+to\s+wake\s+up\s+again\b"),
-    _c(r"\bwish\s+(?:i\s+)?would\s+never\s+wake\s+up\b"),
-    _c(r"\bwish\s+i\s+could\s+just\s+sleep\s+and\s+not\s+wake\s+up\b"),
+    _c(r"\bwish\s+(?:i\s+)?(?:could\s+just\s+|would\s+just\s+|would\s+)?never\s+wake\s+up\b"),
+    _c(r"\bwish\s+i\s+could\s+just\s+(?:sleep|fall\s+asleep)\s+and\s+not\s+wake\s+up\b"),
+    _c(r"\b(?:wish\s+(?:i\s+)?(?:could\s+just\s+|would\s+just\s+)?|hope\s+(?:i\s+)?)(?:never|not|don'?t|wouldn'?t)\s+wake\s+up(?:\s+tomorrow|\s+again|\s+anymore)?\b"),
+    _c(r"\b(?:don'?t|do\s+not)\s+want\s+to\s+wake\s+up\s+anymore\b"),
+    _c(r"\bdidn'?t\s+open\s+my\s+eyes\s+tomorrow\b"),
     _c(r"\bput\s+me\s+to\s+sleep\s+permanently\b"),
+    _c(r"\b(?:fall\s+asleep\s+and\s+not\s+come\s+back|fall\s+asleep\s+and\s+never\s+wake)\b"),
+    _c(r"\b(?:logging\s+off|checking\s+out)\s+(?:forever|permanently|of\s+life)\b"),
 ]
 
 _FATAL_SLEEP_NEGATIVE_BLOCKERS: List[re.Pattern] = [
