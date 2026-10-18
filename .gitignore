@@ -46,6 +46,8 @@ desktop.ini
 
 # Presentations & Open House (kept local only)
 openhouse/
+extras/
+
 
 # Reviewer Sheets & Research Evaluation Reports (kept locally)
 artifacts/reviewer_sheets/
@@ -63,6 +65,10 @@ test_artifacts/
 client/coverage/
 client/test-results/
 test-results/
+extras/reviewer_sheets/
+extras/tests_artifacts/
+extras/test_artifacts/
+extras/test-results/
 
 # Thesis figures & local statement
 docs/figures/
@@ -76,6 +82,8 @@ docs/project_statement.txt
 .aider*
 changes_file.txt
 scratch/
+extras/scratch/
+extras/zcode/
 temp/
 tmp/
 *.tmp
@@ -90,5 +98,9 @@ yarn-error.log*
 # Local scratch / binaries
 contact.jpg
 example.txt
+extras/contact.jpg
+extras/example.txt
+extras/.coverage
 *.exe
+
 

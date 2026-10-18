@@ -123,8 +123,6 @@ MindGuard is continuously verified against adversarial test suites, held-out ben
 │   └── run_all_tests.py    # Master test & security audit pipeline
 ├── e2e/                    # Playwright end-to-end multi-browser test suite
 ├── docker-compose.yml      # Multi-container orchestration (MongoDB + Flask + React)
-├── BUGS.md                 # Authoritative defect remediation & root cause log
-├── TEST_REPORT.md          # Comprehensive QA and verification audit report
 └── README.md
 ```
 
