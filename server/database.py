@@ -143,6 +143,10 @@ def init_db():
     db.audit_logs.create_index([("created_at", DESCENDING)], name="idx_audit_created_at")
     db.user_profiles.create_index([("user_id", ASCENDING)], name="idx_user_profiles_user_id", unique=True)
 
+    # 5. TTL Indexes for Automatic Data Retention Expiry
+    db.chat_messages.create_index("expires_at", expireAfterSeconds=0)
+    db.mood_logs.create_index("expires_at", expireAfterSeconds=0)
+
     logger.info("MongoDB collections and compound indexes initialized successfully.")
 
 
@@ -292,7 +296,7 @@ def get_mood_summary_for_chat(user_id: str) -> str:
 
 # --- Mood Logs Operations ---
 
-def save_mood_log(user_id: str, score: int, tags: List[str], notes: str, expires_at: Optional[str] = None) -> Dict[str, Any]:
+def save_mood_log(user_id: str, score: int, tags: List[str], notes: str, expires_at: Optional[Any] = None) -> Dict[str, Any]:
     """Saves a mood log record for a user."""
     db = get_db()
     log_id = f"mood-{uuid.uuid4().hex[:12]}"
@@ -642,7 +646,7 @@ def save_chat_message(
     sentiment: Optional[str] = None,
     grounding_exercise: Optional[str] = None,
     session_id: Optional[str] = None,
-    expires_at: Optional[str] = None
+    expires_at: Optional[Any] = None
 ) -> Dict[str, Any]:
     """Saves a chat message to MongoDB chat_messages collection."""
     db = get_db()
@@ -765,13 +769,28 @@ def update_trusted_contact(user_id: str, contact_data: Dict[str, str]) -> Option
     return get_user_by_id(user_id)
 
 
+# NOTE: cleanup_old_records() is now a manual/audit purge tool, not the primary deletion mechanism (the TTL index is).
 def cleanup_old_records(retention_days: int = 30) -> Dict[str, int]:
     """Deletes documents older than retention_days from chat_messages and mood_logs."""
     db = get_db()
-    cutoff_date = (datetime.utcnow() - timedelta(days=retention_days)).isoformat()
+    now_dt = datetime.utcnow()
+    now_iso = now_dt.isoformat()
+    cutoff_date = (now_dt - timedelta(days=retention_days)).isoformat()
 
-    res_msg = db.chat_messages.delete_many({"$or": [{"created_at": {"$lt": cutoff_date}}, {"expires_at": {"$lte": datetime.utcnow().isoformat()}}]})
-    res_mood = db.mood_logs.delete_many({"$or": [{"created_at": {"$lt": cutoff_date}}, {"expires_at": {"$lte": datetime.utcnow().isoformat()}}]})
+    res_msg = db.chat_messages.delete_many({
+        "$or": [
+            {"created_at": {"$lt": cutoff_date}},
+            {"expires_at": {"$lte": now_dt}},
+            {"expires_at": {"$lte": now_iso}}
+        ]
+    })
+    res_mood = db.mood_logs.delete_many({
+        "$or": [
+            {"created_at": {"$lt": cutoff_date}},
+            {"expires_at": {"$lte": now_dt}},
+            {"expires_at": {"$lte": now_iso}}
+        ]
+    })
 
     return {
         "cutoff_date": cutoff_date,

@@ -46,6 +46,8 @@ def real_mongo():
     db.mood_logs.create_index([("user_id", ASCENDING), ("created_at", DESCENDING)], name="idx_user_mood_timeline")
     db.chat_sessions.create_index([("user_id", ASCENDING), ("created_at", DESCENDING)], name="idx_user_sessions_timeline")
     db.user_profiles.create_index([("user_id", ASCENDING)], name="idx_user_profiles_user_id", unique=True)
+    db.chat_messages.create_index("expires_at", expireAfterSeconds=0)
+    db.mood_logs.create_index("expires_at", expireAfterSeconds=0)
 
     yield {"client": client, "db": db, "name": throwaway_db_name}
 
@@ -55,7 +57,7 @@ def real_mongo():
 
 
 def test_real_mongodb_indexes_created(real_mongo):
-    """Verify all required unique and compound indexes exist on real MongoDB."""
+    """Verify all required unique, compound, and TTL indexes exist on real MongoDB."""
     db = real_mongo["db"]
     user_idx = db.users.index_information()
     assert "idx_unique_email" in user_idx
@@ -64,10 +66,56 @@ def test_real_mongodb_indexes_created(real_mongo):
     chat_idx = db.chat_messages.index_information()
     assert "idx_user_chat_timeline" in chat_idx
     assert chat_idx["idx_user_chat_timeline"]["key"] == [("user_id", 1), ("created_at", -1)]
+    assert "expires_at_1" in chat_idx
+    assert chat_idx["expires_at_1"].get("expireAfterSeconds") == 0
 
     mood_idx = db.mood_logs.index_information()
     assert "idx_user_mood_timeline" in mood_idx
     assert mood_idx["idx_user_mood_timeline"]["key"] == [("user_id", 1), ("created_at", -1)]
+    assert "expires_at_1" in mood_idx
+    assert mood_idx["expires_at_1"].get("expireAfterSeconds") == 0
+
+
+def test_real_mongodb_ttl_auto_purge(real_mongo):
+    """
+    Creates a document with expires_at in the past (as a real datetime),
+    confirms it exists immediately after insert, then confirms MongoDB's
+    background TTL monitor removes it within ~90 seconds.
+    """
+    import time
+    from datetime import datetime, timedelta
+
+    db = real_mongo["db"]
+    doc_id = f"msg-ttl-{uuid.uuid4().hex[:8]}"
+    past_date = datetime.utcnow() - timedelta(minutes=5)
+
+    # Insert document with expires_at in the past (as native datetime)
+    db.chat_messages.insert_one({
+        "id": doc_id,
+        "user_id": "usr-ttl-test",
+        "text": "This message should auto-purge via MongoDB TTL",
+        "created_at": (datetime.utcnow() - timedelta(days=1)).isoformat(),
+        "expires_at": past_date
+    })
+
+    # 1. Confirm it exists immediately after insert
+    inserted = db.chat_messages.find_one({"id": doc_id})
+    assert inserted is not None, "Document must exist immediately after insert"
+    assert isinstance(inserted.get("expires_at"), datetime), "expires_at must be stored as native datetime"
+
+    # 2. Confirm MongoDB's background TTL monitor removes it within ~90 seconds
+    max_wait = 95
+    poll_interval = 2
+    start = time.time()
+    purged = False
+
+    while (time.time() - start) < max_wait:
+        if db.chat_messages.find_one({"id": doc_id}) is None:
+            purged = True
+            break
+        time.sleep(poll_interval)
+
+    assert purged, f"Document was not removed by MongoDB TTL monitor within {max_wait}s (elapsed {time.time() - start:.1f}s)"
 
 
 def test_real_mongodb_query_uses_ixscan_not_collscan(real_mongo):

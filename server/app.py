@@ -562,7 +562,7 @@ def moods_endpoint():
         return jsonify({"success": False, "data": None, "error": {"code": "RETENTION_DISABLED", "message": "Mood logging is disabled when retention is turned off."}}), 409
 
     retention_days = int(settings.get("retention_days", 30))
-    expires_at = (datetime.utcnow() + timedelta(days=retention_days)).isoformat()
+    expires_at = datetime.utcnow() + timedelta(days=retention_days)
 
     doc = save_mood_log(user_id, score, tags, notes, expires_at=expires_at)
     save_audit_event("mood_logged", user_id, {"score": score})
@@ -721,7 +721,7 @@ def chat():
             retention_days = int(settings.get("retention_days", 30))
             user_locale = "pakistan"
             if retention_enabled:
-                expires_at = (datetime.utcnow() + timedelta(days=retention_days)).isoformat()
+                expires_at = datetime.utcnow() + timedelta(days=retention_days)
 
     # --- Context-aware counselor context (built AFTER session creation) ---
     user_context = ""
