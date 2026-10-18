@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Shield, Database, Phone, Download, Trash2, AlertOctagon, CheckCircle2, Eye, EyeOff, Lock, AlertCircle, Info, Building2, ArrowLeft } from "lucide-react";
 import type { MindUser, SafetyProfile, TrustedContact, UserSettings } from "./types";
+import useAuthGate from "./useAuthGate";
 
 interface Props {
   user: MindUser | null;
@@ -9,6 +10,7 @@ interface Props {
   onAccountDeleted?: () => void;
   onBackToChat?: () => void;
   onSignIn?: () => void;
+  onNavigateToAuth?: (mode: "login" | "register") => void;
 }
 
 const defaults: UserSettings = {
@@ -25,7 +27,15 @@ const safetyProfileDefaults: SafetyProfile = {
   emergency_actions_consent: false,
 };
 
-export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted, onBackToChat, onSignIn }: Props) {
+export default function SettingsPanel({
+  user,
+  token,
+  onUpdated,
+  onAccountDeleted,
+  onBackToChat,
+  onSignIn,
+  onNavigateToAuth,
+}: Props) {
   const [settings, setSettings] = useState<UserSettings>(user?.settings || defaults);
   const [contact, setContact] = useState<TrustedContact>(
     user?.trusted_contact || { name: "", phone: "", relationship: "Friend or family" }
@@ -40,6 +50,14 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const isAuthenticated = Boolean(user && (token === undefined || Boolean(token)));
+  const { requireAuth, AuthModal } = useAuthGate({
+    isAuthenticated,
+    onNavigateToAuth: onNavigateToAuth || (onSignIn ? () => onSignIn() : undefined),
+    title: "Sign In Required",
+    description: "You are currently using MindGuard in anonymous guest mode. Sign in or create an account to save custom settings, configure trusted contacts, export data, or manage your account.",
+  });
 
   useEffect(() => {
     if (user?.settings) setSettings(user.settings);
@@ -441,7 +459,7 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
           <button
             type="button"
             disabled={isSaving}
-            onClick={save}
+            onClick={requireAuth(save)}
             className="rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:opacity-50 cursor-pointer"
           >
             {isSaving ? "Saving Settings..." : "Save Settings & Preferences"}
@@ -462,7 +480,7 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
             </div>
             <button
               type="button"
-              onClick={downloadExport}
+              onClick={requireAuth(downloadExport)}
               className="flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-800 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 cursor-pointer shadow-2xs"
             >
               <Download className="size-4 text-indigo-600" />
@@ -479,10 +497,10 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
             </div>
             <button
               type="button"
-              onClick={() => {
+              onClick={requireAuth(() => {
                 setDeleteConfirmText("");
                 setShowDeleteModal(true);
-              }}
+              })}
               className="flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 cursor-pointer shadow-2xs"
             >
               <Trash2 className="size-4" />
@@ -533,7 +551,7 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
                 <button
                   type="button"
                   disabled={deleteConfirmText.trim().toUpperCase() !== "DELETE" || isDeleting}
-                  onClick={executeAccountDeletion}
+                  onClick={requireAuth(executeAccountDeletion)}
                   className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isDeleting ? "Deleting..." : "Permanently Delete"}
@@ -543,6 +561,7 @@ export default function SettingsPanel({ user, token, onUpdated, onAccountDeleted
           </div>
         )}
       </div>
+      <AuthModal />
     </section>
   );
 }

@@ -8,6 +8,7 @@ import SettingsPanel from './components/SettingsPanel';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('auth');
+  const [authMode, setAuthMode] = useState('login');
   const [user, setUser] = useState(null);
   const [token, setToken] = useState('');
   const [isCrisisModalOpen, setIsCrisisModalOpen] = useState(false);
@@ -19,6 +20,11 @@ export default function App() {
   const [activeSessionId, setActiveSessionId] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
   const [chatKey, setChatKey] = useState(0);
+
+  const handleNavigateToAuth = (mode = 'login') => {
+    setAuthMode(mode);
+    setActiveTab('auth');
+  };
 
   // Clear previous session storage on clean startup so app always asks for login
   useEffect(() => {
@@ -310,8 +316,10 @@ export default function App() {
             moodLogs={moodLogs}
             onClearLogs={handleClearMoodLogs}
             token={token}
+            user={user}
             onMoodCreated={handleRecordMood}
             onStartChat={() => setActiveTab('chat')}
+            onNavigateToAuth={handleNavigateToAuth}
           />
         )}
         {activeTab === 'settings' && (
@@ -321,12 +329,15 @@ export default function App() {
             onUpdated={handleSettingsUpdated}
             onAccountDeleted={handleAccountDeleted}
             onBackToChat={() => setActiveTab('chat')}
-            onSignIn={() => setActiveTab('auth')}
+            onSignIn={() => handleNavigateToAuth('login')}
+            onNavigateToAuth={handleNavigateToAuth}
           />
         )}
         {activeTab === 'auth' && (
           <AuthScreen
+            key={`auth-${authMode}`}
             onLogin={handleLoginSuccess}
+            defaultLoginMode={authMode === 'login'}
           />
         )}
       </main>

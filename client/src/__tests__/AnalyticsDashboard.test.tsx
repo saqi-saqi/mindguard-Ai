@@ -155,4 +155,133 @@ describe("AnalyticsDashboard Accessibility & Quality", () => {
     fireEvent.click(midtermsChip);
     expect(midtermsChip.getAttribute("aria-pressed")).toBe("false");
   });
+
+  describe("Guest-Mode Auth Gate on Mood & Analytics", () => {
+    it("intercepts Save check-in when guest user: opens modal and does not fire API call", async () => {
+      const mockFetch = vi.fn();
+      globalThis.fetch = mockFetch as any;
+      const onMoodCreated = vi.fn();
+      const onNavigateToAuth = vi.fn();
+
+      await act(async () => {
+        render(
+          <AnalyticsDashboard
+            moodLogs={[]}
+            token=""
+            user={null}
+            onMoodCreated={onMoodCreated}
+            onNavigateToAuth={onNavigateToAuth}
+          />
+        );
+      });
+
+      // Guest clicks Save check-in
+      const saveBtn = screen.getByRole("button", { name: /Save check-in/i });
+      fireEvent.click(saveBtn);
+
+      // Verify AuthGateModal opens
+      expect(screen.getByRole("dialog")).toBeDefined();
+      expect(screen.getByText(/Sign In to Save Mood Check-ins/i)).toBeDefined();
+      expect(screen.getByRole("button", { name: /^Log In$/i })).toBeDefined();
+      expect(screen.getByRole("button", { name: /^Register$/i })).toBeDefined();
+
+      // Original action must NOT fire
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(onMoodCreated).not.toHaveBeenCalled();
+    });
+
+    it("intercepts Clear Mood History when guest user: opens modal and does not execute clear", async () => {
+      const onClearLogs = vi.fn();
+      const onNavigateToAuth = vi.fn();
+      const sampleLogs: MoodLog[] = [
+        { id: "1", score: 7, tags: ["Exercise"], notes: "Good run", created_at: new Date().toISOString() }
+      ];
+
+      await act(async () => {
+        render(
+          <AnalyticsDashboard
+            moodLogs={sampleLogs}
+            token=""
+            user={null}
+            onClearLogs={onClearLogs}
+            onNavigateToAuth={onNavigateToAuth}
+          />
+        );
+      });
+
+      const clearBtn = screen.getByRole("button", { name: /Clear Mood History/i });
+      fireEvent.click(clearBtn);
+
+      // Verify modal opens and onClearLogs did not fire
+      expect(screen.getByRole("dialog")).toBeDefined();
+      expect(onClearLogs).not.toHaveBeenCalled();
+    });
+
+    it("allows routing to Log In and Register from modal and dismissal to stay on page", async () => {
+      const onNavigateToAuth = vi.fn();
+
+      await act(async () => {
+        render(
+          <AnalyticsDashboard
+            moodLogs={[]}
+            token=""
+            user={null}
+            onNavigateToAuth={onNavigateToAuth}
+          />
+        );
+      });
+
+      const saveBtn = screen.getByRole("button", { name: /Save check-in/i });
+      fireEvent.click(saveBtn);
+
+      // Click Log In
+      const loginBtn = screen.getByRole("button", { name: /^Log In$/i });
+      fireEvent.click(loginBtn);
+      expect(onNavigateToAuth).toHaveBeenCalledWith("login");
+      expect(screen.queryByRole("dialog")).toBeNull();
+
+      // Re-trigger and click Register
+      fireEvent.click(saveBtn);
+      const registerBtn = screen.getByRole("button", { name: /^Register$/i });
+      fireEvent.click(registerBtn);
+      expect(onNavigateToAuth).toHaveBeenCalledWith("register");
+      expect(screen.queryByRole("dialog")).toBeNull();
+
+      // Re-trigger and dismiss
+      fireEvent.click(saveBtn);
+      const dismissBtn = screen.getByRole("button", { name: /Stay on page \(Dismiss\)/i });
+      fireEvent.click(dismissBtn);
+      expect(screen.queryByRole("dialog")).toBeNull();
+    });
+
+    it("allows authenticated user to click Clear Mood History normally without auth modal", async () => {
+      const onClearLogs = vi.fn();
+      const sampleLogs: MoodLog[] = [
+        { id: "1", score: 7, tags: ["Exercise"], notes: "Good run", created_at: new Date().toISOString() }
+      ];
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          success: true,
+          data: { mood_logs: sampleLogs }
+        })
+      }) as any;
+
+      await act(async () => {
+        render(
+          <AnalyticsDashboard
+            moodLogs={sampleLogs}
+            token="valid-token"
+            onClearLogs={onClearLogs}
+          />
+        );
+      });
+
+      const clearBtn = screen.getByRole("button", { name: /Clear Mood History/i });
+      fireEvent.click(clearBtn);
+
+      expect(onClearLogs).toHaveBeenCalledTimes(1);
+      expect(screen.queryByRole("dialog")).toBeNull();
+    });
+  });
 });

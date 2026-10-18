@@ -1,18 +1,29 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Activity, Plus, Trash2, Calendar, Info, BarChart3, TrendingUp, CheckCircle2, AlertCircle, MessageCircle, Compass } from "lucide-react";
-import type { MoodLog } from "./types";
+import type { MoodLog, MindUser } from "./types";
+import useAuthGate from "./useAuthGate";
 
 interface Props {
   moodLogs?: MoodLog[];
   onClearLogs?: () => void;
   token?: string;
+  user?: MindUser | null;
   onMoodCreated?: (log: MoodLog) => void;
   onStartChat?: () => void;
+  onNavigateToAuth?: (mode: "login" | "register") => void;
 }
 
 const COMMON_TAGS = ["Exam", "Sleep", "Exercise", "Work", "Family", "Social", "Study", "Relaxation"];
 
-export default function AnalyticsDashboard({ moodLogs = [], onClearLogs, token, onMoodCreated, onStartChat }: Props) {
+export default function AnalyticsDashboard({
+  moodLogs = [],
+  onClearLogs,
+  token,
+  user,
+  onMoodCreated,
+  onStartChat,
+  onNavigateToAuth,
+}: Props) {
   const [period, setPeriod] = useState("monthly");
   const [logs, setLogs] = useState<MoodLog[]>(moodLogs);
   const [score, setScore] = useState(5);
@@ -27,6 +38,14 @@ export default function AnalyticsDashboard({ moodLogs = [], onClearLogs, token, 
   const messageTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
   const sliderRef = useRef<HTMLInputElement | null>(null);
+
+  const isAuthenticated = Boolean(token && (user === undefined || Boolean(user)));
+  const { requireAuth, AuthModal } = useAuthGate({
+    isAuthenticated,
+    onNavigateToAuth,
+    title: "Sign In to Save Mood Check-ins",
+    description: "You are currently browsing in guest mode. Sign in or create an account to record personal mood check-ins and track reflections over time.",
+  });
 
   useEffect(() => {
     setLogs(moodLogs);
@@ -385,7 +404,7 @@ export default function AnalyticsDashboard({ moodLogs = [], onClearLogs, token, 
         )}
 
         {/* Log Mood Check-in Form */}
-        <form ref={formRef} onSubmit={addMood} className="space-y-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs">
+        <form ref={formRef} onSubmit={requireAuth(addMood)} className="space-y-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h2 className="flex items-center gap-2 text-base font-bold text-slate-900 font-heading">
               <Plus className="size-4 text-indigo-600" /> A quick check-in
@@ -507,6 +526,7 @@ export default function AnalyticsDashboard({ moodLogs = [], onClearLogs, token, 
             <button
               type="submit"
               disabled={isSubmitting}
+              onClick={requireAuth(addMood)}
               className="rounded-xl bg-indigo-600 px-5 py-2 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? "Saving Check-in..." : "Save check-in"}
@@ -523,7 +543,7 @@ export default function AnalyticsDashboard({ moodLogs = [], onClearLogs, token, 
             {onClearLogs && logs.length > 0 && (
               <button
                 type="button"
-                onClick={onClearLogs}
+                onClick={requireAuth(onClearLogs)}
                 className="flex items-center gap-1 text-xs font-semibold text-rose-700 hover:text-rose-900 transition-colors cursor-pointer"
               >
                 <Trash2 className="size-3.5" /> Clear Mood History
@@ -561,6 +581,7 @@ export default function AnalyticsDashboard({ moodLogs = [], onClearLogs, token, 
           )}
         </div>
       </div>
+      <AuthModal />
     </section>
   );
 }
