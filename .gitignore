@@ -103,4 +103,22 @@ extras/example.txt
 extras/.coverage
 *.exe
 
+# Admin CLI utility (kept local only)
+scripts/make_admin.py
+
+# Research, evaluation & benchmark scripts (kept local only)
+scripts/benchmarks/
+scripts/build_report_numbers.py
+scripts/build_roman_urdu_adversarial.py
+scripts/build_roman_urdu_benchmark.py
+scripts/check_ml_disjoint.py
+scripts/compute_kappa.py
+scripts/eval_roman_urdu_dev.py
+scripts/eval_roman_urdu_holdout.py
+scripts/evaluate_crisis_roberta.py
+scripts/make_reviewer_sheets.py
+scripts/run_aggressive_gate.py
+scripts/split_roman_urdu_benchmark.py
+
+
 

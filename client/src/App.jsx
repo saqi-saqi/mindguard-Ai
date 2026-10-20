@@ -5,6 +5,7 @@ import AnalyticsDashboard from './components/AnalyticsDashboard';
 import AuthScreen from './components/AuthScreen';
 import CrisisModal from './components/CrisisModal';
 import SettingsPanel from './components/SettingsPanel';
+import AdminSafetyLogs from './components/AdminSafetyLogs';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('auth');
@@ -331,6 +332,14 @@ export default function App() {
             onBackToChat={() => setActiveTab('chat')}
             onSignIn={() => handleNavigateToAuth('login')}
             onNavigateToAuth={handleNavigateToAuth}
+          />
+        )}
+        {activeTab === 'admin' && (
+          <AdminSafetyLogs
+            user={user}
+            token={token}
+            onNavigateToAuth={handleNavigateToAuth}
+            onBackToChat={() => setActiveTab('chat')}
           />
         )}
         {activeTab === 'auth' && (

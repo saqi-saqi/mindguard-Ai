@@ -46,7 +46,9 @@ from database import (
     save_chat_message, get_chat_history, delete_chat_session,
     export_user_data, delete_user_data, delete_user_account,
     update_trusted_contact, update_safety_profile, cleanup_old_records,
-    get_or_create_user_profile, update_user_profile, get_mood_summary_for_chat
+    get_or_create_user_profile, update_user_profile, get_mood_summary_for_chat,
+    log_safety_event, log_safety_event_async, get_safety_logs, get_safety_log_by_id,
+    update_safety_log, get_safety_logs_stats
 )
 from auth import (
     hash_password, verify_password, generate_token, decode_token,
@@ -655,6 +657,89 @@ def admin_cleanup():
 
 
 # ---------------------------------------------------------------------------
+# Admin Crisis Safety Logs Review Endpoints
+# ---------------------------------------------------------------------------
+
+@app.route("/api/admin/safety-logs", methods=["GET"])
+@admin_required
+def get_admin_safety_logs():
+    """
+    Paginated, filterable clinical review endpoint for crisis detection logs.
+    Supports filtering by tier, category, resolved status, and date range.
+    Includes aggregated summary stats for dashboard header metrics.
+    """
+    tier = request.args.get("tier")
+    category = request.args.get("category")
+    resolved = request.args.get("resolved")
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+
+    try:
+        page = int(request.args.get("page", 1))
+    except (ValueError, TypeError):
+        page = 1
+
+    try:
+        limit = int(request.args.get("limit", 20))
+    except (ValueError, TypeError):
+        limit = 20
+
+    logs_result = get_safety_logs(
+        tier=tier,
+        category=category,
+        resolved=resolved,
+        start_date=start_date,
+        end_date=end_date,
+        page=page,
+        limit=limit,
+    )
+    stats = get_safety_logs_stats()
+    logs_result["stats"] = stats
+
+    return jsonify({"success": True, "data": logs_result, "error": None}), 200
+
+
+@app.route("/api/admin/safety-logs/stats", methods=["GET"])
+@admin_required
+def get_admin_safety_logs_stats():
+    """Returns crisis flag counts per tier and category for the last 7 and 30 days."""
+    stats = get_safety_logs_stats()
+    return jsonify({"success": True, "data": stats, "error": None}), 200
+
+
+@app.route("/api/admin/safety-logs/<log_id>", methods=["PATCH"])
+@admin_required
+def patch_admin_safety_log(log_id):
+    """
+    Updates a safety log entry: marks it as reviewed/resolved and adds clinician/admin notes.
+    """
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return jsonify({
+            "success": False,
+            "data": None,
+            "error": {"code": "INVALID_JSON", "message": "Expected JSON object body."}
+        }), 400
+
+    actor_id = g.current_user.get("id") if hasattr(g, "current_user") and g.current_user else None
+    updated = update_safety_log(log_id, body, actor_id=actor_id)
+    if not updated:
+        return jsonify({
+            "success": False,
+            "data": None,
+            "error": {"code": "NOT_FOUND", "message": "Safety log entry not found."}
+        }), 404
+
+    save_audit_event("safety_log_reviewed", actor_id, {
+        "log_id": log_id,
+        "resolved": updated.get("resolved"),
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+    return jsonify({"success": True, "data": updated, "error": None}), 200
+
+
+# ---------------------------------------------------------------------------
 # Core Chat & Multi-Tier Crisis Triage Endpoint
 # ---------------------------------------------------------------------------
 SAFETY_DISCLAIMER = (
@@ -681,9 +766,24 @@ def chat():
 
     user_message = user_message.strip()
 
+    session_id = body.get("session_id")
+    user_api_key = body.get("api_key")
+    user_id = g.current_user["id"] if hasattr(g, "current_user") and g.current_user else None
+
     if len(user_message) > MAX_MESSAGE_LENGTH:
         long_safety = classify_safety_risk(user_message)
         if long_safety.is_crisis:
+            log_safety_event_async(
+                tier=1,
+                rule_or_model="safety_classifier:max_length_gate",
+                category=long_safety.category.value if hasattr(long_safety.category, "value") else str(long_safety.category),
+                action_taken="hotline_shown_LLM_bypassed",
+                message=user_message,
+                session_id=session_id,
+                user_id=user_id,
+                confidence=long_safety.confidence,
+                sync=bool(app.config.get("TESTING")),
+            )
             return jsonify({
                 "success": True,
                 "data": {
@@ -696,11 +796,6 @@ def chat():
                 "error": None
             }), 200
         return jsonify({"success": False, "data": None, "error": {"code": "MESSAGE_TOO_LONG", "message": f"Message exceeds maximum allowed length ({MAX_MESSAGE_LENGTH} characters)."}}), 400
-
-    session_id = body.get("session_id")
-    user_api_key = body.get("api_key")
-
-    user_id = g.current_user["id"] if hasattr(g, "current_user") and g.current_user else None
 
     # Retention settings
     retention_enabled = True
@@ -877,6 +972,17 @@ def chat():
                 user_id,
                 {"source": "safety_classifier", "request_id": req_id, "risk_category": risk_label}
             )
+            log_safety_event_async(
+                tier=3 if any("semantic" in s for s in safety_eval.matched_signals) else 1,
+                rule_or_model=", ".join(safety_eval.matched_signals) if safety_eval.matched_signals else "safety_classifier",
+                category=safety_eval.category.value,
+                action_taken="hotline_shown_LLM_bypassed",
+                message=user_message,
+                session_id=session_id,
+                user_id=user_id,
+                confidence=safety_eval.confidence,
+                sync=bool(app.config.get("TESTING")),
+            )
 
             return jsonify({
                 "success": True,
@@ -922,6 +1028,17 @@ def chat():
                     expires_at=expires_at
                 )
             save_audit_event("third_party_report_guidance", user_id, {"source": "safety_classifier", "request_id": req_id, "risk_category": risk_label})
+            log_safety_event_async(
+                tier=1,
+                rule_or_model=", ".join(safety_eval.matched_signals) if safety_eval.matched_signals else "threat_actor_detector",
+                category=safety_eval.category.value,
+                action_taken="guidance_shown",
+                message=user_message,
+                session_id=session_id,
+                user_id=user_id,
+                confidence=safety_eval.confidence,
+                sync=bool(app.config.get("TESTING")),
+            )
 
             return jsonify({
                 "success": True,
@@ -968,6 +1085,17 @@ def chat():
                     expires_at=expires_at
                 )
             save_audit_event("third_party_crisis_guidance", user_id, {"source": "third_party", "request_id": req_id, "risk_category": risk_label})
+            log_safety_event_async(
+                tier=1,
+                rule_or_model=str(crisis_eval.get("source") or "deterministic_pipeline:third_party"),
+                category=crisis_eval.get("risk_level", "THIRD_PARTY_REPORT"),
+                action_taken="guidance_shown",
+                message=user_message,
+                session_id=session_id,
+                user_id=user_id,
+                confidence=crisis_eval.get("confidence", 0.95),
+                sync=bool(app.config.get("TESTING")),
+            )
             return jsonify({
                 "success": True,
                 "status": "success",
@@ -1017,6 +1145,17 @@ def chat():
                     expires_at=expires_at
                 )
             save_audit_event("crisis_detected", user_id, {"source": "deterministic_pipeline", "request_id": req_id, "risk_level": risk_label})
+            log_safety_event_async(
+                tier=1,
+                rule_or_model=str(crisis_eval.get("rule_triggered") or crisis_eval.get("source") or "deterministic_regex"),
+                category="self-harm",
+                action_taken="hotline_shown_LLM_bypassed",
+                message=user_message,
+                session_id=session_id,
+                user_id=user_id,
+                confidence=crisis_eval.get("confidence", 1.0),
+                sync=bool(app.config.get("TESTING")),
+            )
 
             return jsonify({
                 "success": True,
@@ -1106,6 +1245,7 @@ def chat():
 
         triage_level = "ELEVATED_DISTRESS" if safety_eval.category == SafetyRiskCategory.EMOTIONAL_DISTRESS else "LOW"
 
+        verifier_res = None
         if is_crisis_signal:
             conf = float(ml_results.get("intent_confidence", 0.5))
 
@@ -1159,6 +1299,29 @@ def chat():
                     expires_at=expires_at
                 )
             save_audit_event("crisis_detected", user_id, {"source": "ml_pipeline", "request_id": req_id})
+            is_verifier_crisis = bool(verifier_res and verifier_res.get("is_crisis", False))
+            if is_verifier_crisis:
+                t_val = 3
+                m_val = "gemini_llm_guardrail"
+                c_val = verifier_res.get("category") or "self-harm"
+                conf_val = float(verifier_res.get("confidence") or ml_results.get("intent_confidence") or 0.90)
+            else:
+                t_val = 2
+                m_val = "crisis_detector.joblib"
+                c_val = "self-harm"
+                conf_val = float(ml_results.get("intent_confidence", 0.85))
+
+            log_safety_event_async(
+                tier=t_val,
+                rule_or_model=m_val,
+                category=c_val,
+                action_taken="hotline_shown_LLM_bypassed",
+                message=user_message,
+                session_id=session_id,
+                user_id=user_id,
+                confidence=conf_val,
+                sync=bool(app.config.get("TESTING")),
+            )
 
             return jsonify({
                 "success": True,

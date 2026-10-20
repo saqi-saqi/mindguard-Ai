@@ -8,12 +8,14 @@ Supports both real PyMongo client and isolated mongomock testing.
 """
 
 import os
+import re
 import uuid
 import time
 import hmac
 import hashlib
 import logging
-from datetime import datetime, timedelta
+import threading
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Any, Tuple
 from urllib.parse import urlparse
 
@@ -146,6 +148,12 @@ def init_db():
     # 5. TTL Indexes for Automatic Data Retention Expiry
     db.chat_messages.create_index("expires_at", expireAfterSeconds=0)
     db.mood_logs.create_index("expires_at", expireAfterSeconds=0)
+
+    # 6. Safety Logs Collection - Compound and single-field indexes for clinical review
+    db.safety_logs.create_index([("timestamp", DESCENDING)], name="idx_safety_timestamp")
+    db.safety_logs.create_index([("tier", ASCENDING), ("timestamp", DESCENDING)], name="idx_safety_tier_timestamp")
+    db.safety_logs.create_index([("category", ASCENDING), ("timestamp", DESCENDING)], name="idx_safety_category_timestamp")
+    db.safety_logs.create_index([("resolved", ASCENDING), ("timestamp", DESCENDING)], name="idx_safety_resolved_timestamp")
 
     logger.info("MongoDB collections and compound indexes initialized successfully.")
 
@@ -797,3 +805,404 @@ def cleanup_old_records(retention_days: int = 30) -> Dict[str, int]:
         "deleted_messages": res_msg.deleted_count,
         "deleted_mood_logs": res_mood.deleted_count
     }
+
+
+# ===========================================================================
+# Clinical Crisis Safety Logs & Review Operations (safety_logs collection)
+# ===========================================================================
+
+# Circuit breaker state for safety logging persistence
+_SAFETY_LOG_CIRCUIT_BROKEN_UNTIL: float = 0.0
+_SAFETY_LOG_CONSECUTIVE_FAILURES: int = 0
+_CIRCUIT_BREAKER_COOLDOWN_SEC: float = 30.0
+_MAX_CONSECUTIVE_FAILURES: int = 3
+_safety_log_lock = threading.Lock()
+
+
+def is_safety_log_circuit_open() -> bool:
+    """Returns True if the safety logging circuit breaker is currently open."""
+    global _SAFETY_LOG_CIRCUIT_BROKEN_UNTIL
+    return time.time() < _SAFETY_LOG_CIRCUIT_BROKEN_UNTIL
+
+
+def reset_safety_log_circuit() -> None:
+    """Resets the safety log circuit breaker state (useful for tests and manual resets)."""
+    global _SAFETY_LOG_CIRCUIT_BROKEN_UNTIL, _SAFETY_LOG_CONSECUTIVE_FAILURES
+    with _safety_log_lock:
+        _SAFETY_LOG_CIRCUIT_BROKEN_UNTIL = 0.0
+        _SAFETY_LOG_CONSECUTIVE_FAILURES = 0
+
+
+def _record_safety_log_failure(err: Exception) -> None:
+    global _SAFETY_LOG_CIRCUIT_BROKEN_UNTIL, _SAFETY_LOG_CONSECUTIVE_FAILURES
+    with _safety_log_lock:
+        _SAFETY_LOG_CONSECUTIVE_FAILURES += 1
+        if _SAFETY_LOG_CONSECUTIVE_FAILURES >= _MAX_CONSECUTIVE_FAILURES:
+            _SAFETY_LOG_CIRCUIT_BROKEN_UNTIL = time.time() + _CIRCUIT_BREAKER_COOLDOWN_SEC
+            logger.error(
+                f"Safety logging circuit breaker ACTIVATED for {_CIRCUIT_BREAKER_COOLDOWN_SEC}s "
+                f"after {_SAFETY_LOG_CONSECUTIVE_FAILURES} consecutive errors. Last error: {err}"
+            )
+
+
+def _record_safety_log_success() -> None:
+    global _SAFETY_LOG_CONSECUTIVE_FAILURES
+    with _safety_log_lock:
+        _SAFETY_LOG_CONSECUTIVE_FAILURES = 0
+
+
+def redact_trigger_message(text: str, max_chars: int = 60) -> str:
+    """
+    Produces a privacy-preserving redacted excerpt and cryptographic hash of the triggering message.
+    The full raw message is never persisted in safety_logs to minimize sensitive data retention.
+    """
+    if not text or not isinstance(text, str):
+        return "[EMPTY]"
+
+    msg_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]
+    sensitive_tokens = {
+        "kill", "killing", "suicide", "suicidal", "murder", "die", "dying", "death",
+        "stab", "shoot", "hang", "cut", "cutting", "overdose", "slit", "gun",
+        "knife", "blade", "poison", "marne", "khatam", "jaan", "khudkushi", "marna"
+    }
+
+    words = text.strip().split()
+    redacted = []
+    for w in words[:12]:
+        cleaned_w = re.sub(r"[^\w]", "", w.lower())
+        if cleaned_w in sensitive_tokens or any(t in cleaned_w for t in ("suicid", "overdos")):
+            redacted.append("[REDACTED]")
+        else:
+            redacted.append(w)
+
+    excerpt = " ".join(redacted)
+    if len(excerpt) > max_chars:
+        excerpt = excerpt[:max_chars].rsplit(" ", 1)[0] + "..."
+
+    return f"{excerpt} [hash:{msg_hash}]"
+
+
+def normalize_safety_category(cat: Any) -> str:
+    """Normalizes internal enum values and classification labels into clean, standard categories."""
+    if hasattr(cat, "value"):
+        c = str(cat.value)
+    else:
+        c = str(cat or "")
+
+    c_upper = c.upper()
+    if "SELF_HARM" in c_upper or "SUICIDE" in c_upper:
+        return "self-harm"
+    if "HARM_TO_OTHERS" in c_upper or "HOMICIDE" in c_upper:
+        return "homicide/threat-to-others"
+    if "THREAT_AGAINST_USER" in c_upper:
+        return "reported-threat-to-user"
+    if "REPORTED_THREAT_TO_OTHERS" in c_upper:
+        return "reported-threat-to-others"
+    if "COMBINED" in c_upper:
+        return "combined_high_crisis"
+    if "THIRD_PARTY" in c_upper:
+        return "third-party-report"
+    return c.lower().replace("_", "-")
+
+
+def log_safety_event(
+    tier: int,
+    rule_or_model: str,
+    category: str,
+    action_taken: str,
+    message: str,
+    session_id: Optional[str] = None,
+    user_id: Optional[str] = None,
+    confidence: Optional[float] = None,
+) -> Optional[Dict[str, Any]]:
+    """
+    Persists a crisis detection event to the safety_logs collection.
+    
+    Guaranteed graceful failure: catches all exceptions, increments failure counters,
+    and returns None instead of raising so safety triage is never interrupted.
+    """
+    if is_safety_log_circuit_open():
+        logger.warning("Safety log write skipped: circuit breaker is open.")
+        return None
+
+    try:
+        db = get_db()
+
+        if user_id:
+            user_ref = user_id
+            is_guest = False
+        else:
+            seed = session_id or str(uuid.uuid4())
+            user_ref = f"guest-{hashlib.sha256(seed.encode('utf-8')).hexdigest()[:12]}"
+            is_guest = True
+
+        log_id = f"safe-{uuid.uuid4().hex[:12]}"
+        now_dt = datetime.now(timezone.utc)  # Real BSON Date!
+
+        doc = {
+            "id": log_id,
+            "timestamp": now_dt,  # Stored as native BSON Date (datetime object)
+            "session_id": session_id,
+            "user_id": user_ref,
+            "is_guest": is_guest,
+            "tier": int(tier),
+            "rule_or_model": str(rule_or_model),
+            "category": normalize_safety_category(category),
+            "confidence": float(confidence) if confidence is not None else None,
+            "action_taken": str(action_taken),
+            "message_excerpt": redact_trigger_message(message),
+            "message_hash": hashlib.sha256(message.encode("utf-8")).hexdigest()[:12] if message else "",
+            "resolved": False,
+            "reviewed": False,
+            "admin_note": "",
+            "reviewed_at": None,
+            "reviewed_by": None,
+        }
+
+        db.safety_logs.insert_one(doc)
+        _record_safety_log_success()
+        return serialize_doc(doc)
+    except Exception as e:
+        logger.error(f"Failed to record safety log: {e}", exc_info=True)
+        _record_safety_log_failure(e)
+        return None
+
+
+def log_safety_event_async(
+    tier: int,
+    rule_or_model: str,
+    category: str,
+    action_taken: str,
+    message: str,
+    session_id: Optional[str] = None,
+    user_id: Optional[str] = None,
+    confidence: Optional[float] = None,
+    sync: bool = False,
+) -> None:
+    """
+    Fire-and-forget logging hook.
+    Dispatches to a daemon thread so it never blocks or slows the critical crisis response path.
+    When sync=True (e.g. in test suites), executes synchronously.
+    """
+    if is_safety_log_circuit_open():
+        return
+
+    if sync:
+        log_safety_event(
+            tier=tier,
+            rule_or_model=rule_or_model,
+            category=category,
+            action_taken=action_taken,
+            message=message,
+            session_id=session_id,
+            user_id=user_id,
+            confidence=confidence,
+        )
+        return
+
+    def _worker():
+        try:
+            log_safety_event(
+                tier=tier,
+                rule_or_model=rule_or_model,
+                category=category,
+                action_taken=action_taken,
+                message=message,
+                session_id=session_id,
+                user_id=user_id,
+                confidence=confidence,
+            )
+        except Exception as e:
+            logger.error(f"Async safety logging worker error: {e}")
+
+    thread = threading.Thread(target=_worker, daemon=True)
+    thread.start()
+
+
+def _parse_filter_date(val: Any) -> Optional[datetime]:
+    if not val:
+        return None
+    if isinstance(val, datetime):
+        return val
+    if isinstance(val, (int, float)):
+        return datetime.fromtimestamp(val, tz=timezone.utc).replace(tzinfo=None)
+    if isinstance(val, str) and val.strip():
+        s = val.strip().replace("Z", "+00:00")
+        try:
+            dt = datetime.fromisoformat(s)
+            if dt.tzinfo:
+                dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+            return dt
+        except Exception:
+            pass
+        try:
+            return datetime.strptime(val.strip(), "%Y-%m-%d")
+        except Exception:
+            pass
+    return None
+
+
+def get_safety_logs(
+    tier: Optional[Any] = None,
+    category: Optional[str] = None,
+    resolved: Optional[Any] = None,
+    start_date: Optional[Any] = None,
+    end_date: Optional[Any] = None,
+    page: int = 1,
+    limit: int = 20,
+) -> Dict[str, Any]:
+    """
+    Retrieves a paginated list of crisis safety logs with optional filters for
+    tier, category, resolved status, and date range.
+    """
+    db = get_db()
+    query: Dict[str, Any] = {}
+
+    if tier is not None and str(tier).strip() != "" and str(tier).strip().lower() != "all":
+        try:
+            query["tier"] = int(tier)
+        except (ValueError, TypeError):
+            query["tier"] = tier
+
+    if category and str(category).strip() != "" and str(category).strip().lower() != "all":
+        query["category"] = normalize_safety_category(str(category).strip())
+
+    if resolved is not None and str(resolved).strip() != "" and str(resolved).strip().lower() != "all":
+        if isinstance(resolved, str):
+            query["resolved"] = resolved.lower() in ("true", "1", "yes")
+        else:
+            query["resolved"] = bool(resolved)
+
+    start_dt = _parse_filter_date(start_date)
+    end_dt = _parse_filter_date(end_date)
+    if end_dt and isinstance(end_date, str) and len(end_date.strip()) == 10:
+        end_dt = end_dt.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+    if start_dt or end_dt:
+        date_q: Dict[str, Any] = {}
+        if start_dt:
+            date_q["$gte"] = start_dt
+        if end_dt:
+            date_q["$lte"] = end_dt
+        query["timestamp"] = date_q
+
+    total = db.safety_logs.count_documents(query)
+
+    page = max(1, int(page))
+    limit = max(1, min(100, int(limit)))
+    skip = (page - 1) * limit
+
+    cursor = db.safety_logs.find(query).sort("timestamp", DESCENDING).skip(skip).limit(limit)
+    logs = [serialize_doc(doc) for doc in cursor]
+
+    total_pages = (total + limit - 1) // limit if limit > 0 else 1
+
+    return {
+        "logs": logs,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": total_pages,
+    }
+
+
+def get_safety_log_by_id(log_id: str) -> Optional[Dict[str, Any]]:
+    """Retrieves a single safety log by public ID."""
+    db = get_db()
+    doc = db.safety_logs.find_one({"id": log_id})
+    return serialize_doc(doc)
+
+
+def update_safety_log(log_id: str, updates: Dict[str, Any], actor_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """
+    Updates the review status and clinical notes of a safety log entry.
+    """
+    db = get_db()
+    set_fields: Dict[str, Any] = {}
+
+    if "resolved" in updates:
+        is_res = bool(updates["resolved"])
+        set_fields["resolved"] = is_res
+        set_fields["reviewed"] = is_res
+        if is_res:
+            set_fields["reviewed_at"] = datetime.now(timezone.utc)
+            if actor_id:
+                set_fields["reviewed_by"] = actor_id
+
+    if "reviewed" in updates and "resolved" not in updates:
+        is_rev = bool(updates["reviewed"])
+        set_fields["resolved"] = is_rev
+        set_fields["reviewed"] = is_rev
+        if is_rev:
+            set_fields["reviewed_at"] = datetime.now(timezone.utc)
+            if actor_id:
+                set_fields["reviewed_by"] = actor_id
+
+    if "admin_note" in updates:
+        set_fields["admin_note"] = str(updates["admin_note"]).strip()
+
+    if not set_fields:
+        return get_safety_log_by_id(log_id)
+
+    res = db.safety_logs.update_one({"id": log_id}, {"$set": set_fields})
+    if res.matched_count == 0:
+        return None
+
+    return get_safety_log_by_id(log_id)
+
+
+def get_safety_logs_stats() -> Dict[str, Any]:
+    """
+    Returns summary crisis flag metrics and counts for the admin dashboard header:
+    overall total, unresolved count, flags per tier and category in the last 7 and 30 days.
+    """
+    db = get_db()
+    now = datetime.now(timezone.utc)
+    seven_days_ago = now - timedelta(days=7)
+    thirty_days_ago = now - timedelta(days=30)
+
+    total_flags = db.safety_logs.count_documents({})
+    unresolved_count = db.safety_logs.count_documents({"resolved": False})
+
+    logs_7d = list(db.safety_logs.find({"timestamp": {"$gte": seven_days_ago}}))
+    tier_7d = {1: 0, 2: 0, 3: 0}
+    cat_7d: Dict[str, int] = {}
+    for item in logs_7d:
+        t = item.get("tier")
+        if t in tier_7d:
+            tier_7d[t] += 1
+        c = item.get("category", "unknown")
+        cat_7d[c] = cat_7d.get(c, 0) + 1
+
+    logs_30d = list(db.safety_logs.find({"timestamp": {"$gte": thirty_days_ago}}))
+    tier_30d = {1: 0, 2: 0, 3: 0}
+    cat_30d: Dict[str, int] = {}
+    for item in logs_30d:
+        t = item.get("tier")
+        if t in tier_30d:
+            tier_30d[t] += 1
+        c = item.get("category", "unknown")
+        cat_30d[c] = cat_30d.get(c, 0) + 1
+
+    return {
+        "total_flags": total_flags,
+        "unresolved_count": unresolved_count,
+        "resolved_count": max(0, total_flags - unresolved_count),
+        "last_7_days": {
+            "total": len(logs_7d),
+            "tier_1": tier_7d[1],
+            "tier_2": tier_7d[2],
+            "tier_3": tier_7d[3],
+            "by_tier": tier_7d,
+            "by_category": cat_7d,
+        },
+        "last_30_days": {
+            "total": len(logs_30d),
+            "tier_1": tier_30d[1],
+            "tier_2": tier_30d[2],
+            "tier_3": tier_30d[3],
+            "by_tier": tier_30d,
+            "by_category": cat_30d,
+        },
+    }
+

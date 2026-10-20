@@ -116,6 +116,33 @@ function SidebarBody({
 
         <button
           type="button"
+          onClick={() => onSelect("admin")}
+          aria-current={activeTab === "admin" ? "page" : undefined}
+          className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
+            activeTab === "admin"
+              ? "bg-rose-600 text-white shadow-xs font-bold"
+              : user?.role === "admin"
+              ? "text-rose-300 hover:bg-rose-500/10 hover:text-white"
+              : "text-slate-400 hover:bg-slate-800/80 hover:text-slate-200"
+          }`}
+        >
+          <div className="flex items-center gap-3 truncate">
+            <ShieldAlert className={`size-4 shrink-0 ${activeTab === "admin" ? "text-white" : user?.role === "admin" ? "text-rose-400" : "text-slate-400"}`} />
+            <span className="truncate">Review Safety Logs</span>
+          </div>
+          <span
+            className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${
+              user?.role === "admin"
+                ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                : "bg-slate-800 text-slate-400 border border-slate-700"
+            }`}
+          >
+            Admin
+          </span>
+        </button>
+
+        <button
+          type="button"
           onClick={onCrisis}
           className="mt-1 flex w-full items-center gap-3 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-200 transition-colors hover:bg-rose-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 cursor-pointer"
         >
