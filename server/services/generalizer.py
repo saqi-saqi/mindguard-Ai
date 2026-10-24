@@ -181,7 +181,7 @@ def detect_fictional_frame(text: str) -> bool:
 
 # Third-Party Subject markers (Reporting another person's crisis)
 _THIRD_PARTY_PATTERNS = [
-    _compile(r"\b(?:my\s+(?:\w+\s+){0,2}?(?:friend|brother|sister|mom|dad|roommate|coworker|classmate|partner|ex|colleague|cousin|uncle|aunt|neighbor|husband|wife|son|daughter))\s+(?:is|was|has|just|told\s+me|texted\s+me|said|posted|threatened|sent\s+a\s+message)\b.*?(?:kill|hurt|unalive|die|suicide|end\s+(?:his|her|their|it|my)?\s*life|end\s+it|harm)\b"),
+    _compile(r"\b(?:my\s+(?:\w+\s+){0,2}?(?:friend|brother|sister|mom|dad|roommate|coworker|classmate|partner|ex|colleague|cousin|uncle|aunt|neighbor|husband|wife|son|daughter))\s+(?:is|was|has|just|told\s+me|texted\s+me|said|posted|threatened|sent\s+a\s+message|left|wrote)\b.*?(?:kill|hurt|unalive|die|suicide|end\s+(?:his|her|their|it|my)?\s*life|end\s+it|harm|suicide\s+note)\b"),
     _compile(r"\b(?:a\s+classmate|a\s+coworker|someone\s+i\s+know|my\s+friend)\s+(?:posted|wrote|said|texted)\s+(?:about\s+wanting\s+to|that\s+(?:he|she|they)\s+wants?\s+to)\s+(?:unalive|kill|die|suicide)\b"),
     _compile(r"\b(?:he|she|they)\s+(?:told\s+me|said)\s+(?:he|she|they)\s+(?:wants?|is\s+going|plans?)\s+to\s+(?:die|kill|end|suicide)\b"),
     _compile(r"\bhow\s+to\s+(?:help|support|report)\s+(?:a\s+friend|my\s+friend|my\s+sister|my\s+brother|someone)\s+(?:who\s+is|who\s+wants\s+to)\b"),
@@ -208,6 +208,8 @@ def detect_third_party_frame(text: str) -> bool:
 # ---------------------------------------------------------------------------
 
 _PAST_RECOVERY_PATTERNS = [
+    _compile(r"\bsurvived\s+(?:a\s+)?suicide\s+attempt\b.*?(?:happy\s+life|doing\s+well|recovered|healthy|thriving)\b"),
+    _compile(r"\bsurvived\s+(?:a\s+)?suicide\s+attempt\b"),
     _compile(r"\b(?:i|we)\s+(?:used\s+to|previously)\s+(?:feel|felt|feeling|be|was|were)\s+(?:suicidal|depressed|hopeless|in\s+a\s+dark\s+place)\b"),
     _compile(r"\b(?:i|we)\s+had\s+suicidal\s+thoughts\s+(?:during|in|as\s+a|years\s+ago|months\s+ago)\b"),
     _compile(r"\b(?:\d+\s+years?|\d+\s+months?)\s+clean\s+from\s+self[ -]?harm\b"),
@@ -241,6 +243,9 @@ def has_present_ideation_markers(text: str) -> bool:
 # ---------------------------------------------------------------------------
 
 _PREPARATORY_PATTERNS = [
+    # Suicide plan
+    _compile(r"\b(?:have|got|made|developed)\s+(?:a\s+)?(?:suicide\s+plan|plan\s+to\s+(?:die|kill\s+myself|end\s+my\s+life))\b"),
+    _compile(r"\bsuicide\s+plan\b"),
     # Means acquisition & hoarding
     _compile(r"\b(?:gather(?:ed|ing)?|collect(?:ed|ing)?|bought|buy(?:ing)?|purchas(?:ed|ing)?|stockpil(?:ed|ing)?|hoard(?:ed|ing)?|stash(?:ed|ing)?)\s+(?:.*?\s+)?(?:pills|meds|medication|drugs|rope|blades?|razors?|weapons?)\b"),
     # Temporal & physical concealment

@@ -60,6 +60,8 @@ def _c(pattern: str) -> re.Pattern:
 # --- Past Historical Reflection Patterns ---
 # (Migrated from crisis_rules.py _PAST_HISTORICAL_REFLECTION_PATTERNS L530-562)
 _PAST_ANCHOR_PATTERNS: List[re.Pattern] = [
+    _c(r"\bsurvived\s+(?:a\s+)?(?:suicide\s+attempt|attempt)\b"),
+    _c(r"\b(?:during|in)\s+my\s+(?:twenties|teens|thirties|youth|childhood)\b"),
     _c(r"\bused\s+to\s+feel\s+suicidal\b"),
     _c(r"\bused\s+to\s+want\s+to\s+(?:kill\s+myself|die|end\s+my\s+life)\b"),
     _c(r"\bused\s+to\s+be\s+suicidal\b"),
@@ -115,6 +117,8 @@ _RECENT_ANCHORS: List[re.Pattern] = [
 # --- Resolution Markers ---
 # (Migrated from crisis_rules.py _RESOLUTION_MARKERS L579-592)
 _RESOLUTION_PATTERNS: List[re.Pattern] = [
+    _c(r"\b(?:now\s+i\s+(?:live|have)\s+a\s+happy\s+life|live\s+a\s+happy\s+life\s+now|happy\s+life\s+now)\b"),
+    _c(r"\b(?:live|living)\s+a\s+happy\s+life\b"),
     _c(r"\bbut\s+i'?m\s+doing\s+(?:great|better|fine|well|okay|good|much\s+better)\s+(?:now|today)\b"),
     _c(r"\bi'?m\s+(?:doing\s+)?(?:much\s+)?better\s+(?:now|today)\b"),
     _c(r"\bi'?m\s+in\s+a\s+(?:good|better|different)\s+place\s+(?:now|today)\b"),
@@ -152,9 +156,11 @@ _RELAPSE_PATTERNS: List[re.Pattern] = [
     _c(r"\brelaps(?:e|ed|ing)\b"),
     _c(r"\bholding\s+a\s+(?:razor|blade|knife)\s+right\s+now\b"),
     _c(r"\bbought\s+a\s+rope\s+today\b"),
-    _c(r"\btonight\b"),
-    _c(r"\blast\s+night\b"),
-    _c(r"\bright\s+now\b"),
+    # Anchored temporal crisis/relapse expressions (require co-occurrence with crisis/distress/means)
+    _c(r"\b(?:tonight|today|right\s+now)\s+(?:i\s+)?(?:feel|want|need|am|have\s+the|might)\s+(?:suicidal|to\s+die|urges?|relaps\w*)\b"),
+    _c(r"\b(?:relaps\w*|holding\s+(?:a\s+)?(?:blade|knife|pills))\s+(?:tonight|right\s+now|today)\b"),
+    _c(r"\b(?:cut|cutting|harm|harming|hurt|hurting|burn|burning)\s+(?:myself\s+)?(?:again|tonight|today|right\s+now)\b"),
+    _c(r"\b(?:and\s+)?(?:i\s+am|i'?m)\s+(?:cutting|harming|hurting)(?:\s+again)?\b"),
     # NEW: Explicit relapse recurrence patterns
     _c(r"\b(?:and\s+)?(?:now|again|today|tonight)\s+(?:i|I)\s+(?:feel|am|'m)\s+(?:the\s+same|that\s+way|like\s+(?:that|before|dying|ending)|suicidal|like\s+dying)\b"),
     _c(r"\b(?:it'?s?\s+)?(?:happening|coming\s+back|returning|starting)\s+again\b"),

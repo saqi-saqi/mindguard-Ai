@@ -899,7 +899,7 @@ def normalize_safety_category(cat: Any) -> str:
     if "REPORTED_THREAT_TO_OTHERS" in c_upper:
         return "reported-threat-to-others"
     if "COMBINED" in c_upper:
-        return "combined_high_crisis"
+        return "combined-high-crisis"
     if "THIRD_PARTY" in c_upper:
         return "third-party-report"
     return c.lower().replace("_", "-")

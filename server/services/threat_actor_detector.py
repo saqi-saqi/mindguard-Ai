@@ -63,10 +63,11 @@ _NEGATED_THREAT_PATTERNS = [
     re.compile(
         r"\b(?:does\s+not|doesn'?t|did\s+not|didn'?t|will\s+not|won'?t|would\s+never|do\s+not|don'?t|"
         r"has\s+no\s+intention\s+(?:of|to)|have\s+no\s+intention\s+(?:of|to)|never\s+wanted\s+to|never\s+intended\s+to|"
-        r"is\s+not\s+(?:going|trying|planning)\s+to|isn'?t\s+(?:going|trying|planning)\s+to)\s+"
+        r"(?:am\s+not|i'?m\s+not|is\s+not|isn'?t|are\s+not|aren'?t)\s+(?:going|trying|planning)\s+to)\s+"
         r"(?:want\s+to\s+)?(?:kill|murder|harm|hurt|shoot|stab|attack|injure|slaughter)\b",
         re.IGNORECASE,
     ),
+    re.compile(r"\b(?:i\s+am\s+not|i'?m\s+not|not)\s+(?:going\s+to\s+)?(?:kill\s+myself|commit\s+suicide|hurt\s+myself|harm\s+myself|end\s+my\s+life)\b", re.IGNORECASE),
     re.compile(r"\b(?:i\s+would|i'd)\s+never\s+(?:kill|hurt|harm|shoot|stab|murder|injure)\b", re.IGNORECASE),
     re.compile(r"\b(?:nahi|nahin)\s+(?:marna|qatal|jaan\s+se\s+marna)\s+chaht[ai]\b", re.IGNORECASE),
     re.compile(r"\bmarne\s+ka\s+koi\s+irada\s+nah?i\b", re.IGNORECASE),
@@ -139,7 +140,7 @@ _THIRD_PARTY_INDIRECT_PATTERNS = [
 # 7. Canonical Subject-Verb-Object Threat Regex
 _THREAT_SVO_PATTERN = re.compile(
     r"\b(?:(?P<reporter_prefix>(?:my\s+\w+|a\s+\w+|[a-z]+)\s+(?:told\s+me|said(?:\s+to\s+me)?|texted(?:\s+me)?|messaged(?:\s+me)?|wrote(?:\s+to\s+me)?|posted(?:\s+that)?|warned(?:\s+me)?)\s+(?:that\s+)?(?:,\s*)?(?:\"|')?))?"
-    r"(?P<actor>i\s+am|i'?m|i\s+will|i'?ll|i\s+plan\s+to|i'?m\s+planning\s+to|i|we|he|she|they|my\s+\w+|his\s+\w+|her\s+\w+|someone|somebody|a\s+guy|a\s+person|[a-z]+)\s+"
+    r"(?P<actor>i\s+am|i'?m|i\s+will|i'?ll|i\s+plan\s+to|i'?m\s+planning\s+to|i|we|he|she|they|my\s+\w+|his\s+\w+|her\s+\w+|someone|somebody|a\s+guy|a\s+person|(?!(?:not|never|no|is|am|are|was|were)\b)[a-z]+)\s+"
     r"(?P<intent>wants?\s+to|wanna|planning\s+to|plans?\s+to|plans?\s+2|is\s+planning\s+to|am\s+planning\s+to|going\s+to|going\s+2|gonna|is\s+going\s+to|am\s+going\s+to|will|would|may|might|intends?\s+to|is\s+trying\s+to|trying\s+to|threatened?\s+to|is\s+threatening\s+to|threatens?\s+to)\s+"
     r"(?P<verb>kill|murder|slaughter|shoot|stab|choke|strangle|poison|attack|harm|hurt|beat|injure)\s+"
     r"(?P<target>me|myself|himself|herself|themselves|him|her|them|my\s+\w+|his\s+\w+|her\s+\w+|someone|anyone|[a-z]+(?:\s+[a-z]+)?)\b",
@@ -434,6 +435,12 @@ def analyze_threat_actor_target(text: str) -> ThreatActorTargetResult:
                     has_later_negation = any(cr.is_negated for cr in clause_results[idx + 1:])
                     if not has_later_negation:
                         return res
+
+            # If any clause contains active self-harm risk, that crisis signal takes precedence
+            # and cannot be cancelled by a negation clause concerning others.
+            active_self_harm = [cr for cr in clause_results if cr.is_threat and cr.category == "SELF_HARM_RISK" and not cr.is_negated and not cr.is_fictional]
+            if active_self_harm:
+                return active_self_harm[0]
 
             # If the post-contrast clause is an explicit negation, the negation governs.
             if any(cr.is_negated for cr in clause_results[1:]):

@@ -353,6 +353,8 @@ _BURDEN_AND_GOODBYE = [
 
 # 4. LETHAL MEANS & PREPARATION ----------------------------------------------
 _LETHAL_MEANS_AND_PREPARATION = [
+    r"\b(?:have|got|made|developed)\s+(?:a\s+)?(?:suicide\s+plan|plan\s+to\s+(?:die|kill\s+myself|commit\s+suicide))\b",
+    r"\bsuicide\s+plan\b",
     r"\b(?:buy|bought|buying|stockpil(?:e|ing|ed)|gather(?:ed|ing)?)\s+(?:[\w\s]{1,30}\s+)?(?:pills|medication|tablets)\b",
     r"\blook(?:ing)?\s+for\s+a\s+bridge\b",
     r"\bfound\s+a\s+rope\b",
@@ -558,8 +560,9 @@ _ACTIVE_ESCALATION_IN_PROGRESS = [
 # language and an other-person target, excluding ordinary idioms.
 _DIRECT_HARM_TO_OTHERS = [
     r"\b(?:i'?m\s+(?:gonna|going\s+to|planning\s+to)|i\s+(?:am\s+)?(?:going\s+to|will|plan(?:ning)?\s+to|want\s+to|intend\s+to)|i'll)\s+"
+    r"(?:severely\s+|seriously\s+)?"
     r"(?:kill|murder|harm|hurt|attack|assault|injure|shoot|stab|strangle|poison)\s+"
-    r"(?!(?:myself|me)\b)(?:my\s+(?!(?:alarm|clock|phone|laptop|computer|car|pizza|burger|food|game|exam|test)\b)[a-z]+|the\s+[a-z]+|him|her|them|someone|anyone|anybody|everybody|everyone|people|(?!(?:alarm|clock|phone|laptop|computer|car|pizza|burger|food|game|exam|test|my|this|that)\b)[a-z]+)\b",
+    r"(?!(?:myself|me)\b)(?:my\s+(?!(?:alarm|clock|phone|laptop|computer|car|pizza|burger|food|game|exam|test)\b)[a-z]+|(?:the|that|this)\s+[a-z]+|him|her|them|someone|anyone|anybody|everybody|everyone|people|(?!(?:alarm|clock|phone|laptop|computer|car|pizza|burger|food|game|exam|test|my|this|that)\b)[a-z]+)\b",
     r"\b(?:i\s+)?want\s+to\s+(?:harm|hurt|attack|assault|injure)\s+"
     r"(?:someone|anyone|anybody|people|him|her|them)\b",
     r"\b(?:main|mein|mai)\s+(?:usay|usey|usko|isko|isay|unko)\s+(?:jaan\s+se\s+)?(?:maar|mar)\s*"
@@ -1174,9 +1177,10 @@ _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE_RAW = [
     r"\bswallow\s+(?:the\s+)?bleach\b",
     r"\bholding\s+(?:a|the)\s+razor\b",
 ]
+_FIRST_PERSON_PRESENT_OVERRIDE_COMPILED = [_c(p) for p in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE_RAW]
 _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE: List[re.Pattern] = (
     CRISIS_EXPLICIT_PATTERNS +
-    [_c(p) for p in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE_RAW] +
+    _FIRST_PERSON_PRESENT_OVERRIDE_COMPILED +
     [_c(p) for p in _INDIRECT_IMPLICIT_DISTRESS] +
     [_c(p) for p in _BURDEN_AND_GOODBYE] +
     [_c(p) for p in _LETHAL_MEANS_AND_PREPARATION] +
@@ -1273,10 +1277,12 @@ def _has_unnegated_acute_crisis(text: str) -> bool:
     return False
 
 NEGATION_PATTERNS = [_c(p) for p in _NEGATION_PATTERNS]
-PAST_HISTORICAL_REFLECTION_PATTERNS = [_c(p) for p in _PAST_HISTORICAL_REFLECTION_PATTERNS]
-CONTINUATION_OVERRIDE_MARKERS = [_c(p) for p in _CONTINUATION_OVERRIDE_MARKERS]
-RESOLUTION_MARKERS = [_c(p) for p in _RESOLUTION_MARKERS]
 ACADEMIC_CONTEXT_PATTERNS = [_c(p) for p in _ACADEMIC_CONTEXT_PATTERNS]
+_THIRD_PARTY_COMPILED = [_c(p) for p in _THIRD_PARTY_SUBJECT_PATTERNS]
+_ACCIDENTAL_COMPILED = [_c(p) for p in _ACCIDENTAL_CONTEXT_PATTERNS]
+_SLANG_DAMPENER_COMPILED = [_c(p) for p in _SLANG_HYPERBOLE_DAMPENER_PATTERNS]
+_PROTECTIVE_COMPILED = [_c(p) for p in _PROTECTIVE_CONTRAST_PATTERNS]
+_LETHAL_OVERRIDE_COMPILED = [_c(p) for p in _NEGATION_OVERRIDE_LETHAL_ACTIONS]
 MEDIA_CONTEXT_PATTERNS = [_c(p) for p in _MEDIA_CONTEXT_PATTERNS]
 IDIOMATIC_METAPHOR_AND_HYPERBOLE_PATTERNS = [_c(p) for p in _IDIOMATIC_METAPHOR_AND_HYPERBOLE_PATTERNS]
 
@@ -1369,7 +1375,7 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
         return None
 
     # (2.5) Third-party subject check: "my friend is going to kill herself"
-    _third_party_compiled = [_c(p) for p in _THIRD_PARTY_SUBJECT_PATTERNS]
+    _third_party_compiled = _THIRD_PARTY_COMPILED
     if any(pat.search(t) for pat in _third_party_compiled):
         # Third-party subjects: crisis is about someone else, not the speaker.
         # Check if any EXPLICIT first-person pronoun precedes a crisis verb.
@@ -1378,12 +1384,12 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
             r"(?:(?:going\s+)?to\s+|gonna\s+)?(?:kill|hurt|harm|end|cut|overdos|suicide|swallow|jump|hang|shoot|drown|crash|have\s+(?:the\s+)?(?:pills|rope|blade))",
             t, re.IGNORECASE
         ))
-        has_explicit_override = any(pat.search(t) for pat in [_c(p) for p in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE_RAW]) or _has_unnegated_acute_crisis(t)
+        has_explicit_override = any(pat.search(t) for pat in _FIRST_PERSON_PRESENT_OVERRIDE_COMPILED) or _has_unnegated_acute_crisis(t)
         if not (has_first_person_crisis or has_explicit_override):
             return "third_party_subject_report"
 
     # (2.6) Accidental / benign context check
-    _accidental_compiled = [_c(p) for p in _ACCIDENTAL_CONTEXT_PATTERNS]
+    _accidental_compiled = _ACCIDENTAL_COMPILED
     if any(pat.search(t) for pat in _accidental_compiled):
         return "accidental_or_benign_context"
 
@@ -1391,12 +1397,12 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
     discourse = evaluate_discourse(text)
     if discourse.should_downgrade and not _has_unnegated_acute_crisis(t):
         return "slang_hyperbole_dampener"
-    _slang_dampener_compiled = [_c(p) for p in _SLANG_HYPERBOLE_DAMPENER_PATTERNS]
+    _slang_dampener_compiled = _SLANG_DAMPENER_COMPILED
     if any(pat.search(t) for pat in _slang_dampener_compiled) and not _has_unnegated_acute_crisis(t):
         return "slang_hyperbole_dampener"
 
     # (2.8) Protective contrast: "want to die but won't because of my dog"
-    _protective_compiled = [_c(p) for p in _PROTECTIVE_CONTRAST_PATTERNS]
+    _protective_compiled = _PROTECTIVE_COMPILED
     if any(pat.search(t) for pat in _protective_compiled):
         return "protective_contrast_clause"
 
@@ -1424,7 +1430,7 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
                 for second_clause in negation_contrast[1:]:
                     second_is_negated = any(p.search(second_clause) for p in NEGATION_PATTERNS)
                     if not second_is_negated:
-                        _lethal_compiled = [_c(p) for p in _NEGATION_OVERRIDE_LETHAL_ACTIONS]
+                        _lethal_compiled = _LETHAL_OVERRIDE_COMPILED
                         if any(lp.search(second_clause) for lp in _lethal_compiled):
                             return None  # Override negation — lethal action in subsequent clause
             return "grammatical_negation"
@@ -1473,7 +1479,7 @@ def is_contextual_or_negated(text: str) -> bool:
     if not text or not text.strip():
         return False
 
-    sentences = _split_sentences(text)
+    sentences = _split_contrastive_segments(text)
     discourse = evaluate_discourse(text, sentences)
     if discourse.should_downgrade:
         return True
@@ -1482,9 +1488,17 @@ def is_contextual_or_negated(text: str) -> bool:
     has_unbypassed_crisis_sentence = False
     has_bypassed_sentence = False
 
+    if _has_unnegated_acute_crisis(text):
+        return False
+
     for sentence in sentences:
         norm_sent = _normalize(sentence)
-        has_crisis_pattern = match_crisis_regex(norm_sent) or any(p.search(norm_sent) for p in _ACTIVE_CRISIS_CONTEXT_OVERRIDE)
+        has_crisis_pattern = (
+            bool(_find_category_matches(norm_sent))
+            or match_crisis_regex(norm_sent)
+            or any(p.search(norm_sent) for p in _ACTIVE_CRISIS_CONTEXT_OVERRIDE)
+            or _has_unnegated_acute_crisis(sentence)
+        )
         reason = _contextual_bypass_reason(sentence)
         
         if has_crisis_pattern and reason is None:
@@ -1683,17 +1697,6 @@ Please connect with one of these free, confidential, 24/7 crisis support service
 📞 **Rozan Emotional Support Line**: 0800-22444
 """
 
-LOW_CONFIDENCE_CHECKIN_TEMPLATE = """
-Thanks for sharing that with me. I want to make sure I understood you correctly — sometimes it's hard to tell exactly what someone means over text.
-
-If you are having thoughts of harming yourself right now, please reach out to one of these free, confidential, 24/7 crisis support services immediately:
-
-🚑 **Rescue 1122 (medical emergency)**: 1122
-📞 **Umang Pakistan Helpline (24/7)**: 0311-7786264
-📞 **Rozan Emotional Support Line**: 0800-22444
-
-If not, I'm here whenever you'd like to talk about what's been on your mind.
-"""
 
 # Gentle check-in for LOW_CONFIDENCE_RISK: deliberately calmer than the crisis
 # modal — supportive, no urgency framing, resources available but not pushed.
@@ -1930,7 +1933,7 @@ def evaluate_crisis_pipeline(
                 r"(?:(?:going\s+)?to\s+|gonna\s+)?(?:kill|hurt|harm|end|cut|overdos|suicide|swallow|jump|hang|shoot|drown|crash|have\s+(?:the\s+)?(?:pills|rope|blade))",
                 unquoted, re.IGNORECASE
             ))
-            has_explicit_override = any(pat.search(unquoted) for pat in [_c(p) for p in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE_RAW]) or _has_unnegated_acute_crisis(unquoted)
+            has_explicit_override = any(pat.search(unquoted) for pat in _FIRST_PERSON_PRESENT_OVERRIDE_COMPILED) or _has_unnegated_acute_crisis(unquoted)
             if has_first_person_crisis or has_explicit_override:
                 pp.is_third_party = False
             else:
@@ -1956,7 +1959,7 @@ def evaluate_crisis_pipeline(
         discourse = evaluate_discourse(raw_text, _split_sentences(pp.text))
         concepts = extract_all_concepts(pp.text)
         unquoted = re.sub(r"['\"].*?['\"]", "", pp.text)
-        has_first_person_override = any(pat.search(unquoted) for pat in [_c(p) for p in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE_RAW]) or _has_unnegated_acute_crisis(unquoted)
+        has_first_person_override = any(pat.search(unquoted) for pat in _FIRST_PERSON_PRESENT_OVERRIDE_COMPILED) or _has_unnegated_acute_crisis(unquoted)
 
         # Step 4: Run Precedence Arbitration
         arb_input = ArbitrationInput(
@@ -2042,6 +2045,7 @@ def evaluate_crisis_pipeline(
 
             from .huggingface_service import analyze_user_message
             ml_res = analyze_user_message(pp.text, context_turns=context_turns)
+            raw_prob = float(ml_res.get("crisis_probability", ml_res.get("intent_confidence", 0.0) if ml_res.get("intent") == "SUICIDE CRISIS OR SELF HARM RISK" else 0.0))
 
             if ml_res.get("intent") == "SUICIDE CRISIS OR SELF HARM RISK" and ml_res.get("intent_confidence", 0) > 0.40:
                 return {
@@ -2065,8 +2069,10 @@ def evaluate_crisis_pipeline(
             # the crisis threshold (>= 0.30) — gentle check-in, never silent.
             if (
                 _URDU_RULES_ENABLED
-                and ml_res.get("intent") == "SUICIDE CRISIS OR SELF HARM RISK"
-                and ml_res.get("intent_confidence", 0) >= 0.30
+                and (
+                    (ml_res.get("intent") == "SUICIDE CRISIS OR SELF HARM RISK" and ml_res.get("intent_confidence", 0) >= 0.30)
+                    or (0.30 <= raw_prob < 0.50)
+                )
             ):
                 return {
                     "is_crisis": False,

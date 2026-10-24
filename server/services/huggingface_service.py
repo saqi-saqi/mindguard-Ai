@@ -246,7 +246,8 @@ def analyze_user_message(text: str, context_turns: list[str] | None = None) -> D
         # 3. High probability check for crisis (combining Transformer & Joblib)
         effective_crisis_prob = max(transformer_crisis_prob, joblib_crisis_prob)
         raw_thresh = float(_CRISIS_MODEL_ARTIFACT.get("threshold", 0.50)) if _CRISIS_MODEL_ARTIFACT else 0.50
-        threshold = 0.50
+        # Preserve conservative safety clamp: threshold should never exceed 0.50
+        threshold = min(0.50, raw_thresh) if raw_thresh > 0 else 0.50
 
         if effective_crisis_prob >= threshold and not is_contextual_or_negated(clean_text):
             top_intent = "SUICIDE CRISIS OR SELF HARM RISK"
@@ -343,6 +344,7 @@ def analyze_user_message(text: str, context_turns: list[str] | None = None) -> D
     return {
         "intent": top_intent,
         "intent_confidence": intent_score,
+        "crisis_probability": round(effective_crisis_prob, 4),
         "emotion": emotion_label,
         "emotion_confidence": emotion_score,
         "sentiment": sentiment_label,

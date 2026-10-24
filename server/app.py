@@ -31,7 +31,7 @@ if BASE_DIR not in sys.path:
 from config import (
     CORS_ORIGINS, RATE_LIMIT_PER_MINUTE, MAX_MESSAGE_LENGTH,
     GEMINI_API_KEY, FLASK_ENV, FLASK_USE_RELOADER, FLASK_DEBUG,
-    TRUSTED_PROXIES
+    TRUSTED_PROXIES, USE_UNIFIED_CRISIS_PIPELINE
 )
 from database import (
     init_db, get_db, serialize_doc,
@@ -73,6 +73,7 @@ from services.intent_rules import match_fast_path_intent
 from services.safety_classifier import (
     classify_safety_risk, SafetyRiskCategory
 )
+from services.unified_safety_pipeline import evaluate_unified_tier1_safety
 from services.roman_urdu_router import (
     route as route_language_scope,
     ROUTE_ARABIC_SCRIPT,
@@ -165,6 +166,8 @@ def get_client_ip(req) -> str:
 
 def is_rate_limited(client_ip: str) -> bool:
     """Sliding-window IP rate limiter."""
+    if app.config.get("RATE_LIMIT_DISABLED") or os.environ.get("RATE_LIMIT_DISABLED") == "true":
+        return False
     effective_limit = int(app.config.get("RATE_LIMIT_PER_MINUTE") if "RATE_LIMIT_PER_MINUTE" in app.config else (os.environ.get("RATE_LIMIT_PER_MINUTE") or RATE_LIMIT_PER_MINUTE))
     now = time.time()
     cutoff = now - RATE_LIMIT_WINDOW_SECONDS
@@ -771,13 +774,27 @@ def chat():
     user_id = g.current_user["id"] if hasattr(g, "current_user") and g.current_user else None
 
     if len(user_message) > MAX_MESSAGE_LENGTH:
-        long_safety = classify_safety_risk(user_message)
-        if long_safety.is_crisis:
+        if USE_UNIFIED_CRISIS_PIPELINE:
+            long_safety = evaluate_unified_tier1_safety(user_message, session_id=session_id)
+        else:
+            long_safety = classify_safety_risk(user_message, session_id=session_id)
+        if long_safety.is_crisis or long_safety.category in (
+            SafetyRiskCategory.REPORTED_THREAT_TO_OTHERS,
+            SafetyRiskCategory.THIRD_PARTY_REPORT,
+        ):
+            risk_label = "HIGH_CRISIS" if long_safety.category == SafetyRiskCategory.SELF_HARM_RISK else long_safety.category.value
+            if session_id and long_safety.is_crisis:
+                set_session_risk_state(session_id, user_id, "crisis_active", risk_label)
+            if user_id and long_safety.is_crisis:
+                try:
+                    update_user_profile(user_id, {"inc_crisis": True})
+                except Exception:
+                    pass
             log_safety_event_async(
                 tier=1,
                 rule_or_model="safety_classifier:max_length_gate",
                 category=long_safety.category.value if hasattr(long_safety.category, "value") else str(long_safety.category),
-                action_taken="hotline_shown_LLM_bypassed",
+                action_taken="hotline_shown_LLM_bypassed" if long_safety.is_crisis else "guidance_shown",
                 message=user_message,
                 session_id=session_id,
                 user_id=user_id,
@@ -786,21 +803,25 @@ def chat():
             )
             return jsonify({
                 "success": True,
+                "status": "success",
+                "risk_level": risk_label,
+                "requires_immediate_action": long_safety.is_crisis,
                 "data": {
                     "reply": long_safety.safety_message,
-                    "is_crisis": True,
-                    "risk_level": "HIGH_CRISIS",
+                    "is_crisis": long_safety.is_crisis,
+                    "risk_level": risk_label,
+                    "classification": risk_label,
                     "category": long_safety.category.value if hasattr(long_safety.category, "value") else str(long_safety.category),
                     "safety_message": long_safety.safety_message,
+                    "status": "success",
+                    "disclaimer": SAFETY_DISCLAIMER,
+                    "emergency_resources": get_resources_for_region("pakistan"),
+                    "requires_immediate_action": long_safety.is_crisis,
+                    "session_id": session_id,
                 },
                 "error": None
             }), 200
         return jsonify({"success": False, "data": None, "error": {"code": "MESSAGE_TOO_LONG", "message": f"Message exceeds maximum allowed length ({MAX_MESSAGE_LENGTH} characters)."}}), 400
-
-    # Retention settings
-    retention_enabled = True
-    retention_days = 30
-    expires_at = None
 
     # Retention and Regional Settings
     retention_enabled = True
@@ -922,14 +943,37 @@ def chat():
         is_session_crisis_active = session_risk.get("risk_state") == "crisis_active"
 
         # -------------------------------------------------------------------
-        # Step 0.5: Pre-LLM Safety & Threat Classification (Highest Priority)
+        # Step 1: Tier 1 - Unified Deterministic Safety, Threat & Rules Pipeline
         # -------------------------------------------------------------------
-        safety_eval = classify_safety_risk(
-            user_message,
-            context_turns=recent_context,
-            api_key=user_api_key,
-            session_id=session_id,
-        )
+        if USE_UNIFIED_CRISIS_PIPELINE:
+            unified_eval = evaluate_unified_tier1_safety(
+                user_message,
+                session_id=session_id,
+                context_turns=recent_context,
+                user_api_key=user_api_key,
+            )
+            safety_eval = unified_eval
+            crisis_eval = unified_eval
+        else:
+            safety_eval = classify_safety_risk(
+                user_message,
+                context_turns=recent_context,
+                api_key=user_api_key,
+                session_id=session_id,
+            )
+            crisis_eval = evaluate_crisis_pipeline(
+                user_message,
+                allow_ml_fallback=False,
+                context_turns=recent_context,
+            )
+
+        # 1A. Deterministic Acute Crisis (Self-Harm, Harm-to-Others, Combined, Threat-Against-User)
+        is_tier1_crisis = False
+        tier1_risk_label = "HIGH_CRISIS"
+        tier1_safety_msg = ""
+        tier1_signals = []
+        tier1_source = "safety_classifier"
+        tier1_conf = 0.98
 
         if safety_eval.category in (
             SafetyRiskCategory.COMBINED_HIGH_CRISIS,
@@ -937,21 +981,37 @@ def chat():
             SafetyRiskCategory.HARM_TO_OTHERS_RISK,
             SafetyRiskCategory.SELF_HARM_RISK,
         ):
+            is_tier1_crisis = True
+            tier1_risk_label = "HIGH_CRISIS" if safety_eval.category == SafetyRiskCategory.SELF_HARM_RISK else safety_eval.category.value
+            tier1_safety_msg = safety_eval.safety_message
+            tier1_signals = safety_eval.matched_signals
+            tier1_source = "safety_classifier"
+            tier1_conf = safety_eval.confidence
+        elif crisis_eval.get("is_crisis"):
+            is_tier1_crisis = True
+            eval_risk = crisis_eval.get("risk_level")
+            tier1_risk_label = eval_risk if eval_risk in ("THREAT_AGAINST_USER", "HARM_TO_OTHERS_RISK", "COMBINED_HIGH_CRISIS") else ("HIGH_CRISIS" if crisis_eval.get("high_risk", True) else "ELEVATED_DISTRESS")
+            tier1_safety_msg = crisis_eval.get("safety_message") or SAFETY_RESPONSE_TEMPLATE.strip()
+            tier1_signals = crisis_eval.get("matched_categories", [])
+            tier1_source = "crisis_rules"
+            tier1_conf = crisis_eval.get("confidence", 0.98)
+
+        if is_tier1_crisis:
             duration_ms = round((time.time() - start_req_time) * 1000, 2)
-            # Preserve "HIGH_CRISIS" for pure self-harm to maintain existing API contracts
-            # COMBINED_HIGH_CRISIS, THREAT_AGAINST_USER, and HARM_TO_OTHERS_RISK keep their enum value as risk_label
-            risk_label = "HIGH_CRISIS" if safety_eval.category == SafetyRiskCategory.SELF_HARM_RISK else safety_eval.category.value
             logger.warning(
-                f"[{req_id}] CRITICAL SAFETY RISK DETECTED: {safety_eval.category.value}. "
-                f"Bypassing all LLM, Ollama, and RAG generative paths. Duration={duration_ms}ms"
+                f"[{req_id}] CRITICAL SAFETY RISK DETECTED via Tier 1: {tier1_risk_label}. "
+                f"Bypassing all LLM and generative paths. Duration={duration_ms}ms"
             )
 
             if session_id:
-                set_session_risk_state(session_id, user_id, "crisis_active", risk_label)
+                set_session_risk_state(session_id, user_id, "crisis_active", tier1_risk_label)
 
             if user_id:
                 try:
-                    update_user_profile(user_id, {"inc_crisis": True, "inc_harm_others": safety_eval.category == SafetyRiskCategory.HARM_TO_OTHERS_RISK})
+                    update_user_profile(user_id, {
+                        "inc_crisis": True,
+                        "inc_harm_others": tier1_risk_label == "HARM_TO_OTHERS_RISK"
+                    })
                 except Exception:
                     pass
 
@@ -959,43 +1019,46 @@ def chat():
                 save_chat_message(
                     user_id=user_id,
                     sender="assistant",
-                    text=safety_eval.safety_message,
-                    risk_level=risk_label,
-                    intent=f"SAFETY PROTOCOL - {risk_label}",
+                    text=tier1_safety_msg,
+                    risk_level=tier1_risk_label,
+                    intent=f"SAFETY PROTOCOL - {tier1_risk_label}",
                     emotion="ACUTE_RISK",
                     sentiment="NEGATIVE",
                     session_id=session_id,
                     expires_at=expires_at
                 )
+
             save_audit_event(
                 "critical_safety_escalation",
                 user_id,
-                {"source": "safety_classifier", "request_id": req_id, "risk_category": risk_label}
+                {"source": tier1_source, "request_id": req_id, "risk_category": tier1_risk_label}
             )
+
+            norm_cat = "self-harm" if tier1_risk_label == "HIGH_CRISIS" else tier1_risk_label
             log_safety_event_async(
-                tier=3 if any("semantic" in s for s in safety_eval.matched_signals) else 1,
-                rule_or_model=", ".join(safety_eval.matched_signals) if safety_eval.matched_signals else "safety_classifier",
-                category=safety_eval.category.value,
+                tier=3 if any("semantic" in s for s in tier1_signals) else 1,
+                rule_or_model=", ".join(tier1_signals) if tier1_signals else tier1_source,
+                category=norm_cat,
                 action_taken="hotline_shown_LLM_bypassed",
                 message=user_message,
                 session_id=session_id,
                 user_id=user_id,
-                confidence=safety_eval.confidence,
+                confidence=tier1_conf,
                 sync=bool(app.config.get("TESTING")),
             )
 
             return jsonify({
                 "success": True,
                 "status": "success",
-                "risk_level": risk_label,
+                "risk_level": tier1_risk_label,
                 "requires_immediate_action": True,
                 "data": {
                     "status": "success",
-                    "risk_level": risk_label,
-                    "classification": risk_label,
-                    "reply": safety_eval.safety_message,
+                    "risk_level": tier1_risk_label,
+                    "classification": tier1_risk_label,
+                    "reply": tier1_safety_msg,
                     "disclaimer": SAFETY_DISCLAIMER,
-                    "intent": f"SAFETY PROTOCOL - {risk_label}",
+                    "intent": f"SAFETY PROTOCOL - {tier1_risk_label}",
                     "emotion": "ACUTE_RISK",
                     "sentiment": "NEGATIVE",
                     "emergency_resources": regional_resources,
@@ -1007,221 +1070,81 @@ def chat():
                 "error": None
             }), 200
 
+        # 1B. Third-Party Reporting Guidance
+        is_third_party = False
+        tp_risk_label = "THIRD_PARTY_REPORT"
+        tp_safety_msg = ""
+        tp_signals = []
+        tp_source = "safety_classifier:third_party"
+        tp_conf = 0.95
+
         if safety_eval.category in (
             SafetyRiskCategory.REPORTED_THREAT_TO_OTHERS,
             SafetyRiskCategory.THIRD_PARTY_REPORT,
         ):
+            is_third_party = True
+            tp_risk_label = safety_eval.category.value
+            tp_safety_msg = safety_eval.safety_message
+            tp_signals = safety_eval.matched_signals
+            tp_source = "safety_classifier:third_party"
+            tp_conf = safety_eval.confidence
+        elif crisis_eval.get("is_third_party") or crisis_eval.get("risk_level") == "REPORTED_THREAT_TO_OTHERS":
+            is_third_party = True
+            tp_risk_label = crisis_eval.get("risk_level", "THIRD_PARTY_REPORT")
+            tp_safety_msg = crisis_eval.get("safety_message") or THIRD_PARTY_GUIDANCE_TEMPLATE.strip()
+            tp_signals = [str(crisis_eval.get("source") or "deterministic_pipeline:third_party")]
+            tp_source = "crisis_rules:third_party"
+            tp_conf = crisis_eval.get("confidence", 0.95)
+
+        if is_third_party:
             duration_ms = round((time.time() - start_req_time) * 1000, 2)
-            risk_label = safety_eval.category.value
-            logger.info(f"[{req_id}] {risk_label} DETECTED. Returning guidance panel. Duration={duration_ms}ms")
+            logger.info(f"[{req_id}] {tp_risk_label} DETECTED. Returning guidance panel. Duration={duration_ms}ms")
 
             if user_id and retention_enabled:
                 save_chat_message(
                     user_id=user_id,
                     sender="assistant",
-                    text=safety_eval.safety_message,
-                    risk_level=risk_label,
-                    intent=f"SAFETY PROTOCOL - {risk_label}",
+                    text=tp_safety_msg,
+                    risk_level=tp_risk_label,
+                    intent=f"SAFETY PROTOCOL - {tp_risk_label}",
                     emotion="CONCERN",
                     sentiment="NEUTRAL",
                     session_id=session_id,
                     expires_at=expires_at
                 )
-            save_audit_event("third_party_report_guidance", user_id, {"source": "safety_classifier", "request_id": req_id, "risk_category": risk_label})
+
+            save_audit_event(
+                "third_party_report_guidance",
+                user_id,
+                {"source": tp_source, "request_id": req_id, "risk_category": tp_risk_label}
+            )
+
             log_safety_event_async(
                 tier=1,
-                rule_or_model=", ".join(safety_eval.matched_signals) if safety_eval.matched_signals else "threat_actor_detector",
-                category=safety_eval.category.value,
+                rule_or_model=", ".join(tp_signals) if tp_signals else tp_source,
+                category=tp_risk_label,
                 action_taken="guidance_shown",
                 message=user_message,
                 session_id=session_id,
                 user_id=user_id,
-                confidence=safety_eval.confidence,
+                confidence=tp_conf,
                 sync=bool(app.config.get("TESTING")),
             )
 
             return jsonify({
                 "success": True,
                 "status": "success",
-                "risk_level": risk_label,
+                "risk_level": tp_risk_label,
                 "requires_immediate_action": False,
                 "data": {
                     "status": "success",
-                    "risk_level": risk_label,
-                    "classification": risk_label,
-                    "reply": safety_eval.safety_message,
+                    "risk_level": tp_risk_label,
+                    "classification": tp_risk_label,
+                    "reply": tp_safety_msg,
                     "disclaimer": SAFETY_DISCLAIMER,
-                    "intent": f"SAFETY PROTOCOL - {risk_label}",
+                    "intent": f"SAFETY PROTOCOL - {tp_risk_label}",
                     "emotion": "CONCERN",
                     "sentiment": "NEUTRAL",
-                    "emergency_resources": regional_resources,
-                    "requires_immediate_action": False,
-                    "session_id": session_id,
-                    "latency_ms": duration_ms,
-                    "inference_latency_ms": duration_ms
-                },
-                "error": None
-            }), 200
-
-        # -------------------------------------------------------------------
-        # Step 1: Tier 1 - Deterministic Rules & Pipeline Preprocessing
-        # -------------------------------------------------------------------
-        crisis_eval = evaluate_crisis_pipeline(user_message, allow_ml_fallback=False, context_turns=recent_context)
-
-        if crisis_eval.get("is_third_party") or crisis_eval.get("risk_level") == "REPORTED_THREAT_TO_OTHERS":
-            duration_ms = round((time.time() - start_req_time) * 1000, 2)
-            risk_label = crisis_eval.get("risk_level", "THIRD_PARTY_REPORT")
-            logger.info(f"[{req_id}] THIRD-PARTY CRISIS REPORTED ({risk_label}). Providing guidance. Duration={duration_ms}ms")
-            if user_id and retention_enabled:
-                save_chat_message(
-                    user_id=user_id,
-                    sender="assistant",
-                    text=crisis_eval["safety_message"],
-                    risk_level=risk_label,
-                    intent=f"THIRD PARTY CRISIS REPORT - {risk_label}",
-                    emotion="CONCERN",
-                    sentiment="NEUTRAL",
-                    session_id=session_id,
-                    expires_at=expires_at
-                )
-            save_audit_event("third_party_crisis_guidance", user_id, {"source": "third_party", "request_id": req_id, "risk_category": risk_label})
-            log_safety_event_async(
-                tier=1,
-                rule_or_model=str(crisis_eval.get("source") or "deterministic_pipeline:third_party"),
-                category=crisis_eval.get("risk_level", "THIRD_PARTY_REPORT"),
-                action_taken="guidance_shown",
-                message=user_message,
-                session_id=session_id,
-                user_id=user_id,
-                confidence=crisis_eval.get("confidence", 0.95),
-                sync=bool(app.config.get("TESTING")),
-            )
-            return jsonify({
-                "success": True,
-                "status": "success",
-                "risk_level": risk_label,
-                "requires_immediate_action": False,
-                "data": {
-                    "status": "success",
-                    "risk_level": risk_label,
-                    "reply": crisis_eval["safety_message"],
-                    "disclaimer": SAFETY_DISCLAIMER,
-                    "intent": f"THIRD PARTY CRISIS REPORT - {risk_label}",
-                    "emotion": "CONCERN",
-                    "sentiment": "NEUTRAL",
-                    "emergency_resources": regional_resources,
-                    "requires_immediate_action": False,
-                    "session_id": session_id,
-                    "latency_ms": duration_ms,
-                    "inference_latency_ms": duration_ms
-                },
-                "error": None
-            }), 200
-
-        if crisis_eval["is_crisis"]:
-            duration_ms = round((time.time() - start_req_time) * 1000, 2)
-            risk_label = "HIGH_CRISIS" if crisis_eval.get("high_risk", True) else "ELEVATED_DISTRESS"
-            logger.warning(f"[{req_id}] CRISIS DETECTED via Tier 1 Pipeline. Risk={risk_label}. Duration={duration_ms}ms")
-
-            if user_id:
-                try:
-                    update_user_profile(user_id, {"inc_crisis": True})
-                except Exception:
-                    pass
-
-            if session_id:
-                set_session_risk_state(session_id, user_id, "crisis_active", risk_label)
-
-            if user_id and retention_enabled:
-                save_chat_message(
-                    user_id=user_id,
-                    sender="assistant",
-                    text=crisis_eval["safety_message"],
-                    risk_level=risk_label,
-                    intent="SUICIDE CRISIS OR SELF HARM RISK",
-                    emotion="DISTRESS",
-                    sentiment="NEGATIVE",
-                    session_id=session_id,
-                    expires_at=expires_at
-                )
-            save_audit_event("crisis_detected", user_id, {"source": "deterministic_pipeline", "request_id": req_id, "risk_level": risk_label})
-            log_safety_event_async(
-                tier=1,
-                rule_or_model=str(crisis_eval.get("rule_triggered") or crisis_eval.get("source") or "deterministic_regex"),
-                category="self-harm",
-                action_taken="hotline_shown_LLM_bypassed",
-                message=user_message,
-                session_id=session_id,
-                user_id=user_id,
-                confidence=crisis_eval.get("confidence", 1.0),
-                sync=bool(app.config.get("TESTING")),
-            )
-
-            return jsonify({
-                "success": True,
-                "status": "success",
-                "risk_level": risk_label,
-                "requires_immediate_action": True,
-                "data": {
-                    "status": "success",
-                    "risk_level": risk_label,
-                    "reply": crisis_eval["safety_message"],
-                    "disclaimer": SAFETY_DISCLAIMER,
-                    "intent": "SUICIDE CRISIS OR SELF HARM RISK",
-                    "emotion": "DISTRESS",
-                    "sentiment": "NEGATIVE",
-                    "emergency_resources": regional_resources,
-                    "requires_immediate_action": True,
-                    "session_id": session_id,
-                    "latency_ms": duration_ms,
-                    "inference_latency_ms": duration_ms
-                },
-                "error": None
-            }), 200
-
-        # Guarded Sticky Follow-up: If session is in crisis_active or user is in active cooling window
-        user_cooling = bool(user_id and is_user_in_cooling_window(user_id))
-        if is_session_crisis_active or user_cooling:
-            duration_ms = round((time.time() - start_req_time) * 1000, 2)
-            logger.info(f"[{req_id}] Guarded crisis follow-up turn (session_crisis={is_session_crisis_active}, user_cooling={user_cooling}). Transitioning to elevated_monitoring.")
-            
-            if session_id:
-                set_session_risk_state(session_id, user_id, "elevated_monitoring", "ELEVATED_DISTRESS")
-
-            guarded_reply = (
-                "I hear you, and I want to make sure you are safe first. "
-                "Even if you feel like stepping back or changing the topic from what you shared, please know that support is available 24/7. "
-                "I am here with you — would you like to talk through how you are feeling, or try a calming grounding exercise together?"
-            )
-
-            if user_id and retention_enabled:
-                save_chat_message(
-                    user_id=user_id,
-                    sender="assistant",
-                    text=guarded_reply,
-                    risk_level="ELEVATED_DISTRESS",
-                    intent="CRISIS MONITORING FOLLOWUP",
-                    intent_confidence=0.90,
-                    emotion="DISTRESS",
-                    sentiment="NEGATIVE",
-                    session_id=session_id,
-                    expires_at=expires_at
-                )
-
-            return jsonify({
-                "success": True,
-                "status": "success",
-                "risk_level": "ELEVATED_DISTRESS",
-                "requires_immediate_action": False,
-                "data": {
-                    "status": "success",
-                    "risk_level": "ELEVATED_DISTRESS",
-                    "reply": guarded_reply,
-                    "disclaimer": SAFETY_DISCLAIMER,
-                    "intent": "CRISIS MONITORING FOLLOWUP",
-                    "intent_confidence": 0.90,
-                    "emotion": "DISTRESS",
-                    "sentiment": "NEGATIVE",
                     "emergency_resources": regional_resources,
                     "requires_immediate_action": False,
                     "session_id": session_id,
@@ -1240,7 +1163,7 @@ def chat():
 
         is_crisis_signal = (
             ml_results["intent"] == "SUICIDE CRISIS OR SELF HARM RISK"
-            and not (crisis_eval.get("bypass_triggered") or is_contextual_or_negated(clean_user_message))
+            and not (crisis_eval.get("bypass_triggered") or (is_contextual_or_negated(clean_user_message) if not USE_UNIFIED_CRISIS_PIPELINE else False))
         )
 
         triage_level = "ELEVATED_DISTRESS" if safety_eval.category == SafetyRiskCategory.EMOTIONAL_DISTRESS else "LOW"
@@ -1253,7 +1176,8 @@ def chat():
                 triage_level = "HIGH_CRISIS"
             elif conf >= 0.30:
                 verifier_res = evaluate_llm_safety_guardrail(
-                    user_text=user_message,
+                    user_text=clean_user_message,
+                    context_turns=recent_context,
                     api_key=user_api_key
                 )
                 if verifier_res is not None:
@@ -1269,12 +1193,13 @@ def chat():
                             logger.info(f"[{req_id}] LLM Verifier de-escalated non-crisis message ({cat}) - routing to supportive flow")
                             triage_level = "LOW"
                 else:
-                    if conf >= 0.85:
+                    # Conservative fallback when verifier is offline/unreachable:
+                    # Confirmed ML confidence >= 0.65 fails closed to HIGH_CRISIS
+                    if conf >= 0.65:
+                        logger.warning(f"[{req_id}] LLM verifier offline; failing closed on ML conf {conf:.2f} to HIGH_CRISIS")
                         triage_level = "HIGH_CRISIS"
-                    elif conf >= 0.30:
-                        triage_level = "ELEVATED_DISTRESS"
                     else:
-                        triage_level = "LOW"
+                        triage_level = "ELEVATED_DISTRESS"
 
         if triage_level == "HIGH_CRISIS":
             duration_ms = round((time.time() - start_req_time) * 1000, 2)
@@ -1298,7 +1223,7 @@ def chat():
                     session_id=session_id,
                     expires_at=expires_at
                 )
-            save_audit_event("crisis_detected", user_id, {"source": "ml_pipeline", "request_id": req_id})
+            save_audit_event("crisis_detected", user_id, {"source": "ml_pipeline", "request_id": req_id, "risk_category": "HIGH_CRISIS"})
             is_verifier_crisis = bool(verifier_res and verifier_res.get("is_crisis", False))
             if is_verifier_crisis:
                 t_val = 3
@@ -1339,6 +1264,61 @@ def chat():
                     "sentiment": ml_results["sentiment"],
                     "emergency_resources": regional_resources,
                     "requires_immediate_action": True,
+                    "session_id": session_id,
+                    "latency_ms": duration_ms,
+                    "inference_latency_ms": duration_ms
+                },
+                "error": None
+            }), 200
+
+        # -------------------------------------------------------------------
+        # Step 3: Guarded Sticky Follow-up (Post-Triage)
+        # Reached ONLY after both Tier 1 and Tier 2/2.5 have verified this turn is non-crisis.
+        # If session is in crisis_active or user in cooling window, transition to elevated_monitoring.
+        # -------------------------------------------------------------------
+        user_cooling = bool(user_id and is_user_in_cooling_window(user_id))
+        if is_session_crisis_active or user_cooling:
+            duration_ms = round((time.time() - start_req_time) * 1000, 2)
+            logger.info(f"[{req_id}] Guarded crisis follow-up turn (session_crisis={is_session_crisis_active}, user_cooling={user_cooling}). Transitioning to elevated_monitoring.")
+            
+            if session_id:
+                set_session_risk_state(session_id, user_id, "elevated_monitoring", "ELEVATED_DISTRESS")
+
+            guarded_reply = (
+                "I hear you, and I want to make sure you are safe first. "
+                "Even if you feel like stepping back or changing the topic from what you shared, please know that support is available 24/7. "
+                "I am here with you — would you like to talk through how you are feeling, or try a calming grounding exercise together?"
+            )
+
+            if user_id and retention_enabled:
+                save_chat_message(
+                    user_id=user_id,
+                    sender="assistant",
+                    text=guarded_reply,
+                    risk_level="ELEVATED_DISTRESS",
+                    intent="CRISIS MONITORING FOLLOWUP",
+                    intent_confidence=0.90,
+                    emotion="DISTRESS",
+                    sentiment="NEGATIVE",
+                    session_id=session_id,
+                    expires_at=expires_at
+                )
+
+            return jsonify({
+                "success": True,
+                "status": "success",
+                "risk_level": "ELEVATED_DISTRESS",
+                "requires_immediate_action": False,
+                "data": {
+                    "status": "success",
+                    "risk_level": "ELEVATED_DISTRESS",
+                    "reply": guarded_reply,
+                    "disclaimer": SAFETY_DISCLAIMER,
+                    "intent": "CRISIS MONITORING FOLLOWUP",
+                    "emotion": "DISTRESS",
+                    "sentiment": "NEGATIVE",
+                    "emergency_resources": regional_resources,
+                    "requires_immediate_action": False,
                     "session_id": session_id,
                     "latency_ms": duration_ms,
                     "inference_latency_ms": duration_ms
@@ -1477,15 +1457,18 @@ def chat():
 # Session Safety Clear & Clearance Token Endpoints
 # ---------------------------------------------------------------------------
 @app.route("/api/chat/session/<session_id>/clearance-token", methods=["POST"])
-@jwt_required
+@optional_jwt
 def get_session_clearance_token(session_id):
-    user_id = g.current_user["id"]
+    current_user = getattr(g, "current_user", None)
+    caller_user_id = current_user["id"] if current_user else None
     session = get_db().chat_sessions.find_one({"id": session_id})
     if not session:
         return jsonify({"success": False, "error": "not_found", "message": "Session not found"}), 404
-    if session.get("user_id") and session["user_id"] != user_id:
-        return jsonify({"success": False, "error": "forbidden", "message": "Session ownership verification failed"}), 403
-    token = generate_clearance_token(session_id, user_id, JWT_SECRET_KEY)
+    if session.get("user_id"):
+        if not caller_user_id or session["user_id"] != caller_user_id:
+            return jsonify({"success": False, "error": "forbidden", "message": "Session ownership verification failed"}), 403
+    effective_user_id = caller_user_id or "anonymous"
+    token = generate_clearance_token(session_id, effective_user_id, JWT_SECRET_KEY)
     return jsonify({"success": True, "data": {"clearance_token": token}, "error": None}), 200
 
 

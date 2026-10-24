@@ -231,7 +231,7 @@ def _semantic_reasoning_fallback(text: str, cross_turn_context: Optional[str] = 
 
     # 1. Live crisis clauses that override any preceding exclusion
     has_live_crisis = bool(re.search(
-        r"\b(?:want\s+to\s+end\s+it\s+all|before\s+i\s+jump|planning\s+my\s+own\s+death|holding\s+the\s+pills\s+ready\s+to\s+swallow|standing\s+on\s+the\s+edge|cutting\s+again|have\s+a\s+plan\s+and\s+i'?m\s+ready|going\s+to\s+do\s+the\s+same\s+thing\s+now)\b|"
+        r"\b(?:want\s+to\s+end\s+it\s+all|decided\s+to\s+end\s+it\s+all|end\s+it\s+all\s+tonight|before\s+i\s+jump|planning\s+my\s+own\s+death|holding\s+the\s+pills\s+ready\s+to\s+swallow|standing\s+on\s+the\s+edge|cutting\s+again|have\s+a\s+plan\s+and\s+i'?m\s+ready|going\s+to\s+do\s+the\s+same\s+thing\s+now|actively\s+suicidal|suicide\s+plan)\b|"
         r"\b(?:have|got|holding|bought|saved|stashed)\s+(?:(?:a|the|my|these|this)\s+)?(?:(?:whole|full|entire)\s+)?(?:bottle\s+of\s+|stash\s+of\s+|handful\s+of\s+)?(?:sleeping\s+)?(?:pills|meds|medication|tablets|capsules|painkillers)\b.*?\b(?:going\s+to|gonna|will|plan\s+to|planning\s+to|about\s+to|intend\s+to)\s+(?:take|swallow|down|ingest|overdose\s+on)\s+(?:them|it|all)\b|"
         r"\b(?:want\s+to|wanna|going\s+to|gonna|plan\s+to|planning\s+to)\s+(?:die|kill\s+myself|end\s+my\s+life|commit\s+suicide)\b|"
         r"\b(?:swallowed\s+(?:the|all)\s+pills|holding\s+(?:the|a)\s+(?:blade|knife|gun|razor)|about\s+to\s+jump)\b",
@@ -257,7 +257,7 @@ def _semantic_reasoning_fallback(text: str, cross_turn_context: Optional[str] = 
     is_harm_others = bool(re.search(
         r"\b(?:they\s+will\s+pay|settle\s+the\s+score\s+in\s+blood|don'?t\s+walk\s+away\s+from\s+this|permanent\s+accident\s+for\s+someone|won'?t\s+be\s+breathing|executing\s+my\s+revenge|putting\s+an\s+end\s+to\s+their\s+existence|eliminating\s+the\s+problem\s+directly|fatal\s+justice|taking\s+matters\s+into\s+my\s+own\s+hands\s+with\s+them)\b|"
         r"\b(?:attacking\s+anyone|make\s+them\s+all\s+pay|planning\s+an\s+attack|inflict\s+pain\s+on\s+others|physically\s+assault\s+somebody|harming\s+people|snap\s+and\s+hurt\s+people|do\s+something\s+violent|urge\s+to\s+destroy\s+and\s+harm|committing\s+a\s+crime\s+against\s+a\s+person|take\s+out\s+my\s+anger\s+physically)\b|"
-        r"\b(?:want\s+to|wanna|need\s+to|feel\s+like|urge\s+to|plan\s+to|planning\s+to|gonna|going\s+to)\s+(?:harm|hurt|beat|attack|assault|injure|kill|murder|shoot|stab)\s+(?:someone|people|anybody|anyone|everybody|everyone|them|him|her|my\s+\w+)\b|"
+        r"\b(?:want\s+to|wanna|need\s+to|feel\s+like|urge\s+to|plan\s+to|planning\s+to|gonna|going\s+to|will|i'll)\s+(?:severely\s+|seriously\s+)?(?:harm|hurt|beat|attack|assault|injure|kill|murder|shoot|stab)\s+(?:someone|people|anybody|anyone|everybody|everyone|them|him|her|that\s+person|this\s+person|person|my\s+\w+)\b|"
         r"\b(?:got\s+my\s+dad'?s\s+rifle.*?heading\s+out|bought\s+a\s+weapon\s+today\s+to\s+finish|loaded\s+the\s+gun.*?find\s+them|sharpened\s+the\s+blade.*?ready\s+to\s+strike|armed\s+and\s+ready\s+to\s+take\s+care\s+of\s+business|holding\s+this\s+weapon\s+makes\s+me\s+feel.*?powerful|got\s+the\s+pistol\s+loaded|with\s+this\s+machete.*?exact\s+my\s+revenge)\b|"
         r"\b(?:have|got|holding|grabbed|brought)\s+(?:a|the|my)?\s*(?:knife|gun|pistol|rifle|blade|weapon|axe)\s+.*?\b(?:attack|harm|hurt|kill|shoot|stab|injure|use\s+it)\b",
         t

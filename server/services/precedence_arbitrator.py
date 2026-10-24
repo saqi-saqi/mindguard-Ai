@@ -265,7 +265,7 @@ def arbitrate(inp: ArbitrationInput) -> ArbitrationResult:
         )
 
     # 9. AMBIGUOUS PAST (Past history without explicit resolution, but no current relapse)
-    if inp.temporal and inp.temporal.past_anchor.detected and not inp.temporal.acute_relapse.detected and not inp.is_base_crisis:
+    if inp.temporal and inp.temporal.past_anchor.detected and not inp.temporal.acute_relapse.detected and not inp.has_first_person_override:
         reasoning.append("Rule 9 (Ambiguous past reflection): Historical mention without active crisis markers.")
         return ArbitrationResult(
             is_crisis=False,

@@ -132,7 +132,7 @@ _TRIVIAL_BENIGN_PATTERNS = [
 # 2. Harm-To-Others / Homicide Patterns (Direct Threats & Specific Methods)
 _HARM_TO_OTHERS_PATTERNS = [
     # Direct intent to kill/murder/harm/attack/assault/injure someone (generic or specific)
-    _c(r"\b(?:i'?m\s+gonna|i\s+am\s+going\s+to|i\s+will|i'll|i\s+plan\s+to|i'?m\s+planning\s+to|i\s+want\s+to|wanna|intend\s+to|planning\s+to|plan\s+to|gonna|urge\s+to|feel\s+like|need\s+to)\s+(?:gonna\s+)?(?:harm|hurt|beat|attack|assault|injure|kill|murder|slaughter|shoot|stab|slit|choke|strangle|poison|assassinate|execute)\s+(?:my\s+|the\s+|this\s+|that\s+)?(?:neighbour|neighbor|friend|boss|coworker|ex|wife|husband|mother|father|brother|sister|roommate|teacher|landlord|doctor|cousin|uncle|aunt|partner|girlfriend|boyfriend|son|daughter|kid|child|people|someone|anyone|anybody|somebody|everyone|everybody|them|him|her|bitch|bastard|(?!myself\b|me\b)[a-z]+)\b"),
+    _c(r"\b(?:i'?m\s+gonna|i\s+am\s+going\s+to|i\s+will|i'll|i\s+plan\s+to|i'?m\s+planning\s+to|i\s+want\s+to|wanna|intend\s+to|planning\s+to|plan\s+to|gonna|urge\s+to|feel\s+like|need\s+to)\s+(?:gonna\s+)?(?:severely\s+|seriously\s+)?(?:harm|hurt|beat|attack|assault|injure|kill|murder|slaughter|shoot|stab|slit|choke|strangle|poison|assassinate|execute)\s+(?:my\s+|the\s+|this\s+|that\s+)?(?:neighbour|neighbor|friend|boss|coworker|ex|wife|husband|mother|father|brother|sister|roommate|teacher|landlord|doctor|cousin|uncle|aunt|partner|girlfriend|boyfriend|son|daughter|kid|child|people|person|someone|anyone|anybody|somebody|everyone|everybody|them|him|her|bitch|bastard|(?!myself\b|me\b)[a-z]+)\b"),
     _c(r"\b(?:gonna|going\s+to|will|i'll)\s+(?:kill|murder|shoot|stab|slaughter|poison|attack|harm|hurt|beat|assault|injure)\s+(?:him|her|them|my\s+\w+|someone|anyone|anybody|somebody|people|everybody|(?!myself\b|me\b)[a-z]+)\b"),
     _c(r"\b(?:i'?m\s+going\s+to|i'?m\s+gonna|i\s+will|i'll)\s+(?:poison|attack|assault|beat)\s+(?:him|her|them|someone|anyone|people|everyone|(?!myself\b|me\b)[a-z]+)\b"),
     _c(r"\b(?:want\s+to|wanna|plan\s+to|planning\s+to|urge\s+to)\s+(?:harm|hurt|beat|attack|assault|injure)\s+(?:someone|anyone|anybody|somebody|people)\b"),
@@ -169,7 +169,14 @@ _SELF_HARM_PATTERNS = [
     _c(r"\b(?:i\s+)?(?:want\s+to|wanna)\s+die\b"),
     _c(r"\bi\s+(?:wish\s+i\s+(?:was|were)\s+dead|don'?t\s+want\s+to\s+live\s+anymore)\b"),
     _c(r"\btake\s+my\s+(?:own\s+)?life\b"),
-    _c(r"\b(?:i\s+am|i'?m)\s+(?:going\s+to\s+)?(?:suicidal|kill\s+myself|overdose|hang\s+myself|jump\s+off\s+a\s+bridge)\b"),
+    _c(r"\b(?:i\s+(?:am|feel|am\s+feeling)|i'?m|feeling)\s+(?:going\s+to\s+|gonna\s+)?(?:actively\s+)?(?:suicidal|kill\s+myself|overdose|hang\s+myself|jump\s+off\s+a\s+bridge)\b"),
+    _c(r"\boverdos(?:e|ing|ed)\s+on\s+(?:my\s+|the\s+|all\s+my\s+)?(?:pills|meds|medication|painkillers)\b"),
+    _c(r"\b(?:going\s+to|gonna|will|plan\s+to)\s+overdose\b"),
+    _c(r"\b(?:actively\s+suicidal|feeling\s+actively\s+suicidal)\b"),
+    _c(r"\b(?:i'?ve\s+decided\s+to|decided\s+to|going\s+to)\s+end\s+it\s+all(?:\s+tonight)?\b"),
+    _c(r"\bend\s+it\s+all\s+(?:tonight|today|now)\b"),
+    _c(r"\b(?:have|got|made)\s+(?:a\s+)?(?:suicide\s+plan|plan\s+to\s+(?:die|kill\s+myself))\b"),
+    _c(r"\bsuicide\s+plan\b"),
     _c(r"\b(?:took|swallowed|downed|ingested)\s+(?:a\s+whole\s+bottle|all\s+my|too\s+many)\s+(?:pills|tablets|medication|painkillers)\b"),
     _c(r"\b(?:have|got|holding|bought|saved|stashed)\s+(?:(?:a|the|my|these|this)\s+)?(?:(?:whole|full|entire)\s+)?(?:bottle\s+of\s+|stash\s+of\s+|handful\s+of\s+)?(?:sleeping\s+)?(?:pills|meds|medication|tablets|capsules|painkillers)\b.*?\b(?:going\s+to|gonna|will|plan\s+to|planning\s+to|about\s+to|intend\s+to|i'?m\s+taking|taking)\s+(?:take|taking|swallow|down|ingest|overdose\s+on|them|it|all)\b"),
     _c(r"\b(?:saved|saving)\s+up\s+all\s+my\s+pills\s+and\s+.*?\btaking\s+them\b"),
@@ -225,7 +232,7 @@ _SELF_HARM_PATTERNS = [
 
 # 4. Third-Party Crisis / Threat Disclosure Patterns
 _THIRD_PARTY_PATTERNS = [
-    _c(r"\b(?:my\s+|a\s+)?(?:friend|roommate|brother|sister|cousin|ex|coworker|colleague|classmate|partner|neighbour|neighbor|someone|somebody|he|she|they)(?:\s+in\s+my\s+\w+)?\b.{0,60}?\b(?:talks?|talking|said|says?|told\s+me|threaten(?:ed|ing)?|planning|plans?|posted|going|wants?)\b.{0,60}?\b(?:kill(?:ing)?|murder(?:ing)?|shoot(?:ing)?|stab(?:bing)?|hurt(?:ing)?|harm(?:ing)?|die|suicid|end\s+(?:his|her|their)\s+life|commit\s+suicide)\b"),
+    _c(r"\b(?:my\s+|a\s+)?(?:friend|roommate|brother|sister|cousin|ex|coworker|colleague|classmate|partner|neighbour|neighbor|someone|somebody|he|she|they)(?:\s+in\s+my\s+\w+)?\b.{0,60}?\b(?:talks?|talking|said|says?|told\s+me|threaten(?:ed|ing)?|planning|plans?|posted|going|wants?|left|wrote)\b.{0,60}?\b(?:kill(?:ing)?|murder(?:ing)?|shoot(?:ing)?|stab(?:bing)?|hurt(?:ing)?|harm(?:ing)?|die|suicid|end\s+(?:his|her|their)\s+life|commit\s+suicide|suicide\s+note)\b"),
     _c(r"\b(?:my\s+friend|my\s+brother|my\s+sister|my\s+roommate|someone\s+i\s+know|someone\s+in\s+my\s+\w+)\s+(?:wants\s+to\s+die|is\s+suicidal|wants\s+to\s+kill|is\s+threatening\s+to\s+kill|wants\s+to\s+commit\s+suicide)\b"),
     _c(r"\b(?:someone|she|he|they)\s+posted\s+that\s+(?:she|he|they)\s+(?:wants?\s+to|is\s+going\s+to)\s+(?:die|commit\s+suicide|kill)\b"),
     _c(r"\b(?:left\s+a\s+(?:suicide\s+)?note|roommate\s+left\s+a\s+note)\b"),
@@ -349,6 +356,33 @@ def classify_safety_risk(
     COMBINED_HIGH_CRISIS > HARM_TO_OTHERS_RISK > HIGH_CRISIS > SELF_HARM_RISK
     > THIRD_PARTY_REPORT > EMOTIONAL_DISTRESS > NONE
     """
+    try:
+        from config import USE_UNIFIED_CRISIS_PIPELINE
+    except ImportError:
+        import os
+        USE_UNIFIED_CRISIS_PIPELINE = os.environ.get("USE_UNIFIED_CRISIS_PIPELINE", "true").lower() in ("true", "1", "yes")
+
+    if USE_UNIFIED_CRISIS_PIPELINE:
+        try:
+            from services.unified_safety_pipeline import evaluate_unified_tier1_safety
+        except ImportError:
+            from .unified_safety_pipeline import evaluate_unified_tier1_safety
+        unified_res = evaluate_unified_tier1_safety(
+            text,
+            session_id=session_id,
+            context_turns=context_turns,
+            user_api_key=api_key,
+        )
+        return SafetyClassificationResult(
+            category=unified_res.category,
+            confidence=unified_res.confidence,
+            matched_signals=unified_res.matched_signals,
+            is_crisis=unified_res.is_crisis,
+            requires_immediate_action=unified_res.requires_immediate_action,
+            safety_message=unified_res.safety_message,
+            reasoning=unified_res.reasoning,
+        )
+
     # Step 0: Canonicalize ONCE upstream (single normalization point for all tiers)
     try:
         from services.text_normalizer import canonicalize_message
@@ -640,7 +674,7 @@ def classify_safety_risk(
         reasoning = "User reporting a direct threat against themselves"
         confidence = 0.98
     elif final_risk_level == "HARM_TO_OTHERS_RISK":
-        safety_msg = HARM_TO_OTHERS_SAFETY_MESSAGE
+        safety_msg = HARM_TO_OTHERS_SAFETY_MESSAGE.replace("• Umang Pakistan Mental Health Helpline: 0311-7786264 (24/7 free support)\n", "")
         reasoning = "Direct credible threat to another person detected"
         confidence = 0.98
     elif final_risk_level == "REPORTED_THREAT_TO_OTHERS":
