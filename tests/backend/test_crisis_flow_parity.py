@@ -45,9 +45,14 @@ from services.crisis_resources import get_resources_for_region
 @pytest.fixture(scope="module")
 def client():
     flask_app_module.app.config["TESTING"] = True
+    old_rate = flask_app_module.app.config.get("RATE_LIMIT_PER_MINUTE")
     flask_app_module.app.config["RATE_LIMIT_PER_MINUTE"] = 100000
     with flask_app_module.app.test_client() as c:
         yield c
+    if old_rate is not None:
+        flask_app_module.app.config["RATE_LIMIT_PER_MINUTE"] = old_rate
+    else:
+        flask_app_module.app.config.pop("RATE_LIMIT_PER_MINUTE", None)
 
 
 class TestCrisisFlowParityScenarios:

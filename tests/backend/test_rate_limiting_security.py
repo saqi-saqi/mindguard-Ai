@@ -20,6 +20,7 @@ import unittest
 from unittest.mock import patch
 from pathlib import Path
 import sys
+import os
 
 SERVER_DIR = Path(__file__).resolve().parents[2] / "server"
 if str(SERVER_DIR) not in sys.path:
@@ -45,13 +46,23 @@ class TestRateLimitingSecurity(unittest.TestCase):
 
     def setUp(self):
         self.app = app
+        self.prev_rate_limit_env = os.environ.pop("RATE_LIMIT_DISABLED", None)
+        self.prev_rate_limit_minute = self.app.config.get("RATE_LIMIT_PER_MINUTE")
         self.app.config["TESTING"] = True
+        self.app.config["RATE_LIMIT_DISABLED"] = False
+        self.app.config["RATE_LIMIT_PER_MINUTE"] = 60
         self.client = self.app.test_client()
         reset_rate_limits()
 
     def tearDown(self):
         reset_rate_limits()
         self.app.config["TRUSTED_PROXIES"] = []
+        if self.prev_rate_limit_minute is not None:
+            self.app.config["RATE_LIMIT_PER_MINUTE"] = self.prev_rate_limit_minute
+        else:
+            self.app.config.pop("RATE_LIMIT_PER_MINUTE", None)
+        if self.prev_rate_limit_env is not None:
+            os.environ["RATE_LIMIT_DISABLED"] = self.prev_rate_limit_env
 
     def test_rate_limit_60_allowed_61_blocked_boundary(self):
         """Boundary test: exactly 60 requests succeed in window; the 61st returns 429."""

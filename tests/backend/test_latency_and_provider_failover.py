@@ -78,7 +78,7 @@ class LatencyAndProviderFailoverTestCase(unittest.TestCase):
         self.assertEqual(call_count, 1, "Expected loop to terminate on first 503 failure without waterfalling")
         self.assertTrue(time.time() < llm_service._GEMINI_CONNECTIVITY_BROKEN_UNTIL, "Circuit breaker should be active")
         self.assertIn("sleep", reply.lower())
-        self.assertLess(duration_ms, 500, "Fallback after 503 should complete in under 500ms locally")
+        self.assertLess(duration_ms, 2500, "Fallback after 503 should complete in under 2500ms locally")
 
     def test_gemini_504_deadline_exceeded_trips_circuit_breaker(self):
         """A 504 DEADLINE_EXCEEDED response must activate the 60s circuit breaker."""

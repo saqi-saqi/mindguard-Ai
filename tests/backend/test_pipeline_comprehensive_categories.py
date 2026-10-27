@@ -49,7 +49,6 @@ from typing import Any, Dict, List, NamedTuple
 # Configure in-memory mocks and testing flags before importing server modules
 os.environ["USE_MONGOMOCK"] = "true"
 os.environ["FLASK_ENV"] = "testing"
-os.environ["RATE_LIMIT_DISABLED"] = "true"
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 SERVER_DIR = ROOT_DIR / "server"
@@ -62,6 +61,17 @@ import pytest
 from app import app
 from services.crisis_rules import evaluate_crisis_pipeline, is_contextual_or_negated
 from services.safety_classifier import classify_safety_risk, SafetyRiskCategory
+
+@pytest.fixture(scope="module", autouse=True)
+def manage_rate_limiting():
+    old = app.config.get("RATE_LIMIT_DISABLED")
+    app.config["RATE_LIMIT_DISABLED"] = True
+    yield
+    if old is not None:
+        app.config["RATE_LIMIT_DISABLED"] = old
+    else:
+        app.config.pop("RATE_LIMIT_DISABLED", None)
+
 
 
 class PipelineTestCase(NamedTuple):

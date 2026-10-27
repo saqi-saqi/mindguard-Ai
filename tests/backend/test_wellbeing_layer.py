@@ -302,9 +302,14 @@ def test_client():
         sys.path.insert(0, server_dir)
     import app as flask_app
     flask_app.app.config["TESTING"] = True
+    old_rate = flask_app.app.config.get("RATE_LIMIT_PER_MINUTE")
     flask_app.app.config["RATE_LIMIT_PER_MINUTE"] = 100000
     with flask_app.app.test_client() as c:
         yield c
+    if old_rate is not None:
+        flask_app.app.config["RATE_LIMIT_PER_MINUTE"] = old_rate
+    else:
+        flask_app.app.config.pop("RATE_LIMIT_PER_MINUTE", None)
 
 
 def test_api_chat_stress_supportive_flow(test_client):
