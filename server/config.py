@@ -40,6 +40,7 @@ RATE_LIMIT_WINDOW_SECONDS = int(os.environ.get("RATE_LIMIT_WINDOW_SECONDS", "60"
 DEFAULT_RETENTION_DAYS = int(os.environ.get("DEFAULT_RETENTION_DAYS", "30"))
 USE_GENERALIZER_PIPELINE = os.environ.get("USE_GENERALIZER_PIPELINE", "true").lower() in ("true", "1", "yes")
 USE_UNIFIED_CRISIS_PIPELINE = os.environ.get("USE_UNIFIED_CRISIS_PIPELINE", "true").lower() in ("true", "1", "yes")
+ENABLE_WELLBEING_MULTILABEL_MODEL = os.environ.get("ENABLE_WELLBEING_MULTILABEL_MODEL", "false").lower() in ("true", "1", "yes")
 
 # Latency and Provider Configuration
 DEMO_MODE = os.environ.get("DEMO_MODE", "false").lower() in ("true", "1", "yes")

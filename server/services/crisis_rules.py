@@ -1533,7 +1533,14 @@ def _severity_to_label(severity: int) -> str:
     return "none"
 
 
-def _empty_result(risk_level: str = "none") -> Dict:
+def _empty_result(
+    risk_level: str = "none",
+    sentence_findings: Optional[List[Dict]] = None,
+    preprocess_result: Optional[PreprocessResult] = None,
+    temporal_result: Optional[Any] = None,
+    discourse_result: Optional[Any] = None,
+    semantic_concepts: Optional[List[Any]] = None,
+) -> Dict:
     return {
         "is_crisis": False,
         "risk_level": risk_level,
@@ -1541,10 +1548,14 @@ def _empty_result(risk_level: str = "none") -> Dict:
         "matched_phrases": [],
         "bypass_triggered": False,
         "bypass_reason": None,
-        "sentence_findings": [],
+        "sentence_findings": sentence_findings if sentence_findings is not None else [],
         "confidence": 0.95,
         "recommended_action": "none",
         "suppressed_tier12": False,
+        "preprocess_result": preprocess_result,
+        "temporal_result": temporal_result,
+        "discourse_result": discourse_result,
+        "semantic_concepts": semantic_concepts if semantic_concepts is not None else [],
     }
 
 
@@ -1568,6 +1579,11 @@ def evaluate_crisis(text: str, preprocess_result: Optional[PreprocessResult] = N
 
     # Evaluation spans: sentences + contrastive conjunctions; commas never split
     sentences = _split_contrastive_segments(clean_text)
+
+    # Modular extractor signals computed once for artifact propagation
+    temporal_result = extract_temporal_state(clean_text, pp)
+    discourse_result = evaluate_discourse(clean_text, sentences)
+    semantic_concepts = extract_all_concepts(clean_text)
 
     sentence_findings: List[Dict] = []
     escalating_categories: set = set()
@@ -1637,7 +1653,13 @@ def evaluate_crisis(text: str, preprocess_result: Optional[PreprocessResult] = N
                     })
 
     if not any_crisis_sentence_found:
-        return _empty_result()
+        return _empty_result(
+            sentence_findings=sentence_findings,
+            preprocess_result=pp,
+            temporal_result=temporal_result,
+            discourse_result=discourse_result,
+            semantic_concepts=semantic_concepts,
+        )
 
     if escalating_categories:
         risk_level = _severity_to_label(max_escalating_severity)
@@ -1659,6 +1681,9 @@ def evaluate_crisis(text: str, preprocess_result: Optional[PreprocessResult] = N
             "confidence": 0.9,
             "recommended_action": action,
             "preprocess_result": pp,
+            "temporal_result": temporal_result,
+            "discourse_result": discourse_result,
+            "semantic_concepts": semantic_concepts,
         }
 
     # Bypassed case: expose whether a Tier-1/2 (severity >= 4) anchor was
@@ -1679,6 +1704,9 @@ def evaluate_crisis(text: str, preprocess_result: Optional[PreprocessResult] = N
         "recommended_action": "log_only",
         "suppressed_tier12": _suppressed_tier12,
         "preprocess_result": pp,
+        "temporal_result": temporal_result,
+        "discourse_result": discourse_result,
+        "semantic_concepts": semantic_concepts,
     }
 
 
@@ -1953,11 +1981,11 @@ def evaluate_crisis_pipeline(
                     "preprocess_result": pp,
                 }
 
-        # Step 3: Extract modular extractor signals
+        # Step 3: Extract modular extractor signals (reuse evaluate_crisis artifacts when available)
         det_result = evaluate_crisis(pp.text, preprocess_result=pp)
-        temporal = extract_temporal_state(pp.text, pp)
-        discourse = evaluate_discourse(raw_text, _split_sentences(pp.text))
-        concepts = extract_all_concepts(pp.text)
+        temporal = det_result.get("temporal_result") or extract_temporal_state(pp.text, pp)
+        discourse = det_result.get("discourse_result") or evaluate_discourse(raw_text, _split_sentences(pp.text))
+        concepts = det_result.get("semantic_concepts") if det_result.get("semantic_concepts") is not None else extract_all_concepts(pp.text)
         unquoted = re.sub(r"['\"].*?['\"]", "", pp.text)
         has_first_person_override = any(pat.search(unquoted) for pat in _FIRST_PERSON_PRESENT_OVERRIDE_COMPILED) or _has_unnegated_acute_crisis(unquoted)
 

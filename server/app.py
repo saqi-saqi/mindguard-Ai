@@ -1161,6 +1161,34 @@ def chat():
         clean_user_message = pp_res.text if pp_res else user_message
         ml_results = analyze_user_message(clean_user_message, context_turns=recent_context)
 
+        # Enrich wellbeing result with ML evidence (strictly non-escalating, audit preserved)
+        wb_result = getattr(safety_eval, "wellbeing_result", None) or (crisis_eval.get("wellbeing_result") if isinstance(crisis_eval, dict) else None)
+        if not wb_result:
+            try:
+                from services.wellbeing_layer import extract_deterministic_wellbeing_signals
+                wb_result = extract_deterministic_wellbeing_signals(
+                    raw_text=user_message,
+                    norm_text=clean_user_message,
+                    preprocess_result=pp_res,
+                    api_risk_label="none" if safety_eval.category == SafetyRiskCategory.NONE else safety_eval.category.value,
+                )
+            except Exception as ex:
+                wb_result = None
+
+        if wb_result:
+            try:
+                from services.wellbeing_layer import enrich_wellbeing_with_ml
+                enrich_wellbeing_with_ml(
+                    wellbeing_dict=wb_result,
+                    ml_results=ml_results,
+                    preprocess_result=pp_res,
+                    actor_target=getattr(safety_eval, "actor_target_result", None),
+                    bypass_reason=crisis_eval.get("bypass_reason"),
+                    sentence_findings=crisis_eval.get("sentence_findings", []),
+                )
+            except Exception as wb_err:
+                logger.warning(f"[{req_id}] Error enriching wellbeing result with ML: {wb_err}")
+
         is_crisis_signal = (
             ml_results["intent"] == "SUICIDE CRISIS OR SELF HARM RISK"
             and not (crisis_eval.get("bypass_triggered") or (is_contextual_or_negated(clean_user_message) if not USE_UNIFIED_CRISIS_PIPELINE else False))
@@ -1378,13 +1406,27 @@ def chat():
         # -------------------------------------------------------------------
         # Step 3: Tier 3 - Supportive Flow Response Generation
         # -------------------------------------------------------------------
+        llm_context = user_context
+        if wb_result and isinstance(wb_result, dict):
+            wb_signals = wb_result.get("wellbeing_signals", {})
+            wb_hints = []
+            if wb_signals.get("stress", {}).get("flagged"):
+                wb_hints.append("User indicates high stress, burnout, or workload pressure")
+            if wb_signals.get("anxiety_signals", {}).get("flagged"):
+                wb_hints.append("User indicates anxiety signals, restlessness, or racing thoughts")
+            if wb_signals.get("depression_signals", {}).get("flagged"):
+                wb_hints.append("User indicates depression-related signals (persistent sadness, emptiness, or low energy)")
+            if wb_hints:
+                wb_prompt_note = f"Wellbeing observations: {'; '.join(wb_hints)}. Respond with gentle warmth and supportive grounding; do not diagnose."
+                llm_context = f"{llm_context}\n{wb_prompt_note}" if llm_context else wb_prompt_note
+
         bot_reply = generate_llm_response(
             user_text=user_message,
             intent=ml_results["intent"],
             emotion=ml_results["emotion"],
             sentiment=ml_results["sentiment"],
             api_key=user_api_key,
-            user_context=user_context
+            user_context=llm_context
         )
 
         duration_ms = round((time.time() - start_req_time) * 1000, 2)
@@ -1419,6 +1461,14 @@ def chat():
 
         kb_match = INTENT_RESPONSES.get(ml_results.get("intent", ""), {})
         grounding_exercise = kb_match.get("grounding_exercise")
+        if not grounding_exercise and wb_result and isinstance(wb_result, dict):
+            wb_signals = wb_result.get("wellbeing_signals", {})
+            if wb_signals.get("anxiety_signals", {}).get("flagged"):
+                grounding_exercise = INTENT_RESPONSES.get("ANXIETY OR PANIC ATTACK", {}).get("grounding_exercise")
+            elif wb_signals.get("stress", {}).get("flagged"):
+                grounding_exercise = INTENT_RESPONSES.get("STRESS OR PROBLEM", {}).get("grounding_exercise")
+            elif wb_signals.get("depression_signals", {}).get("flagged"):
+                grounding_exercise = INTENT_RESPONSES.get("GRIEF OR SADNESS", {}).get("grounding_exercise")
 
         return jsonify({
             "success": True,
@@ -1561,5 +1611,15 @@ if __name__ == "__main__":
     host = os.environ.get("FLASK_HOST", "127.0.0.1")
     debug_mode = FLASK_DEBUG or (FLASK_ENV == "development")
     use_reloader = FLASK_USE_RELOADER
+
+    # Pre-warm ML models before accepting requests to eliminate cold-start penalty on first request
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or not use_reloader:
+        logger.info("Pre-warming ML models and pipelines before accepting requests...")
+        try:
+            load_ml_pipelines()
+            logger.info("ML models and pipelines pre-warmed successfully.")
+        except Exception as e:
+            logger.warning(f"Startup ML pre-warming warning: {e}")
+
     logger.info(f"MindGuard Backend Server starting on http://{host}:{port} (debug={debug_mode}, reloader={use_reloader})")
     app.run(host=host, port=port, debug=debug_mode, use_reloader=use_reloader)

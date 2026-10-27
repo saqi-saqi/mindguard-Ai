@@ -241,6 +241,30 @@ class TestSessionStateSecurityAndConcurrency(unittest.TestCase):
         self.assertEqual(clear_resp.status_code, 200)
         self.assertEqual(get_session_risk_state(session_id)["risk_state"], "resolved_by_safety_flow")
 
+    def test_anonymous_clearance_token_flow(self):
+        # Anonymous session created during unauthenticated chat
+        session_id = "ses-anon-clearance-test"
+        set_session_risk_state(session_id, None, "crisis_active", "HIGH_CRISIS")
+
+        # 1. Anonymous user requests clearance token without JWT header
+        token_resp = self.client.post(f"/api/chat/session/{session_id}/clearance-token")
+        self.assertEqual(token_resp.status_code, 200)
+        clearance_token = token_resp.get_json()["data"]["clearance_token"]
+
+        # 2. Anonymous user uses clearance token to clear session
+        clear_resp = self.client.post(
+            f"/api/chat/session/{session_id}/safety-clear",
+            json={"resolution_type": "grounding_completed", "clearance_token": clearance_token}
+        )
+        self.assertEqual(clear_resp.status_code, 200)
+        self.assertEqual(get_session_risk_state(session_id)["risk_state"], "resolved_by_safety_flow")
+
+        # 3. Security invariant: Anonymous caller cannot request clearance token for authenticated session
+        auth_session = create_chat_session("auth-user", "Auth Session")
+        set_session_risk_state(auth_session["id"], "auth-user", "crisis_active", "HIGH_CRISIS")
+        forbidden_resp = self.client.post(f"/api/chat/session/{auth_session['id']}/clearance-token")
+        self.assertEqual(forbidden_resp.status_code, 403)
+
     def test_optimistic_concurrency_conflict(self):
         session = create_chat_session("user-concur", "Concurrency Session")
         session_id = session["id"]

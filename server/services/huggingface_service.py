@@ -165,6 +165,22 @@ def load_ml_pipelines():
             except Exception as e:
                 logger.error(f"Failed to load Sentiment Classifier pipeline: {e}")
 
+        # Warm up pipelines with dummy inference so the very first user message does not pay cold compilation overhead
+        try:
+            if _CRISIS_TRANSFORMER_PIPE is not None:
+                _CRISIS_TRANSFORMER_PIPE("warmup test", truncation=True, max_length=16)
+            if _EMOTION_PIPE is not None:
+                _EMOTION_PIPE("warmup test", truncation=True, max_length=16)
+            if _SENTIMENT_PIPE is not None:
+                _SENTIMENT_PIPE("warmup test", truncation=True, max_length=16)
+            if _INTENT_MODEL_ARTIFACT is not None:
+                _INTENT_MODEL_ARTIFACT["pipeline"].predict_proba(["warmup test"])
+            if _CRISIS_MODEL_ARTIFACT is not None:
+                _CRISIS_MODEL_ARTIFACT["pipeline"].predict_proba(["warmup test"])
+            logger.info("ML pipelines warm-up forward pass completed.")
+        except Exception as warmup_ex:
+            logger.debug(f"ML pipelines warm-up forward pass note: {warmup_ex}")
+
         logger.info(f"ML pipelines initialization attempt completed in {time.time() - start_time:.2f}s")
     except Exception as e:
         logger.error(f"Hugging Face transformers infrastructure error: {e}")

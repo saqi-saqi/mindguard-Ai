@@ -31,6 +31,7 @@ from .threat_actor_detector import (
     build_threat_against_user_safety_message,
 )
 from .generalizer import preprocess_text, PreprocessResult
+from .wellbeing_layer import extract_deterministic_wellbeing_signals
 from .crisis_rules import (
     evaluate_crisis,
     SAFETY_RESPONSE_TEMPLATE,
@@ -85,6 +86,16 @@ class UnifiedSafetyResult:
     matched_phrases: List[str] = field(default_factory=list)
     disclaimer: str = SAFETY_DISCLAIMER
     resources: List[Dict] = field(default_factory=lambda: list(CRISIS_RESOURCES))
+    actor_target_result: Optional[ThreatActorTargetResult] = None
+    has_casual_dampener: bool = False
+    has_inanimate_subject: bool = False
+    has_others_negation: bool = False
+    is_fictional: bool = False
+    sentence_findings: List[Dict] = field(default_factory=list)
+    temporal_result: Optional[Any] = None
+    discourse_result: Optional[Any] = None
+    semantic_concepts: List[Any] = field(default_factory=list)
+    wellbeing_result: Optional[Dict[str, Any]] = None
 
     def __getitem__(self, key: str) -> Any:
         if hasattr(self, key):
@@ -110,6 +121,7 @@ def evaluate_unified_tier1_safety(
     and semantic safety in a single, non-redundant pass.
     """
     if not raw_text or not raw_text.strip():
+        empty_wb = extract_deterministic_wellbeing_signals("", "", api_risk_label="none")
         return UnifiedSafetyResult(
             category=SafetyRiskCategory.NONE,
             confidence=1.0,
@@ -118,6 +130,7 @@ def evaluate_unified_tier1_safety(
             risk_level="none",
             reasoning="Empty input",
             source="empty_input",
+            wellbeing_result=empty_wb,
         )
 
     # 1. Single Upstream Normalization
@@ -398,6 +411,21 @@ def evaluate_unified_tier1_safety(
         confidence = 0.95
         api_risk_label = "none"
 
+    wb_result = extract_deterministic_wellbeing_signals(
+        raw_text=raw_text,
+        norm_text=norm,
+        preprocess_result=pp,
+        actor_target=actor_target,
+        has_casual_dampener=has_casual_dampener,
+        has_inanimate_subject=has_inanimate_subject,
+        has_others_negation=has_others_negation,
+        is_fictional=is_fictional,
+        det_res=det_res,
+        api_risk_label=api_risk_label,
+        harm_to_others_matches=harm_to_others_matches,
+        self_harm_matches=self_harm_matches,
+    )
+
     return UnifiedSafetyResult(
         category=final_category,
         confidence=confidence,
@@ -417,4 +445,14 @@ def evaluate_unified_tier1_safety(
         rule_triggered=matched_signals[0] if matched_signals else None,
         matched_categories=det_res.get("matched_categories", []),
         matched_phrases=det_res.get("matched_phrases", []),
+        actor_target_result=actor_target,
+        has_casual_dampener=has_casual_dampener,
+        has_inanimate_subject=has_inanimate_subject,
+        has_others_negation=has_others_negation,
+        is_fictional=is_fictional,
+        sentence_findings=det_res.get("sentence_findings", []),
+        temporal_result=det_res.get("temporal_result"),
+        discourse_result=det_res.get("discourse_result"),
+        semantic_concepts=det_res.get("semantic_concepts", []),
+        wellbeing_result=wb_result,
     )
