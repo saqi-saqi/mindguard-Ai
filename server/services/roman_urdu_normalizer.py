@@ -47,7 +47,7 @@ FOLD_JUSTIFICATIONS: List[Tuple[str, str, str]] = [
     ("hay", "hai", "common spelling variant of 'hai'"),
     ("mrna|mrrna", "marna", "typo'd 'marna' (texting) — same word"),
     ("himt", "himmat", "typo'd 'himmat' (courage) — same word"),
-    ("zindgi", "zindagi", "typo'd 'zindagi' (life) — same word"),
+    ("zindgi|zindagee", "zindagi", "variant spelling of 'zindagi' (life) — same word"),
     ("rhi|rhy", "rahi", "texting shorthand of 'rahi'"),
     ("rha|rhay", "raha", "texting shorthand of 'raha'"),
     ("liy|liah", "liya", "typo'd 'liya' (took) — same word"),

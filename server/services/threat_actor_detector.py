@@ -80,7 +80,11 @@ _INANIMATE_OR_METAPHOR_PATTERNS = [
         r"\b(?:this|the|my|that)\s+(?:traffic|exam|exams|test|tests|homework|commute|job|work|boss|meeting|weather|shoes|feet|computer|printer|code|headache)\s+(?:is|are|is\s+going\s+to|will)\s+(?:literally\s+)?(?:killing\s+me|kill\s+me)\b",
         re.IGNORECASE,
     ),
-    re.compile(r"\b(?:traffic|homework|work|exam|finals|shoes|feet)\s+(?:is|are)\s+(?:literally\s+)?killing\s+me\b", re.IGNORECASE),
+    re.compile(r"\b(?:traffic|homework|work|exam|finals|shoes|feet)\s+(?:is|are)\s+(?:literally\s+)?killing\s+me\b", re.IGNORECASE),
+    re.compile(
+        r"\b(?:traffic|garmi|sardi|bhook|pyas|bukhar|sar\s*dard|sardard|exam|exams|assignment|parhai|kaam|work|office|mehngai|load\s*shedding)\s+(?:mujhe|humain|humein)\s+(?:jaan\s+se\s+)?(?:maar|mar)\s*(?:dalega|dalegi|dega|degi|dalen?ge)\b",
+        re.IGNORECASE,
+    ),
     re.compile(r"\b(?:dying|died)\s+of\s+(?:laughter|boredom|embarrassment|curiosity)\b", re.IGNORECASE),
     re.compile(r"\bi\s+(?:could|can)\s+kill\s+for\s+(?:a\s+)?(?:coffee|drink|beer|pizza|nap|break|vacation|cigarette|burger|food)\b", re.IGNORECASE),
     re.compile(r"\bkill\s+two\s+birds\s+with\s+one\s+stone\b", re.IGNORECASE),
@@ -112,7 +116,12 @@ _THIRD_PARTY_SUICIDE_PATTERNS = [
         r"wants?\s+to\s+kill\s+(?:himself|herself|themselves)|talks?\s+about\s+(?:committing\s+suicide|ending\s+(?:his|her|their)\s+life|dying))\b",
         re.IGNORECASE,
     ),
-    re.compile(r"\b(?P<actor>someone|she|he|they|[a-z]{2,})\s+posted\s+that\s+(?:she|he|they)\s+wants?\s+to\s+(?:die|commit\s+suicide)\b", re.IGNORECASE),
+    re.compile(r"\b(?P<actor>someone|she|he|they|[a-z]{2,})\s+posted\s+that\s+(?:she|he|they)\s+wants?\s+to\s+(?:die|commit\s+suicide)\b", re.IGNORECASE),
+    re.compile(
+        r"\b(?P<actor>(?:someone|somebody|koi|kisi)\s+(?:online\s+)?ne|mer[aei]\s+[a-z]+|us\s*ne|woh?)\b[^.!?]{0,35}\b"
+        r"(?:khud\s+ko\s+(?:nuqsan|chot|khatam|zakhmi)|khudkushi|suicide|jaan\s+lene)\b",
+        re.IGNORECASE,
+    ),
 ]
 
 # 5. First-Person Suicide Statements

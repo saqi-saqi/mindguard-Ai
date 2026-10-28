@@ -618,9 +618,11 @@ _URDU_EXPLICIT_INTENT = [
     r"\bmarne\s+ka\s+irada\s+kar\s+liy[ai]\b",
     r"\b(?:mujhe\s+)?jee+na\s+nah?i\s+hai\b",
     r"\b(?:ab\s+)?aur\s+nah?i\s+jee\s+sakt[ai]\b",
+    r"\b(?:(?:mujhse|mujh\s+se)\s+(?:ab\s+|aur\s+)?(?:zinda\s+nah?i\s+raha\s+jata|nah?i\s+jiya\s+jata|jiya\s+nah?i\s+jata)|zinda\s+nah?i\s+raha\s+jata)\b",
     r"\bkhud\s*kush[eií]+\s*(?:kar|karn[ei]|kr)\s*(?:lun\s*ga|lunga|chaht[ai]|raha|rahi|dunga|karunga)\b",
     r"\b(?:mein|main)\s+khud\s*kush[eií]+\b",
-    r"\b(?:apni\s+)?zindagi\s+khatam\s+kar\b",
+    r"\b(?:apni\s+)?zindag[eií]+\s+(?:ko\s+)?khatam\s+(?:kar(?:n[aei]|u[mn]ga|unga|ungi|un|oon?ga|oonga|raha|rahi|t[aei]|k[ae]|ke|li[ae]|di[ae]|chuka|chuki)?|karne\s+ka\s+(?:faisla|irada|iraada|soch|mansooba)|karne\s+laga)\b",
+    r"\b(?:(?:want\s+to|wanna|going\s+to|planning\s+to)\s+khatam\s+(?:my\s+)?life|khatam\s+my\s+life)\b",
     r"\bsab\s+khatam\s+kar\s*(?:dunga|doon\s*ga|dun\s*ga)\b",
     r"\bmeri\s+maut\s+(?:hi\s+)?behtar\b",
     r"\bmere\s+bina\s+(?:sab\s+)?khush\b",
@@ -631,7 +633,7 @@ _URDU_EXPLICIT_INTENT = [
     r"\bsuicide\s+karna\s+hai\b",
     r"\bmai\s+khudkashi\s+kr\s+lunga\b",
     r"\b(?:mein\s+|main\s+)?(?:apni\s+)?jaan\s+lene\s+ja\s+raha\b",
-    r"\bapne\s+aap\s+ko\s+khatam\s+kar\b",
+    r"\b(?:apne\s+aap|khud)\s+ko\s+khatam\s+(?:kar(?:n[aei]|u[mn]ga|unga|ungi|un|oon?ga|oonga|raha|rahi|t[aei]|k[ae]|ke|li[ae]|di[ae]|chuka|chuki)?|karna\s+hai|karne\s+ka)\b",
     r"\b(?:mein|main)\s+kal\s+nahi\s+hu?nga\b",
     r"\bmarna\s+hi\s+mera\s+muqaddar\b",
     r"\baur\s+mein\s+maroonga\b",
@@ -701,11 +703,11 @@ _URDU_LETHAL_MEANS = [
     r"\b(?:pani\s+k[a-z]?\s+tanki|darya|nadi|nehar)\s+mein\s+doob\s*kar\s+mar",
     r"\b(?:rail|train|gari|gaari)\s+k[ae]?\s+(?:a?ag[ae]y?|samn[ae]|neech[ae])\s+(?:kood|chalang|gir|gira)\b",
     r"\b(?:khud\s+ko|apne\s+aap\s+ko)\s+aag\s+laga\s*(?:loon?ga|doon?ga|lunga|dunga|raha|rahi)\b",
-    r"\b(?:chhat|chat|building)\s+se\s+(?:foran\s+)?(?:kood|chalang|chhalang)\b",
+    r"\b(?:chhat|chat|building|pul|bridge)\s+se\s+(?:foran\s+)?(?:kood|kud|chalang|chhalang)(?:n[aei]|ne\s+wal[aei]|raha|rahi|jao+un?ga|dunga)?\b",
+    r"\b(?:kood|kud|chhalang\s+lagane)\s+wal[aei]\s+(?:hoon|hun|hai)\b",
     r"\bzeh[ae]?r\b[^.!?]{0,35}\bpee\s+(?:loon?ga|lunga|doon?ga|dunga|raha|rahi)\b",
     r"\bzeh[ae]?r\s+ki\s+(?:sheeshi|botal|dawa)\b[^.!?]{0,30}\bkhol\b",
-    r"\b(?:railway\s+track|rail\s+ki\s+patri)\b[^.!?]{0,40}\b(?:body|la+sh|jao+un?ga|baith|horn|laut|mar|maut|kood|let)\b",
-    r"\b(?:railway\s+track|rail\s+ki\s+patri)\s+(?:pe|par)\b",
+    r"\b(?:railway\s+track|rail\s+ki\s+patri)\b[^.!?]{0,40}\b(?:body|la+sh|jao+un?ga|baith|horn|laut|mar|maut|kood|let|jaan\s+de)\b",
     r"\bmein\s+gari\s+(?:tezi\s+se\s+)?deewar\s+mein\s+maarne\s+ja\s+raha\b",
     r"\bpani\s+mein\s+kood\s+raha\s+hoo?n\b",
     r"\bseedha\s+chhalang\s+laga\s+dunga\b",
@@ -713,7 +715,8 @@ _URDU_LETHAL_MEANS = [
     r"\b(?:apna\s+)?gala\s+(?:kaat|ghot)\s*(?:loonga|lunga|doonga|dunga|lia|liya)\b",
     r"\b(?:pankh?[ae]y?|fan)\s+(?:se\s+latak\s*kar|tayar\s+hai)\b",
     r"\bapni\s+rooh\s+ko\s+azaad\s+karne\s+laga\s+hoo?n\s+pankhey\s+se\s+latak\b",
-    r"\b(?:blade|churi|chhuri)\s+se\s+(?:haath|hath|kalai|gala)\s+(?:cheel|kaat)\b",
+    r"\b(?:blade|churi|chhuri)\s+se\s+(?:apni\s+)?(?:haath|hath|kalai|kalaai|gala|rag|nas)\s+(?:cheel|kaat)(?:n[aei]|u[mn]ga|unga|ungi|raha|rahi|ne\s+ja\s+raha|ne\s+laga)?\b",
+    r"\b(?:kalai|kalaai|haath|hath|nas|rag)\s+kaat(?:n[aei]|u[mn]ga|unga|ungi|raha|rahi|ne\s+ja\s+raha|ne\s+laga)?\b",
     r"\bchuri\s+dil\s+k[ae]?\s+qareeb\s+rakh\s+li\b",
     r"\b(?:shashay|sheeshay)\s+ka\s+tukra\s+gale\s+mein\s+ghonpne\b",
     r"\bzeh[ae]?r\b[^.!?]{0,30}\bqabristan\b",
@@ -759,12 +762,17 @@ _URDU_BURDEN_GOODBYE = [
     r"\b(?:meri\s+)?la?ash\s+(?:hi\s+)?dekhog[aei]\b",
     r"\baj\s+mera\s+aakhri\s+din\s+hai\s+dosto\s+maaf\s+kar\s+dena\b",
     r"\baj\s+meri\s+aakhri\s+post\s+hai\s+social\s+media\s+pe\b",
+    r"\bmere\s+baad\b[^.!?]{0,40}\b(?:sab\s+ko|maaf|yaad|khush|mera)\b",
+    r"\b(?:meri\s+|mera\s+)?aa?kh?ri\s+(?:paigh?aam|message|post|khat|alfaaz|baat)\b[^.!?]{0,50}\b(?:alvida|maaf|bakhsh|zindagi\s+khatam|dunya\s+se|chhor|chhod|kood|zeher|marna|mar\s+jaunga|khayal\s+rakhna|ja\s+raha|ja\s+rahi)\b",
+    r"\b(?:alvida|maaf\s+kar\s+dena|khayal\s+rakhna)\b[^.!?]{0,50}\b(?:aa?kh?ri\s+(?:paigh?aam|message|post|khat|alfaaz|baat))\b",
+    r"\b(?:tum\s+sab\s+)?(?:mujhe|mjhe)\s+(?:kabhi\s+|dobara\s+)?nah?i\s+dekhog[aei]\b",
     r"\btum\s+mujhe\s+rota\s+dekhna\s+chahte\s+thay\s+ab\s+meri\s+mayyat\s+dekhna\b",
     r"\baj\s+subah\s+mera\s+bistar\s+khali\s+milega\b",
 ]
 _URDU_SELF_HARM = [
     r"\bkalai\s+kaat\b",
-    r"\b(?:khud|apne\s+aap)\s+ko\s+(?:nu[kq]san|zakhami|chot|chubhot|jalat|kaat)",
+    r"\b(?:khud|apne\s+aap)\s+ko\s+(?:nu[kq]san|zakhami|zakhmi|chot|chubhot|jalat|kaat|hurt|harm)",
+    r"\b(?:khud|apne\s+aap)\s+ko\s+hurt\s+(?:kar(?:n[aei]|u[mn]ga|unga|ungi|un|raha|rahi|ne\s+wala)?)\b",
     r"\b(?:haath|hath)\s+kaat\b",
     r"\bchhuri\s+le\s+kar\s+baith[ai]\b",
     r"\bdard\s+mein\s+sukoon\s+milt[ai]\b",
@@ -918,6 +926,10 @@ _NEGATION_PATTERNS = [
     r"\b(?:[a-z]+\s+)?(?:does\s+not|doesn'?t|did\s+not|didn'?t|will\s+not|won'?t|would\s+never|do\s+not|don'?t|has\s+no\s+intention\s+(?:of|to)|have\s+no\s+intention\s+(?:of|to)|never\s+wanted\s+to|is\s+not\s+(?:going|planning|trying)\s+to)\s+(?:want\s+to\s+)?(?:kill|murder|harm|hurt|shoot|stab|attack|injure)\b",
     r"\b(?:i\s+would|i'd)\s+never\s+(?:kill|hurt|harm|shoot|stab|murder)\b",
     r"\b(?:nahi|nahin)\s+(?:marna|qatal|jaan\s+se\s+marna)\s+chaht[ai]\b",
+    r"\b(?:koi\s+)?(?:plan|irada|iraada|soch|khayal)\s+(?:nah?i|nahin|nai|nhe)\s+(?:hai|hoga)?\b(?:(?!\b(?:lekin|lekan|magar|par|per|pr|but|however|yet|phir\s+bhi)\b)[^.!?]){0,40}\b(?:nu[kq]san|chot|hurt|harm|khudkushi|marna)\b",
+    r"\b(?:nu[kq]san|chot|hurt|harm|khudkushi|marna)\b(?:(?!\b(?:lekin|lekan|magar|par|per|pr|but|however|yet|phir\s+bhi)\b)[^.!?]){0,40}\b(?:koi\s+)?(?:plan|irada|iraada|soch|khayal)\s+(?:nah?i|nahin|nai|nhe)\b",
+    r"\b(?:khud\s*ko|apne\s*aap\s*ko)\s+(?:nu[kq]san|chot|hurt|harm)\s+(?:dene|pohanchane)?\s*(?:ka\s+)?(?:koi\s+)?(?:plan|irada|iraada|soch|khayal)\s+(?:nah?i|nahin|nai|nhe)\b",
+    r"\b(?:main\s+)?(?:apne\s*aap\s*ko|khud\s*ko)\s+(?:hurt|nu[kq]san|chot)\s+(?:nah?i|nahin|nai|nhe)\s*(?:karunga|karungi|pohanchaunga|doonga)\b",
     r"\bnot\s+killing\s+myself\b",
     r"\b(?:have\s+)?(?:zero|no)\s+(?:intention|desire|plan|plans|thoughts?)\s+of\s+(?:hurting|harming|killing|suicid\w*|ending\s+my\s+life|doing\s+anything\s+drastic)\b",
     r"\b(?:zero|no)\s+(?:intention|desire|plan|plans)\s+to\s+(?:hurt|harm|kill|end)\s+(?:myself|my\s+life)\b",
@@ -1084,8 +1096,9 @@ _SLANG_HYPERBOLE_DAMPENER_PATTERNS = [
 
 # Third-party subject indicators: statements about someone else's crisis
 _THIRD_PARTY_SUBJECT_PATTERNS = [
-    r"^\s*(?:my\s+)?(?:friend|brother|sister|mom|dad|mother|father|uncle|aunt|partner|colleague|teammate|roommate|classmate|neighbor|best\s+friend|bf|gf|girlfriend|boyfriend|husband|wife|son|daughter|cousin|nephew|niece)\b",
-    r"^\s*someone\s+(?:on\s+this\s+|in\s+the\s+|at\s+|i\s+know\s+)?",
+    r"(?:^|[\b,;:]\s*|\b(?:yaar|suno|please|honestly|dekho|bhai|bro|hey|hi)\b[,\s]*)(?:my\s+)?(?:friend|brother|sister|mom|dad|mother|father|uncle|aunt|partner|colleague|teammate|roommate|classmate|neighbor|best\s+friend|bf|gf|girlfriend|boyfriend|husband|wife|son|daughter|cousin|nephew|niece)\b",
+    r"(?:^|[\b,;:]\s*|\b(?:yaar|suno|please|honestly|dekho|bhai|bro|hey|hi)\b[,\s]*)(?:someone|somebody)\s+(?:on\s+this\s+|in\s+the\s+|at\s+|i\s+know\s+|online\s+)?",
+    r"\b(?:someone|somebody|kisi|koi)\s+(?:online\s+)?ne\b",
     r"\b(?:my\s+)?(?:friend|brother|sister|mom|dad|mother|father|partner|uncle|aunt|teammate|roommate|cousin|best\s+friend|colleague|classmate)\s+(?:is|was|has|just|told|texted|said|sent|has\s+been|might\s+be|wants?\s+to|plans?\s+to)\s+",
     r"\b(?:he|she|they)\s+(?:is|are|was|were|has|have)\s+(?:going\s+to|gonna|about\s+to|planning\s+to|trying\s+to)\s+(?:kill|hurt|harm|end|commit|jump|cut|overdose|suicide|die)\b",
     r"\b(?:he|she|they)\s+(?:wants?\s+to|plans?\s+to|is\s+thinking\s+(?:of|about))\s+(?:kill|hurt|harm|end|commit|jump|cut|overdose|suicide|die)\b",
@@ -1272,9 +1285,11 @@ _ACUTE_FIRST_PERSON_CRISIS_PATTERNS: List[re.Pattern] = [
     re.compile(r"\b(?:zehr|zehar)\s+khaa?\s*kar\s+mar\s+jaunga\b", re.I),
     re.compile(r"\bapne\s+aap\s+ko\s+khatam\s+kar\s+raha\b", re.I),
     re.compile(r"\bmain\s+marna\s+chahta\s+hoon\b", re.I),
-    re.compile(r"\b(?:mein|main|mai|hum)\s+.*?\b(?:rail|train|gari|gaari)\s+k[ae]?\s+(?:a?ag[ae]y?|samn[ae]|neech[ae])\s+(?:kood|chalang|gir|gira)\b", re.I),
-    re.compile(r"\b(?:mein|main|mai|hum)\s+.*?\b(?:pankh?[ae]y?|fan)\s+se\s+latka\b", re.I),
-    re.compile(r"\b(?:mein|main|mai|hum)\s+.*?\b(?:chhat|chat|building)\s+se\s+kood\b", re.I),
+    re.compile(r"\b(?:mein|main|mai|hum|ab\s+(?:main|mein))\s+.*?\b(?:rail|train|gari|gaari)\s+k[ae]?\s+(?:a?ag[ae]y?|samn[ae]|neech[ae])\s+(?:kood|chalang|gir|gira)\b", re.I),
+    re.compile(r"\b(?:mein|main|mai|hum|ab\s+(?:main|mein))\s+.*?\b(?:pankh?[ae]y?|fan)\s+se\s+latka\b", re.I),
+    re.compile(r"\b(?:mein|main|mai|hum|ab\s+(?:main|mein))?\s*.*?\b(?:chhat|chat|building|pul|bridge)\s+se\s+(?:kood|kud|chalang|chhalang)(?:n[aei]|ne\s+wal[aei]|raha|rahi|dunga|doonga|laga)?\b", re.I),
+    re.compile(r"\b(?:apni\s+)?zindag[eií]+\s+(?:ko\s+)?khatam\s+(?:kar(?:n[aei]|u[mn]ga|unga|ungi|un|oon?ga|oonga|raha|rahi|t[aei]|k[ae]|ke|li[ae]|di[ae]|chuka|chuki)?|karne\s+ka\s+(?:faisla|irada|iraada|soch)|karna\s+hai|karni\s+hai)\b", re.I),
+    re.compile(r"\b(?:mujhe|mjhe|main|mein)\s+(?:apne\s+aap|khud)\s+ko\s+khatam\s+(?:karna|karna\s+hai|kar\s*(?:raha|rahi|lunga|doonga))\b", re.I),
     re.compile(r"\b(?:meri\s+)?la?ash\s+(?:hi\s+)?dekhog[aei]\b", re.I),
     re.compile(r"\bzeh[ae]?r\b[^.!?]{0,35}\bpee\s+(?:loon?ga|lunga|doon?ga|dunga|raha|rahi)\b", re.I),
     re.compile(r"\b(?:apni\s+)?saans(?:ain|en)?\s+khatam\s+kar\b", re.I),
@@ -1288,7 +1303,7 @@ _DIRECT_NEGATION_PREFIX = re.compile(
     re.I
 )
 _DIRECT_NEGATION_SUFFIX_URDU = re.compile(
-    r"^\s*(?:nahi|nahin|nai|nhe)\s*(?:karu|kare|karta|karti|dena|deni|hoga|hogi)?\b",
+    r"^\s*(?:dene\s+ka\s+)?(?:koi\s+)?(?:plan|irada|iraada|soch|khayal)?\s*(?:nahi|nahin|nai|nhe)\s*(?:karu|kare|karta|karti|dena|deni|hoga|hogi|hai)?\b",
     re.I
 )
 
@@ -1309,7 +1324,10 @@ def _has_unnegated_acute_crisis(text: str) -> bool:
                 continue
             if _DIRECT_NEGATION_PREFIX.search(pre):
                 last_neg = list(_DIRECT_NEGATION_PREFIX.finditer(pre))[-1]
-                if m.start() - last_neg.end() <= 35:
+                between = pre[last_neg.end():]
+                if re.search(r"\b(?:but|however|though|yet|lekin|lekan|magar|par|per|pr|phir\s+bhi)\b|[.;!,]", between, re.I):
+                    return True
+                if len(between) <= 35:
                     continue
             return True
     return False
@@ -1338,13 +1356,17 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
     # A negated thought or idiom combined with a crisis clause is not a safe bypass.
     # Example: "I don't want to die, but I am going to kill myself tonight."
     # Example: "I want to die, but this exam is killing me."
-    contrast_parts = [p.strip() for p in re.split(r"\b(?:but|however|though|yet)\b", t) if p.strip()]
-    so_parts = [p.strip() for p in re.split(r",?\s+(?:so|and)\s+", t) if p.strip()]
+    contrast_parts = [p.strip() for p in re.split(r"\b(?:but|however|though|yet|lekin|lekan|magar|par|per|pr|phir\s+bhi)\b", t) if p.strip()]
+    so_parts = [p.strip() for p in re.split(r",?\s+(?:so|and|to|aur)\s+", t) if p.strip()]
     allow_idiom_bypass = True
     if len(contrast_parts) >= 2:
         for idx, part in enumerate(contrast_parts):
             part_negated = any(pat.search(part) for pat in NEGATION_PATTERNS)
-            part_has_crisis = (not part_negated) and any(pat.search(part) for pat in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE)
+            part_has_crisis = (not part_negated) and (
+                any(pat.search(part) for pat in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE)
+                or any(pat.search(part) for pat in _ACTIVE_CRISIS_CONTEXT_OVERRIDE)
+                or _has_unnegated_acute_crisis(part)
+            )
             if part_has_crisis and idx > 0:
                 return None  # Subsequent clause has un-negated crisis
             if part_has_crisis and idx == 0:
@@ -1375,7 +1397,7 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
         ))
         if (
             re.search(r"\b(?:garmi|bhook|bhok|bhookh|bukhar|exam|assignment|thakan|traffic|has\s*ke|has-has|hans|bore|maza|mazak|mauz|paise)\b", t, re.IGNORECASE)
-            and re.search(r"\bmarr?\b|\bmar\s*(?:jao+un?ga|jaunga|gaya|gayi|dala|dalegi|jao|jati)\b|\bjaan\s+nikal\b", t, re.IGNORECASE)
+            and re.search(r"\bma?arr?\b|\bma?ar\s*(?:jao+un?ga|jaunga|gaya|gayi|dala|dalega|dalegi|dega|degi|jao|jati)\b|\bjaan\s+nikal\b", t, re.IGNORECASE)
             and not re.search(r"\b(?:lekin|magar|phir\s+bhi)\b", t, re.IGNORECASE)
         ):
             return "urdu_hyperbole"
@@ -1397,6 +1419,10 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
             r"\bmaut\s+(?:nahi|nahin|nai|nhe)\b",
             r"\bjaan\s+(?:nahi|nahin|nai|nhe)\s+den[ai]\b",
             r"\bnuqsan\s+(?:nahi|nahin|nai|nhe)\b",
+            r"\b(?:nu[kq]san|chot|hurt|harm|khudkushi|marna)\b(?:(?!\b(?:lekin|lekan|magar|par|per|pr|but|however|yet|phir\s+bhi)\b)[^.!?]){0,40}\b(?:koi\s+)?(?:plan|irada|iraada|soch|khayal)\s+(?:nah?i|nahin|nai|nhe)\b",
+            r"\b(?:koi\s+)?(?:plan|irada|iraada|soch|khayal)\s+(?:nah?i|nahin|nai|nhe)\b(?:(?!\b(?:lekin|lekan|magar|par|per|pr|but|however|yet|phir\s+bhi)\b)[^.!?]){0,40}\b(?:nu[kq]san|chot|hurt|harm|khudkushi|marna)\b",
+            r"\b(?:nu[kq]san|chot|hurt|harm)\s+(?:dene|pohanchane)?\s*(?:ka\s+)?(?:koi\s+)?(?:plan|irada|iraada|soch|khayal)?\s*(?:nah?i|nahin|nai|nhe)\b",
+            r"\b(?:nu[kq]san|chot|hurt|harm)\b[^.!?]{0,25}\b(?:nah?i|nahin|nai|nhe)\s*(?:karu?ng[ai]|pohanchau?ng[ai]|doon?ga)\b",
             r"\bkhayal\s+(?:nahi|nahin|nai|nhe)\s+aata?\b",
             r"\bkabhi\b[^.!?]{0,30}\b(?:nahi|nahin|nai|nhe)\b",
             r"\b(?:irada|iraada)\s+(?:nahi|nahin|nai|nhe)\b",
@@ -1463,14 +1489,18 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
             # Negation-disclaimer paradox fix:
             # "I'm not suicidal, but I took the pills / want to die tonight"
             # (negation in 1st clause + un-negated lethal action in 2nd clause)
-            negation_contrast = [p.strip() for p in re.split(r"\b(?:but|just|except|although|however|yet)\b", t) if p.strip()]
+            negation_contrast = [p.strip() for p in re.split(r"\b(?:but|just|except|although|however|yet|lekin|lekan|magar|par|per|pr|phir\s+bhi)\b", t) if p.strip()]
             if len(negation_contrast) >= 2:
                 for second_clause in negation_contrast[1:]:
                     second_is_negated = any(p.search(second_clause) for p in NEGATION_PATTERNS)
                     if not second_is_negated:
                         _lethal_compiled = _LETHAL_OVERRIDE_COMPILED
-                        if any(lp.search(second_clause) for lp in _lethal_compiled):
-                            return None  # Override negation — lethal action in subsequent clause
+                        if (
+                            any(lp.search(second_clause) for lp in _lethal_compiled)
+                            or any(ov.search(second_clause) for ov in _ACTIVE_CRISIS_CONTEXT_OVERRIDE)
+                            or _has_unnegated_acute_crisis(second_clause)
+                        ):
+                            return None  # Override negation — lethal action/crisis in subsequent clause
             return "grammatical_negation"
 
     # (5) Past historical reflection with resolution
@@ -1502,7 +1532,7 @@ def _contextual_bypass_reason(text: str) -> Optional[str]:
     # (9) Non-crisis situational expressions -- must not suppress active first-person crisis overrides
     for pat in NON_CRISIS_SITUATIONAL_EXPRESSIONS:
         if pat.search(t):
-            if not (any(override.search(t) for override in _FIRST_PERSON_PRESENT_CRISIS_OVERRIDE) or _has_unnegated_acute_crisis(t)):
+            if not (any(override.search(t) for override in _ACTIVE_CRISIS_CONTEXT_OVERRIDE) or _has_unnegated_acute_crisis(t)):
                 return "non_crisis_situational_expression"
 
     return None
@@ -1885,14 +1915,16 @@ def evaluate_crisis_pipeline(
         # subject check; suppressed when the writer's own risk is present)
         if _URDU_RULES_ENABLED and not pp.is_third_party:
             _u_tp = re.search(
-                r"\b(?:mer[aei]|hamar[aei]|us\s+ka|us\s+ki|us\s+ne|un\s+ka)\s+"
-                r"(?:dost|doston|cousin|bhai|behen|bahan|ammi|abbu|colleague|saathi|beta|beti)\b",
+                r"\b(?:mer[aei]|hamar[aei]|us\s*ka|us\s*ki|us\s*ne|un\s*ka)\s+"
+                r"(?:dost|doston|cousin|bhai|behen|bahan|ammi|abbu|colleague|saathi|beta|beti)\b"
+                r"|\b(?:someone|somebody|kisi|koi)\s+(?:online\s+)?ne\b"
+                r"|\b(?:us\s*ne)\s+(?:mujhe|humain|humein|sab\s+ko)\b",
                 pp.text, re.IGNORECASE)
             _u_tp = _u_tp or bool(re.search(
-                r"\b(?:wo|woh|us)\s+khud\s+ko\s+(?:nuqsan|khatam|zakhami|maarta|maare?)\b",
+                r"\b(?:wo|woh|us)\s+khud\s+ko\s+(?:nuqsan|khatam|zakhami|zakhmi|maarta|maare?)\b",
                 pp.text, re.IGNORECASE))
             _u_tp_risk = re.search(
-                r"\b(?:marr?na?\s+chaht[ai]|khudkushi|theek\s+nahi|pareshan|udaas|depress|rot[ai]\s+(?:hai|raha|rahi)|self\s*harm|nuqsan|khatam)\b",
+                r"\b(?:marr?na?\s+chaht[ai]|khudkushi|suicide|theek\s+nahi|pareshan|udaas|depress|rot[ai]\s+(?:hai|raha|rahi)|self\s*harm|nuqsan|khatam)\b",
                 pp.text, re.IGNORECASE)
             if _u_tp and _u_tp_risk:
                 _u_own = re.search(
