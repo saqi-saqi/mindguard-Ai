@@ -335,7 +335,7 @@ describe("CrisisModal Accessibility & Clinical Hierarchy", () => {
       fireEvent.click(copy115Btn);
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith("115");
 
-      window.location = originalLocation;
+      (window as any).location = originalLocation;
     });
 
     it("handles QuickCall, QuickCopy, and QuickText for trusted contact and preferred hospital", () => {
@@ -383,7 +383,7 @@ describe("CrisisModal Accessibility & Clinical Hierarchy", () => {
       fireEvent.click(callHospital);
       expect(window.location.href).toBe("tel:04235905000");
 
-      window.location = originalLocation;
+      (window as any).location = originalLocation;
     });
 
     it("handles Primary Mental Health Line (Umang) call and copy", () => {
@@ -407,7 +407,7 @@ describe("CrisisModal Accessibility & Clinical Hierarchy", () => {
       fireEvent.click(copyUmang);
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith("0311-7786264");
 
-      window.location = originalLocation;
+      (window as any).location = originalLocation;
     });
 
     it("exercises HelplineCard Call, Copy, Text, and Website actions", () => {
@@ -466,7 +466,7 @@ describe("CrisisModal Accessibility & Clinical Hierarchy", () => {
       fireEvent.click(copySmsBtn);
       expect(navigator.clipboard.writeText).toHaveBeenCalled();
 
-      window.location = originalLocation;
+      (window as any).location = originalLocation;
     });
 
     it("runs complete 4-7-8 breathing timer phases and pause/resume", () => {

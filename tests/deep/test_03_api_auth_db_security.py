@@ -511,7 +511,8 @@ def test_concurrent_duplicate_registration_creates_one_user(flask_app):
 # =========================================================================== #
 # 12. REPO + CONFIG HYGIENE (secret scanning, docker, env)
 # =========================================================================== #
-_SKIP_DIRS = {".git", "node_modules", "venv", ".venv", ".venv_clean", "__pycache__", "dist", "build", "artifacts", ".pytest_cache"}
+_SKIP_DIRS = {".git", "node_modules", "venv", ".venv", ".venv_clean", "__pycache__", "dist", "build",
+              "artifacts", ".pytest_cache", ".test-deps", ".venv-test", "htmlcov", ".zwork"}
 _SECRET_PATTERNS = {
     "Google API key": re.compile(r"AIza[0-9A-Za-z_\-]{35}"),
     "Private key block": re.compile(r"-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----"),

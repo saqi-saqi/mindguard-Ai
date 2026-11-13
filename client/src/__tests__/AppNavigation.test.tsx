@@ -7,6 +7,7 @@ describe("App Navigation Flow", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     localStorage.clear();
+    sessionStorage.clear();
     globalThis.fetch = vi.fn().mockImplementation((url) => {
       if (url.includes("/api/auth/me")) {
         return Promise.resolve({

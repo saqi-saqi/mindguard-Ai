@@ -9,6 +9,7 @@ describe("AuthScreen Component Quality & Authentication Flow", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   it("renders in Sign In mode by default with email and password inputs", () => {
@@ -68,7 +69,7 @@ describe("AuthScreen Component Quality & Authentication Flow", () => {
     expect(await screen.findByText(/Password must be at least 6 characters long/i)).toBeDefined();
   });
 
-  it("successfully logs in, saves token in localStorage, and calls onLogin", async () => {
+  it("successfully logs in, saves token in sessionStorage, and calls onLogin", async () => {
     const fakeToken = "jwt-login-token-998877";
     const fakeUser = {
       id: "usr-12345",
@@ -100,13 +101,13 @@ describe("AuthScreen Component Quality & Authentication Flow", () => {
         expect.objectContaining({
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: "user@example.com", password: "ValidPass!123" })
+          body: JSON.stringify({ email: "user@example.com", password: "ValidPass!123", remember_me: false })
         })
       );
     });
 
     await waitFor(() => {
-      expect(localStorage.getItem("mg_token")).toBe(fakeToken);
+      expect(sessionStorage.getItem("mg_token")).toBe(fakeToken);
       expect(mockOnLogin).toHaveBeenCalledWith(fakeUser, fakeToken);
     });
   });
@@ -130,7 +131,7 @@ describe("AuthScreen Component Quality & Authentication Flow", () => {
     fireEvent.click(screen.getByRole("button", { name: /Sign In/i }));
 
     expect(await screen.findByText(/Invalid email or password/i)).toBeDefined();
-    expect(localStorage.getItem("mg_token")).toBeNull();
+    expect(sessionStorage.getItem("mg_token")).toBeNull();
     expect(mockOnLogin).not.toHaveBeenCalled();
   });
 
@@ -145,6 +146,6 @@ describe("AuthScreen Component Quality & Authentication Flow", () => {
     fireEvent.click(screen.getByRole("button", { name: /Sign In/i }));
 
     expect(await screen.findByText(/Network connection lost/i)).toBeDefined();
-    expect(localStorage.getItem("mg_token")).toBeNull();
+    expect(sessionStorage.getItem("mg_token")).toBeNull();
   });
 });

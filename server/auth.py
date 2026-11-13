@@ -68,16 +68,35 @@ def verify_password(password: str, hashed_password: str) -> bool:
         return False
 
 
-def generate_token(user_id: str, email: str, expires_in_hours: int = JWT_EXPIRATION_HOURS) -> str:
-    """Generates a signed JWT access token for a user."""
+def generate_token(
+    user_id: str,
+    email: str,
+    expires_in_hours: int = JWT_EXPIRATION_HOURS,
+    token_version: Optional[int] = None,
+) -> str:
+    """Generates a signed JWT access token for a user.
+
+    The ``ver`` claim binds the token to the user's current ``token_version``:
+    logout (or detected refresh-token theft) bumps the version, which instantly
+    invalidates every outstanding access token for that account.
+    """
     expiration = datetime.utcnow() + timedelta(hours=expires_in_hours)
     payload = {
         "sub": user_id,
         "email": email,
+        "ver": int(token_version or 0),
         "iat": datetime.utcnow(),
         "exp": expiration
     }
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+
+
+def _token_version_matches(payload: Dict, user: Dict) -> bool:
+    """Rejects tokens minted before the user's current token_version."""
+    try:
+        return int(payload.get("ver", 0)) == int((user or {}).get("token_version") or 0)
+    except (TypeError, ValueError):
+        return False
 
 
 def decode_token(token: str) -> Tuple[Optional[Dict], Optional[str]]:
@@ -130,6 +149,16 @@ def jwt_required(f):
                 }
             }), 401
 
+        if not _token_version_matches(payload, user):
+            return jsonify({
+                "success": False,
+                "data": None,
+                "error": {
+                    "code": "TOKEN_REVOKED",
+                    "message": "This session has been revoked. Please sign in again."
+                }
+            }), 401
+
         g.current_user = user
         return f(*args, **kwargs)
 
@@ -162,7 +191,7 @@ def optional_jwt(f):
             payload, _ = decode_token(token)
             if payload:
                 user = get_user_by_id(payload.get("sub"))
-                if user:
+                if user and _token_version_matches(payload, user):
                     g.current_user = user
         return f(*args, **kwargs)
 

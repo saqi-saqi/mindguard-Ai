@@ -1,6 +1,3 @@
-pytest>=7.4
-mongomock>=4.1
-pyjwt>=2.8
-scikit-learn>=1.4.0
-pytest-cov>=4.1
-
+# Full test environment: dev tooling + the ML stack the Tier-2 tests exercise.
+-r requirements-dev.txt
+-r server/requirements-ml.txt

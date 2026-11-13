@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Mail, Lock, User, HeartHandshake, ArrowRight, AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
 import type { MindUser } from "./types";
+import { setAccessToken } from "../lib/tokenStore";
 
 interface AuthScreenProps {
   onLogin: (user: MindUser, token: string) => void;
@@ -20,6 +21,7 @@ export default function AuthScreen({ onLogin, defaultLoginMode = true }: AuthScr
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [consentGiven, setConsentGiven] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +55,7 @@ export default function AuthScreen({ onLogin, defaultLoginMode = true }: AuthScr
     try {
       const endpoint = isLoginMode ? "/api/auth/login" : "/api/auth/register";
       const payload = isLoginMode
-        ? { email: cleanEmail, password: cleanPassword }
+        ? { email: cleanEmail, password: cleanPassword, remember_me: rememberMe }
         : { name: name.trim(), email: cleanEmail, password: cleanPassword, consent_given: consentGiven };
 
       const res = await fetch(endpoint, {
@@ -77,7 +79,7 @@ export default function AuthScreen({ onLogin, defaultLoginMode = true }: AuthScr
         const userData = resData.data?.user || resData.user;
 
         if (token && userData) {
-          localStorage.setItem("mg_token", token);
+          setAccessToken(token);
           setSuccessMsg(isLoginMode ? "Signed in successfully!" : "Account registered successfully!");
           setTimeout(() => {
             onLogin(userData, token);
@@ -204,6 +206,21 @@ export default function AuthScreen({ onLogin, defaultLoginMode = true }: AuthScr
               />
             </div>
           </div>
+
+          {isLoginMode && (
+            <label className="flex items-start gap-2 text-xs leading-relaxed text-slate-700">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="mt-0.5"
+              />
+              <span>
+                Keep me signed in on this device for 7 days (secure HttpOnly cookie).
+                Leave unchecked on shared devices — otherwise closing this tab signs you out.
+              </span>
+            </label>
+          )}
 
           <button
             type="submit"

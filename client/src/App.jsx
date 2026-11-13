@@ -6,6 +6,7 @@ import AuthScreen from './components/AuthScreen';
 import CrisisModal from './components/CrisisModal';
 import SettingsPanel from './components/SettingsPanel';
 import AdminSafetyLogs from './components/AdminSafetyLogs';
+import { getAccessToken, setAccessToken, clearAccessToken, clearLegacyToken } from './lib/tokenStore';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('auth');
@@ -27,9 +28,51 @@ export default function App() {
     setActiveTab('auth');
   };
 
-  // Clear previous session storage on clean startup so app always asks for login
+  // Boot: restore the session when possible. The access token lives in
+  // sessionStorage (tab-scoped); the opt-in "Keep me signed in" refresh cookie
+  // restores it even after the browser was closed. Shared-device privacy is
+  // preserved because the token never touches localStorage.
   useEffect(() => {
-    localStorage.removeItem('mg_token');
+    clearLegacyToken();
+    let cancelled = false;
+    (async () => {
+      try {
+        const existing = getAccessToken();
+        if (existing) {
+          const meRes = await fetch('/api/auth/me', {
+            headers: { Authorization: `Bearer ${existing}` },
+          });
+          if (meRes.ok) {
+            const meData = await meRes.json().catch(() => null);
+            const restoredUser = meData?.data?.user;
+            if (!cancelled && restoredUser) {
+              setUser(restoredUser);
+              setToken(existing);
+              setActiveTab('chat');
+              return;
+            }
+          }
+          clearAccessToken();
+        }
+        const refreshRes = await fetch('/api/auth/refresh', { method: 'POST' });
+        if (refreshRes.ok) {
+          const refreshData = await refreshRes.json().catch(() => null);
+          const nextToken = refreshData?.data?.token;
+          const nextUser = refreshData?.data?.user;
+          if (!cancelled && nextToken && nextUser) {
+            setAccessToken(nextToken);
+            setUser(nextUser);
+            setToken(nextToken);
+            setActiveSessionId(null);
+            setChatHistory([]);
+            setActiveTab('chat');
+          }
+        }
+      } catch (err) {
+        console.warn('Session restore skipped:', err);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -99,7 +142,7 @@ export default function App() {
   const handleLoginSuccess = (userData, userToken) => {
     setUser(userData);
     setToken(userToken);
-    localStorage.setItem('mg_token', userToken);
+    setAccessToken(userToken);
     setActiveSessionId(null);
     setChatHistory([]);
     setChatKey((prev) => prev + 1);
@@ -107,9 +150,19 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    // Server-side revocation: kills the refresh family and bumps token_version
+    // so every outstanding access token is rejected immediately.
+    try {
+      fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      }).catch(() => {});
+    } catch (err) {
+      console.warn('Logout request skipped:', err);
+    }
     setUser(null);
     setToken('');
-    localStorage.removeItem('mg_token');
+    clearAccessToken();
     setMoodLogs([]);
     setSessions([]);
     setActiveSessionId(null);
@@ -239,7 +292,8 @@ export default function App() {
       "This action will permanently delete:\n" +
       "• All saved chat messages & reflection sessions\n" +
       "• All recorded mood entries & notes\n" +
-      "• All stored analytics metrics\n\n" +
+      "• All stored analytics metrics\n" +
+      "• Crisis safety records are anonymized: identifiers and message content are removed, aggregate audit data auto-expires\n\n" +
       "This action cannot be undone."
     );
     if (!confirmed) return;

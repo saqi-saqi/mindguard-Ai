@@ -3,7 +3,8 @@
  *
  * 30-Test Comprehensive Behavioral & Clinical Safety Suite:
  * - English + Roman Urdu crisis detection & Pakistan helpline (1122/15) routing.
- * - Intentional clinical privacy behaviors: token wiped on reload (returns user to login).
+ * - Session policy: access token is tab-scoped (sessionStorage); an opt-in
+ *   "Keep me signed in" refresh cookie (HttpOnly, 7d rotation) restores it.
  * - UI guardrails: send button disabled in-flight (ignoring double-send clicks).
  * - Full multi-browser accessibility (WCAG 2.1 AA) and responsive layout stability.
  *
@@ -103,13 +104,18 @@ test.describe('auth flows', () => {
     await expect(page.locator('#mindguard-composer')).not.toBeVisible();
   });
 
-  test('3. sign up -> chat visible -> intentional reload privacy wipe returns user to login screen', async ({ page }) => {
+  test('3. sign up -> chat visible -> in-tab reload restores the session (sessionStorage policy)', async ({ page }) => {
     await openChat(page);
     await page.reload();
-    // MindGuard App.jsx intentionally clears mg_token on startup for shared-device clinical privacy
-    await expect(page.locator('#mg-password').or(page.getByLabel(S.password)).first()).toBeVisible({ timeout: 10_000 });
-    const tokenInStorage = await page.evaluate(() => localStorage.getItem('mg_token'));
-    expect(tokenInStorage, 'auth token should be wiped from localStorage on reload').toBeNull();
+    // Policy: the access token is tab-scoped (sessionStorage), so reloading the
+    // same tab keeps the user signed in; closing the tab ends the session, and
+    // the token never touches localStorage.
+    const input = page.locator('#mindguard-composer').first();
+    await expect(input, 'chat should still be visible after an in-tab reload').toBeVisible({ timeout: 15_000 });
+    const sessionToken = await page.evaluate(() => sessionStorage.getItem('mg_token'));
+    expect(sessionToken, 'access token stays in sessionStorage for the tab').toBeTruthy();
+    const localToken = await page.evaluate(() => localStorage.getItem('mg_token'));
+    expect(localToken, 'token must never persist in localStorage').toBeNull();
   });
 
   test('4. expired/garbage token sends user back to login instead of a broken UI', async ({ page }) => {

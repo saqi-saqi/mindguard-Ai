@@ -209,6 +209,7 @@ def analyze_user_message(text: str, context_turns: list[str] | None = None) -> D
 
     transformer_crisis_prob = 0.0
     joblib_crisis_prob = 0.0
+    effective_crisis_prob = 0.0
     top_intent = None
     intent_score = 0.50
     emotion_label = "NEUTRAL"

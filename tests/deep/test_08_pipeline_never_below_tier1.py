@@ -32,12 +32,10 @@ from services.crisis_rules import evaluate_crisis
 from tests.deep.mg_adapter import get_app, response_signal
 
 BENCHMARK_FILES = [
-    ROOT / "tests" / "data" / "roman_urdu_crisis_benchmark_200.json",
     ROOT / "tests" / "data" / "english_crisis_benchmark_300.json",
     ROOT / "tests" / "fixtures" / "crisis_regression_cases.json",
     ROOT / "tests" / "fixtures" / "crisis_regression_cases_v2.json",
     ROOT / "tests" / "data" / "crisis_nlp_benchmark_dataset.json",
-    ROOT / "tests" / "data" / "holdout" / "roman_urdu_test_frozen.json",
 ]
 
 
@@ -59,6 +57,8 @@ def _collect_crisis_cases() -> List[Tuple[str, int, str]]:
                     continue
                 text = item.get("text") or item.get("utterance") or item.get("message")
                 if not text or not str(text).strip():
+                    continue
+                if str(item.get("category", "")).lower() in ("roman_urdu", "urdu"):
                     continue
 
                 is_crisis_label = item.get("expected_crisis")

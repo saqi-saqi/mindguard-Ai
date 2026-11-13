@@ -23,7 +23,14 @@ from pymongo import MongoClient, ASCENDING, DESCENDING
 from pymongo.errors import PyMongoError, DuplicateKeyError
 
 # Import config settings safely
-from config import MONGO_URI, MONGO_DB_NAME, USE_MONGOMOCK
+from config import (
+    MONGO_URI,
+    MONGO_DB_NAME,
+    USE_MONGOMOCK,
+    SAFETY_LOG_RETENTION_DAYS,
+    AUDIT_LOG_RETENTION_DAYS,
+    REFRESH_TOKEN_TTL_DAYS,
+)
 
 logger = logging.getLogger("MindGuard-Database")
 
@@ -148,6 +155,24 @@ def init_db():
     # 5. TTL Indexes for Automatic Data Retention Expiry
     db.chat_messages.create_index("expires_at", expireAfterSeconds=0)
     db.mood_logs.create_index("expires_at", expireAfterSeconds=0)
+    # Safety and audit records carry a bounded lifetime: unbounded retention of
+    # crisis metadata is a privacy liability, not an audit benefit.
+    db.safety_logs.create_index(
+        "expires_at", expireAfterSeconds=0, name="idx_safety_expires_at"
+    )
+    db.audit_logs.create_index(
+        "expires_at", expireAfterSeconds=0, name="idx_audit_expires_at"
+    )
+
+    # 7. Refresh token families - unique hash lookup + bounded lifetime
+    db.refresh_tokens.create_index([("user_id", ASCENDING)], name="idx_refresh_user")
+    db.refresh_tokens.create_index([("family_id", ASCENDING)], name="idx_refresh_family")
+    db.refresh_tokens.create_index(
+        [("token_hash", ASCENDING)], unique=True, name="idx_refresh_token_hash"
+    )
+    db.refresh_tokens.create_index(
+        "expires_at", expireAfterSeconds=0, name="idx_refresh_expires_at"
+    )
 
     # 6. Safety Logs Collection - Compound and single-field indexes for clinical review
     db.safety_logs.create_index([("timestamp", DESCENDING)], name="idx_safety_timestamp")
@@ -174,6 +199,7 @@ def create_user(name: str, email: str, password_hash: str, consent_given: bool =
         "password_hash": password_hash,
         "created_at": created_at,
         "role": "user",
+        "token_version": 0,
         "settings": {
             "consent_given": bool(consent_given),
             "retention_enabled": True,
@@ -413,12 +439,39 @@ def get_chat_session_by_id(session_id: str, user_id: Optional[str] = None) -> Op
     return serialize_doc(doc)
 
 
+def assert_session_ownership(session_id: str, user_id: Optional[str]) -> Optional[str]:
+    """Fail closed when the caller targets a session owned by another account.
+
+    A client-supplied ``session_id`` is not a credential: without this check an
+    anonymous or unrelated caller could flip a stranger's session into
+    ``crisis_active`` (or silently re-home it to their own account).
+
+    Returns the owning user id (``None`` for anonymous sessions).
+    A missing session document is allowed: the caller may be creating it.
+
+    Raises:
+        PermissionError: the session exists and belongs to a different account.
+    """
+    if not session_id:
+        return None
+    doc = get_db().chat_sessions.find_one({"id": session_id}, {"user_id": 1})
+    if not doc:
+        return None
+    owner = doc.get("user_id")
+    if owner and owner != user_id:
+        raise PermissionError(
+            f"Session {session_id} is owned by another account"
+        )
+    return owner
+
+
 def update_chat_session(session_id: str, user_id: Optional[str], updates: Dict[str, Any]) -> None:
     allowed = {
         key: value for key, value in updates.items()
         if key in {"title", "summary", "last_message_at", "risk_state", "crisis_triggered_at", "last_risk_level", "crisis_count"}
     }
     if allowed:
+        assert_session_ownership(session_id, user_id)
         query: Dict[str, Any] = {"id": session_id}
         if user_id:
             query["user_id"] = user_id
@@ -484,6 +537,101 @@ def clear_user_cooling_window(user_id: str) -> None:
         pass
 
 
+# ---------------------------------------------------------------------------
+# Refresh token families (rotating, revocable, theft-detecting)
+# ---------------------------------------------------------------------------
+
+def _hash_refresh_token(raw_token: str) -> str:
+    """Only the SHA-256 digest of a refresh token is ever stored."""
+    return hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
+
+
+def issue_refresh_token(user_id: str, family_id: Optional[str] = None) -> Tuple[str, str]:
+    """Creates a refresh token in the given (or a new) rotation family.
+
+    Returns ``(raw_token, family_id)``. The raw token exists only inside the
+    httpOnly cookie; the database stores its hash, never the token itself.
+    """
+    raw_token = "rt-" + uuid.uuid4().hex + uuid.uuid4().hex
+    family = family_id or ("fam-" + uuid.uuid4().hex[:12])
+    now_dt = datetime.utcnow()
+    get_db().refresh_tokens.insert_one({
+        "id": "rtk-" + uuid.uuid4().hex[:12],
+        "user_id": user_id,
+        "family_id": family,
+        "token_hash": _hash_refresh_token(raw_token),
+        "revoked": False,
+        "created_at": now_dt.isoformat(),
+        "expires_at": now_dt + timedelta(days=REFRESH_TOKEN_TTL_DAYS),
+    })
+    return raw_token, family
+
+
+def rotate_refresh_token(raw_token: str) -> Optional[Tuple[str, str]]:
+    """Validates and rotates a refresh token; returns ``(new_token, user_id)``.
+
+    Presenting a token that was already rotated or revoked is treated as theft:
+    the whole family is revoked and the user's ``token_version`` is bumped so
+    every outstanding access token dies immediately.
+    """
+    if not raw_token:
+        return None
+    db = get_db()
+    doc = db.refresh_tokens.find_one({"token_hash": _hash_refresh_token(raw_token)})
+    if not doc:
+        return None
+
+    expires_at = doc.get("expires_at")
+    if isinstance(expires_at, str):
+        try:
+            expires_at = datetime.fromisoformat(expires_at)
+        except ValueError:
+            expires_at = None
+    if expires_at is not None and expires_at < datetime.utcnow():
+        return None
+
+    if doc.get("revoked"):
+        revoke_refresh_family(doc["family_id"])
+        bump_token_version(doc["user_id"])
+        return None
+
+    db.refresh_tokens.update_one(
+        {"_id": doc["_id"]},
+        {"$set": {"revoked": True, "rotated_at": datetime.utcnow().isoformat()}},
+    )
+    new_raw, _family = issue_refresh_token(doc["user_id"], family_id=doc["family_id"])
+    return new_raw, doc["user_id"]
+
+
+def find_refresh_family(raw_token: str) -> Optional[str]:
+    """Maps a raw refresh token to its rotation family (used by logout)."""
+    doc = get_db().refresh_tokens.find_one({"token_hash": _hash_refresh_token(raw_token)})
+    return (doc or {}).get("family_id")
+
+
+def revoke_refresh_family(family_id: str) -> None:
+    get_db().refresh_tokens.update_many(
+        {"family_id": family_id}, {"$set": {"revoked": True}}
+    )
+
+
+def revoke_all_refresh_tokens(user_id: str) -> None:
+    get_db().refresh_tokens.update_many(
+        {"user_id": user_id}, {"$set": {"revoked": True}}
+    )
+
+
+def get_user_token_version(user_id: str) -> int:
+    user = get_db().users.find_one({"id": user_id}, {"token_version": 1})
+    return int((user or {}).get("token_version") or 0)
+
+
+def bump_token_version(user_id: str) -> int:
+    """Invalidates every outstanding access token for the user; returns the new version."""
+    get_db().users.update_one({"id": user_id}, {"$inc": {"token_version": 1}})
+    return get_user_token_version(user_id)
+
+
 def generate_clearance_token(session_id: str, user_id: str, secret_key: str) -> str:
     """Generates an HMAC-signed one-time clearance token with 5-minute TTL."""
     now = int(time.time())
@@ -516,9 +664,11 @@ def set_session_risk_state(
     user_id: Optional[str],
     new_state: str,
     risk_level: Optional[str] = None,
-    expected_version: Optional[int] = None
+    expected_version: Optional[int] = None,
+    guest_ref: Optional[str] = None
 ) -> Dict[str, Any]:
     """Updates session risk state ('normal', 'crisis_active', 'elevated_monitoring', 'resolved_by_safety_flow') with versioning."""
+    assert_session_ownership(session_id, user_id)
     valid_states = {"normal", "crisis_active", "elevated_monitoring", "resolved_by_safety_flow"}
     state = new_state if new_state in valid_states else "normal"
     
@@ -540,6 +690,8 @@ def set_session_risk_state(
     set_dict = dict(updates)
     if user_id:
         set_dict["user_id"] = user_id
+    if guest_ref:
+        set_dict["guest_ref"] = guest_ref
 
     update_op: Dict[str, Any] = {
         "$set": set_dict,
@@ -587,8 +739,9 @@ def clear_session_crisis_state(
     if not session:
         raise KeyError(f"Session {session_id} not found")
 
-    # Ownership check: if session has user_id, caller must match
-    if session.get("user_id") and user_id and session["user_id"] != user_id:
+    # Ownership check: an account-owned session may only be resolved by its owner
+    # (or with a clearance token, which the route validates separately).
+    if session.get("user_id") and session["user_id"] != user_id:
         raise PermissionError(f"User {user_id} does not own session {session_id}")
 
     # Transition guard: only crisis_active or elevated_monitoring can be resolved
@@ -621,9 +774,11 @@ def clear_session_crisis_state(
 
 def save_audit_event(event_type: str, actor_id: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None) -> None:
     """Store security/safety metadata only; never save raw chat text or credentials."""
+    now_dt = datetime.utcnow()
     get_db().audit_logs.insert_one({
         "id": f"audit-{uuid.uuid4().hex[:12]}", "event_type": event_type,
-        "actor_id": actor_id, "metadata": metadata or {}, "created_at": datetime.utcnow().isoformat()
+        "actor_id": actor_id, "metadata": metadata or {}, "created_at": now_dt.isoformat(),
+        "expires_at": now_dt + timedelta(days=AUDIT_LOG_RETENTION_DAYS),
     })
 
 
@@ -727,7 +882,12 @@ def export_user_data(user_id: str) -> Dict[str, Any]:
 def delete_user_data(user_id: str) -> Dict[str, int]:
     """
     Idempotent multi-collection data wipe for personal chat messages, mood logs, sessions,
-    and audit events that reference the user. Returns exact counts of documents deleted.
+    and audit events that reference the user. Returns exact counts of documents removed.
+
+    Safety logs are *anonymized* rather than deleted: the clinical event (tier, category,
+    action taken) is retained for aggregate audit under SAFETY_LOG_RETENTION_DAYS, but every
+    identifier and the message excerpt are stripped so nothing remains that points back to
+    the person who exercised their erasure right.
     """
     db = get_db()
 
@@ -735,6 +895,20 @@ def delete_user_data(user_id: str) -> Dict[str, int]:
     res_mood = db.mood_logs.delete_many({"user_id": user_id})
     res_session = db.chat_sessions.delete_many({"user_id": user_id})
     res_audit = db.audit_logs.delete_many({"actor_id": user_id})
+    res_refresh = db.refresh_tokens.delete_many({"user_id": user_id})
+    res_safety = db.safety_logs.update_many(
+        {"user_id": user_id},
+        {
+            "$set": {
+                "user_id": None,
+                "session_id": None,
+                "is_guest": True,
+                "redacted": True,
+                "anonymized_at": datetime.now(timezone.utc).isoformat(),
+            },
+            "$unset": {"message_excerpt": ""},
+        },
+    )
     db.user_profiles.update_one(
         {"user_id": user_id},
         {"$set": {"session_count": 0, "crisis_count": 0, "last_topic": None, "coping_tried": []}}
@@ -744,7 +918,9 @@ def delete_user_data(user_id: str) -> Dict[str, int]:
         "deleted_messages": res_msg.deleted_count,
         "deleted_mood_logs": res_mood.deleted_count,
         "deleted_sessions": res_session.deleted_count,
-        "deleted_audit_events": res_audit.deleted_count
+        "deleted_audit_events": res_audit.deleted_count,
+        "deleted_refresh_tokens": res_refresh.deleted_count,
+        "anonymized_safety_logs": res_safety.modified_count,
     }
 
 
@@ -957,6 +1133,8 @@ def log_safety_event(
             "admin_note": "",
             "reviewed_at": None,
             "reviewed_by": None,
+            # Bounded retention: clinical audit needs a window, not forever.
+            "expires_at": now_dt + timedelta(days=SAFETY_LOG_RETENTION_DAYS),
         }
 
         db.safety_logs.insert_one(doc)

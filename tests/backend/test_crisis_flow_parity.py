@@ -42,7 +42,10 @@ from services.safety_classifier import classify_safety_risk, SafetyRiskCategory
 from services.crisis_resources import get_resources_for_region
 
 
-@pytest.fixture(scope="module")
+# Function scope: each scenario gets a fresh cookie jar. Guests now carry a
+# continuity reference, so a module-scoped client would leak one scenario's
+# session state into the next (TP-04 covers cross-turn behaviour explicitly).
+@pytest.fixture()
 def client():
     flask_app_module.app.config["TESTING"] = True
     old_rate = flask_app_module.app.config.get("RATE_LIMIT_PER_MINUTE")

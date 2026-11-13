@@ -1,0 +1,7 @@
+# MindGuard ML stack (Tier 2 classifiers + transformer pipelines).
+# Install alongside server/requirements.txt. Heavyweight on purpose:
+# keep it out of slim API-only images only if Tier 2 degradation is acceptable.
+torch>=2.2.0,<3.0.0
+transformers>=4.40.0,<5.0.0
+datasets>=2.19.0,<4.0.0
+accelerate>=0.30.0,<2.0.0

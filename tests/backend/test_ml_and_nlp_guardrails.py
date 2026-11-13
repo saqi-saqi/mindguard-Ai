@@ -100,19 +100,32 @@ class MLSafetyGuardrailsTestCase(unittest.TestCase):
 
     def test_session_safety_clear_endpoint(self):
         """POST /api/chat/session/<id>/safety-clear successfully steps down risk state."""
+        # Session ownership is enforced: escalate and clear as the owning user,
+        # mirroring the real authenticated client flow.
+        get_db().users.insert_one({
+            "id": "user-test-clear",
+            "email": "safety-clear-test@mindguard.ai",
+            "role": "user",
+            "name": "Safety Clear Test",
+        })
+        auth_headers = {"Authorization": f"Bearer {generate_token('user-test-clear', 'safety-clear-test@mindguard.ai')}"}
+
         session = create_chat_session("user-test-clear", "Test Session")
         session_id = session["id"]
 
         # Escalate session
-        self.client.post("/api/chat", json={"session_id": session_id, "message": "I want to die tonight"})
+        self.client.post(
+            "/api/chat",
+            json={"session_id": session_id, "message": "I want to die tonight"},
+            headers=auth_headers,
+        )
         self.assertEqual(get_session_risk_state(session_id)["risk_state"], "crisis_active")
 
         # Explicit clear (authenticated)
-        token = generate_token("user-test-clear", "test@mindguard.ai")
         resp = self.client.post(
             f"/api/chat/session/{session_id}/safety-clear",
             json={"resolution_type": "grounding_completed"},
-            headers={"Authorization": f"Bearer {token}"}
+            headers=auth_headers
         )
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(resp.get_json()["success"])

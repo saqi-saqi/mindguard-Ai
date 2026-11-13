@@ -38,6 +38,12 @@ CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", os.environ.get("CO
 RATE_LIMIT_REQUESTS = int(os.environ.get("RATE_LIMIT_REQUESTS", os.environ.get("RATE_LIMIT_PER_MINUTE", "60")))
 RATE_LIMIT_WINDOW_SECONDS = int(os.environ.get("RATE_LIMIT_WINDOW_SECONDS", "60"))
 DEFAULT_RETENTION_DAYS = int(os.environ.get("DEFAULT_RETENTION_DAYS", "30"))
+# Clinical safety records are retained for audit, then expire automatically.
+# They are anonymized (not deleted) when a user exercises their erasure right.
+SAFETY_LOG_RETENTION_DAYS = int(os.environ.get("SAFETY_LOG_RETENTION_DAYS", "365"))
+AUDIT_LOG_RETENTION_DAYS = int(os.environ.get("AUDIT_LOG_RETENTION_DAYS", "90"))
+# Opt-in "Keep me signed in" refresh-token rotation lifetime.
+REFRESH_TOKEN_TTL_DAYS = int(os.environ.get("REFRESH_TOKEN_TTL_DAYS", "7"))
 USE_GENERALIZER_PIPELINE = os.environ.get("USE_GENERALIZER_PIPELINE", "true").lower() in ("true", "1", "yes")
 USE_UNIFIED_CRISIS_PIPELINE = os.environ.get("USE_UNIFIED_CRISIS_PIPELINE", "true").lower() in ("true", "1", "yes")
 ENABLE_WELLBEING_MULTILABEL_MODEL = os.environ.get("ENABLE_WELLBEING_MULTILABEL_MODEL", "false").lower() in ("true", "1", "yes")

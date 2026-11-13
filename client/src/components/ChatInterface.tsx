@@ -393,20 +393,45 @@ export default function ChatInterface({
   };
 
   const handleSafetyClear = async () => {
+    let cleared = false;
     if (activeSessionId) {
       try {
         const headers: Record<string, string> = { "Content-Type": "application/json" };
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-        await fetch(`/api/chat/session/${activeSessionId}/safety-clear`, {
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        } else {
+          // Guests hold no JWT: the endpoint accepts a short-lived clearance
+          // token instead, so request one before acknowledging safety.
+          const tokenRes = await fetch(`/api/chat/session/${activeSessionId}/clearance-token`, {
+            method: "POST",
+          });
+          if (tokenRes.ok) {
+            const tokenData = await tokenRes.json().catch(() => null);
+            const clearance = tokenData?.data?.clearance_token;
+            if (clearance) headers["X-Clearance-Token"] = clearance;
+          }
+        }
+        const res = await fetch(`/api/chat/session/${activeSessionId}/safety-clear`, {
           method: "POST",
           headers,
           body: JSON.stringify({ resolution_type: "user_confirmed_safe" }),
         });
+        cleared = res.ok;
+        if (!res.ok) {
+          console.warn(`Safety clear rejected with status ${res.status}`);
+        }
       } catch (e) {
         console.warn("Safety clear API call:", e);
       }
+    } else {
+      cleared = true;
     }
-    setDismissedEmergencyBanner(true);
+    // Only dismiss the emergency banner when the server actually recorded the
+    // acknowledgement; a silent failure would leave the session in crisis
+    // state server-side while the UI pretends everything is resolved.
+    if (cleared) {
+      setDismissedEmergencyBanner(true);
+    }
   };
 
   // Vetted, reviewed suggestion bank for safe user prompts
